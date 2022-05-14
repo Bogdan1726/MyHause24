@@ -47,7 +47,9 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'user.apps.UserConfig',
     'crm.apps.CrmConfig',
-    'cabinet.apps.CabinetConfig'
+    'cabinet.apps.CabinetConfig',
+    'phonenumber_field',
+
 ]
 
 MIDDLEWARE = [
@@ -112,6 +114,14 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = 'user.User'
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'user.authentication.EmailAuthBackend',
+)
+
 
 
 # Internationalization

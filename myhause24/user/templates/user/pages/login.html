@@ -1,0 +1,109 @@
+{% extends 'user/elements/layout.html' %}
+
+{% block title %}
+{{ block.super }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block login %}
+<div class="card card-primary card-outline card-outline-tabs">
+    <div class="card-header p-0 border-bottom-0">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#cabinet" aria-expanded="true">Для жильца</a>
+            </li>
+            <li class="nav-item">
+                <a class=nav-link data-toggle="tab" href="#admin" aria-expanded="true">Для администрации</a>
+            </li>
+        </ul>
+    </div>
+    <div class="tab-content">
+        <div class="tab-pane active" id="cabinet">
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">Вход в личный кабинет</p>
+                <form action="{% url 'login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        {{ form.username }}
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form.password }}
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="icheck-primary">
+                                <input type="checkbox" id="remember1">
+                                <label for="remember">
+                                    Запомнить меня
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="redirect" value="{% url 'login' %}"/>
+                    <button type="submit" class="btn btn-block btn-primary">
+                        Вход
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="tab-pane" id="admin">
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">Вход в панель управления</p>
+                <form action="{% url 'login' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{% url 'admin' %}"/>
+                    <div class="input-group mb-3">
+                        {{ form.username }}
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form.password }}
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="icheck-primary">
+                                <input type="checkbox" id="remember">
+                                <label for="remember">
+                                    Запомнить меня
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="redirect" value="{% url 'admin' %}"/>
+                    <button type="submit" class="btn btn-block btn-primary" value="admin">
+                        Вход
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.login-card-body -->
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+
+
+

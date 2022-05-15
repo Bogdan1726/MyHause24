@@ -12,7 +12,7 @@ User = get_user_model()
 class CustomUserAdmin(UserAdmin):
     pass
     fieldsets = (
-        (None, {'fields': ('email', 'username', 'password')}),
+        (None, {'fields': ('profile_picture', 'email', 'username', 'password')}),
         ('Персональная информация', {'fields': ('first_name', 'last_name', 'patronymic',
                                                 'phone', 'viber', 'telegram',
                                                 'user_id', 'about_owner')}),

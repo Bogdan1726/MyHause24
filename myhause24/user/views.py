@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import resolve_url
 
 from .forms import UserLoginForm
@@ -15,6 +15,9 @@ class UserLoginView(LoginView):
         url = self.request.POST['redirect']
         return url or resolve_url(settings.LOGIN_REDIRECT_URL)
 
+
+class UserLogout(LogoutView):
+    next_page = 'login'
 
 
 

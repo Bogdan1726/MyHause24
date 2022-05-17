@@ -24,15 +24,25 @@
     <div class="card-header p-0 border-bottom-0">
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#cabinet" aria-expanded="true">Для жильца</a>
+                <a class="nav-link"
+                   data-toggle="tab"
+                   value="cabinet"
+                   id="cabinet-link"
+                   href="#cabinet"
+                   aria-expanded="true">Для жильца</a>
             </li>
             <li class="nav-item">
-                <a class=nav-link data-toggle="tab" href="#admin" aria-expanded="true">Для администрации</a>
+                <a class="nav-link"
+                   data-toggle="tab"
+                   value="admin"
+                   id="admin-link"
+                   href="#admin"
+                   aria-expanded="true">Для администрации</a>
             </li>
         </ul>
     </div>
     <div class="tab-content">
-        <div class="tab-pane active" id="cabinet">
+        <div class="tab-pane" id="cabinet">
             <div class="card-body login-card-body">
                 <p class="login-box-msg">Вход в личный кабинет</p>
                 <form action="{% url 'login' %}" id="cabinet_form" method="post">
@@ -124,6 +134,19 @@
 </script>
 
 <script>
+
+    $('.nav-link').on('click', function () {
+        const value = $(this).attr('value');
+        localStorage.setItem('active_tabs', value)
+    })
+
+    if (localStorage.getItem('active_tabs')) {
+        $('#' + localStorage.getItem('active_tabs') + '').addClass('active');
+        $('#' + localStorage.getItem('active_tabs') + '-link').addClass('active');
+    } else {
+        $('#cabinet').addClass('active');
+        $('#cabinet-link').addClass('active');
+    }
 
 
     $("#cabinet input[name=password]").attr('id', 'password_cabinet');

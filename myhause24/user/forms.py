@@ -63,3 +63,4 @@ class UserLoginForm(AuthenticationForm):
                 except User.DoesNotExist:
                     raise self.get_invalid_login_error()
         return self.cleaned_data
+

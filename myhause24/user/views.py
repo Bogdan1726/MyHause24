@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import resolve_url
-
+from django.contrib.auth import login as auth_login
 from .forms import UserLoginForm
 
-
 # Create your views here.
+
 
 class UserLoginView(LoginView):
     form_class = UserLoginForm
@@ -18,7 +18,3 @@ class UserLoginView(LoginView):
 
 class UserLogout(LogoutView):
     next_page = 'login'
-
-
-
-

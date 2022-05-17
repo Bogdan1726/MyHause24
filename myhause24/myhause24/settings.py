@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'crm.apps.CrmConfig',
     'cabinet.apps.CabinetConfig',
     'phonenumber_field',
+    'snowpenguin.django.recaptcha3',
 
 ]
 
@@ -151,3 +152,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+RECAPTCHA_PRIVATE_KEY = os.getenv('GOOGLE_RECAPTCHA_SECRET_KEY')
+RECAPTCHA_PUBLIC_KEY = os.getenv('GOOGLE_RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_DEFAULT_ACTION = 'generic'
+RECAPTCHA_SCORE_THRESHOLD = 0.5
+RECAPTCHA_LANGUAGE = 'en'

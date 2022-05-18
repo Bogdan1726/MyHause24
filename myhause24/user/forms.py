@@ -9,13 +9,14 @@ from snowpenguin.django.recaptcha3.fields import ReCaptchaField
 
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(
-        widget=forms.TextInput(attrs={'placeholder': 'Email',
-                                      'class': 'form-control'}))
+        widget=forms.EmailInput(attrs={'placeholder': 'Email',
+                                       'autocomplete': 'off',
+                                       'class': 'form-control'}))
 
     password = forms.CharField(
         label=_("Password"),
         strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password',
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password',
                                           'placeholder': 'Пароль',
                                           'class': 'form-control'}),
     )
@@ -38,7 +39,6 @@ class UserLoginForm(AuthenticationForm):
         password = self.cleaned_data.get('password')
         remember_me = self.cleaned_data.get('remember_me')
         remember_me2 = self.cleaned_data.get('remember_me2')
-        print(self.cleaned_data.get('captcha'))
 
         if username is not None and password:
             self.user_cache = authenticate(self.request, username=username, password=password)
@@ -63,4 +63,3 @@ class UserLoginForm(AuthenticationForm):
                 except User.DoesNotExist:
                     raise self.get_invalid_login_error()
         return self.cleaned_data
-

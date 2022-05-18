@@ -36,7 +36,7 @@ class User(AbstractUser):
         """
           Return the first_name plus the last_name, with a space in between.
         """
-        full_name = f'{self.first_name}, {self.last_name}, {self.patronymic}'
+        full_name = f'{self.first_name} {self.last_name}'
         return full_name
 
 

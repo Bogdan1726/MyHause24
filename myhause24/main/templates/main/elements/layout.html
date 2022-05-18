@@ -1,0 +1,67 @@
+<!doctype html>
+{% load static %}
+<html lang="ru">
+<head>
+    <title>Главная</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="{% static 'main/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'cabinet/plugins/fontawesome-free/css/fontawesome.css' %}" rel="stylesheet">
+
+</head>
+
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03"
+                aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="#">
+            <img src="{% static 'crm/media/logo.svg' %}" alt="" width="150" height="30"
+                 class="d-inline-block align-text-top">
+        </a>
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Главная</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">О нас</a>
+
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">Услуги</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Условия приобретения</a>
+
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">Контакты</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="{% url 'login' %}">Вход
+                    </a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+
+
+<!-- Bootstrap js -->
+<script src="{% static 'main/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+
+{% block script %}
+{% endblock %}
+</body>
+</html>

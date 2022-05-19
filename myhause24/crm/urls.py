@@ -1,6 +1,12 @@
 from django.urls import path
-from .views import index
+from .views import HouseListView, index, HouseCreateView
 
 urlpatterns = [
     path('', index, name='admin'),
+
+    # house
+    path('house/', HouseListView.as_view(), name='houses'),
+    path('house/create/', HouseCreateView.as_view(), name='create_house')
+
+    # houses end
 ]

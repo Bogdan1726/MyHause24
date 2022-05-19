@@ -111,7 +111,9 @@
 
     <div class="content-wrapper" style="min-height: 897px;">
         <section class="content-header">
+            {% block content-header %}
             <h1>Статистика</h1>
+            {% endblock %}
         </section>
 
         <section class="content">
@@ -142,7 +144,11 @@
 <script src="{% static 'crm/bower_components/jquery-slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/chart.js/Chart.js' %}"></script>
 <script src="{% static 'crm/dist/js/main.js' %}"></script>
+<script>
+     $(".sidebar-menu a[href='" + location.pathname + "']").parent().addClass('active');
+</script>
 {% block scripts %}
 {% endblock %}
+
 </body>
 </html>

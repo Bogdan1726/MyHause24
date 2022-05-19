@@ -1,0 +1,85 @@
+{% extends 'crm/elements/layout.html'%}
+
+{% block title %}
+Дома
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Новый дом</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'houses'%}">Дома</a></li>
+    <li class="active">Новый дом</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-body">
+        <form id="crate_house" action="#" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-lg-4">
+                    {{ form.as_p }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-lg-8">
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a href="#tab-sections" data-toggle="tab" aria-expanded="true">Секции</a>
+                            </li>
+                            <li><a href="#tab-floors" data-toggle="tab" aria-expanded="false">Этажи</a></li>
+                            <li><a href="#tab-houseuseradmins" data-toggle="tab" aria-expanded="false">Пользователи</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane active clearfix" id="tab-sections">
+                                <div id="form-section-rows">
+                                </div>
+                                <button class="btn btn-success pull-right form-row-add-section-btn" type="button">
+                                    Добавить
+                                </button>
+                            </div>
+                            <div class="tab-pane clearfix" id="tab-floors">
+                                <div id="form-floor-rows">
+                                </div>
+                                <button class="btn btn-success pull-right form-row-add-floor-btn" type="button">
+                                    Добавить
+                                </button>
+                            </div>
+                            <div class="tab-pane clearfix" id="tab-houseuseradmins">
+                                <div id="form-houseuseradmin-rows">
+                                </div>
+                                <button class="btn btn-success pull-right form-row-add-houseuseradmin-btn"
+                                        type="button">Добавить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <div class="form-group">
+                        <a href="{% url 'houses' %}" class="btn btn-default">Отменить</a>
+                        <button type="submit" class="btn btn-success">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+</script>
+{% endblock %}

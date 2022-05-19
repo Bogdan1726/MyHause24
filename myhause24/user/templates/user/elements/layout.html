@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+{% load static %}
+
+
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static 'crm/plugins/fontawesome-free/css/all.min.css' %}">
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" href="{% static 'crm/plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="{% static 'crm/dist/css/adminlte.min.css' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'user/media/favicon.svg' %}"/>
+
+
+    <style>
+
+        .nav-tabs {
+            border-bottom: 1px solid transparent;
+        }
+
+        .nav-tabs .nav-link {
+            margin-bottom: -1px;
+            border: 1px solid transparent;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            color: black;
+        }
+
+        .nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
+            border-color: transparent transparent transparent;
+        }
+
+        .nav-tabs .nav-link.disabled {
+            color: transparent;
+            background-color: transparent;
+            border-color: transparent;
+        }
+
+        .nav-tabs .nav-link.active,
+        .nav-tabs .nav-item.show .nav-link {
+            color: #495057;
+            background-color: transparent;
+            border-color: transparent transparent transparent;
+        }
+
+
+        .nav-tabs li {
+            display: table-cell;
+            width: 50%;
+            margin-right: 0;
+            text-align: center;
+            font-size: 10pt;
+
+        }
+
+
+        .login-page, .register-page {
+            height: 87vh;
+            background-color: #d2d6de
+        }
+
+    </style>
+    {% block style %}
+    {% endblock %}
+    <title>
+        {% block title %}
+        Вход
+        {% endblock %}
+    </title>
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+    <div class="login-logo">
+        <a href="{% url 'main' %}">
+            <img src="{% static 'user/media/logo.svg' %}" alt="logo" width="100%">
+        </a>
+    </div>
+    <!-- /.login-logo -->
+    {% block login %}
+    {% endblock %}
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="{% static 'crm/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'crm/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'crm/dist/js/adminlte.min.js' %}"></script>
+
+
+{% block script %}
+{% endblock %}
+</body>
+</html>

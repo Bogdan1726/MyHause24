@@ -13,11 +13,11 @@ User = get_user_model()
 class House(models.Model):
     title = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
-    image1 = models.ImageField(upload_to='crm/house/')
-    image2 = models.ImageField(upload_to='crm/house/')
-    image3 = models.ImageField(upload_to='crm/house/')
-    image4 = models.ImageField(upload_to='crm/house/')
-    image5 = models.ImageField(upload_to='crm/house/')
+    image1 = models.ImageField(upload_to='crm/house/', blank=True)
+    image2 = models.ImageField(upload_to='crm/house/', blank=True)
+    image3 = models.ImageField(upload_to='crm/house/', blank=True)
+    image4 = models.ImageField(upload_to='crm/house/', blank=True)
+    image5 = models.ImageField(upload_to='crm/house/', blank=True)
     user = models.ManyToManyField(User, blank=True)
 
 
@@ -33,11 +33,13 @@ class Apartment(models.Model):
 
 
 class Section(models.Model):
+    objects = None
     title = models.CharField(max_length=64)
     house = models.ForeignKey('House', on_delete=models.CASCADE)
 
 
 class Floor(models.Model):
+    objects = None
     title = models.CharField(max_length=64)
     house = models.ForeignKey('House', on_delete=models.CASCADE)
 

@@ -1,12 +1,12 @@
 <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 898px;">
     <section class="sidebar" style="overflow: hidden; width: auto; height: 898px;">
-
+        {% with request.resolver_match.url_name as url %}
         <ul class="sidebar-menu tree" data-widget="tree">
             <li>
                 <a href="/admin/">
-                <i class="fa fa-line-chart"></i>
-                <span>Статистика</span>
-            </a>
+                    <i class="fa fa-line-chart"></i>
+                    <span>Статистика</span>
+                </a>
             </li>
             <li><a href="/admin/account-transaction/index"><i class="fa fa-dollar"></i> <span>Касса</span></a>
             </li>
@@ -16,7 +16,7 @@
             </li>
             <li><a href="/admin/flat/index"><i class="fa fa-key"></i> <span>Квартиры</span></a></li>
             <li><a href="/admin/user/index"><i class="fa fa-users"></i> <span>Владельцы квартир</span></a></li>
-            <li>
+            <li class="{% if url == 'houses' or  url == 'create_house' %}active{% endif %}">
                 <a href="{% url 'houses' %}">
                     <i class="fa fa-building"></i>
                     <span>Дома</span>
@@ -60,6 +60,7 @@
                 </ul>
             </li>
         </ul>
+        {% endwith %}
     </section>
     <div class="slimScrollBar"
          style="background: rgb(0, 0, 0); width: 7px; position: absolute; top: 0px; opacity: 0.4; display: none; border-radius: 7px; z-index: 99; right: 1px; height: 898px;"></div>

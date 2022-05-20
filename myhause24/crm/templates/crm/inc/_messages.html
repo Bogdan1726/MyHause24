@@ -1,0 +1,13 @@
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == 'error' %}
+<div class="callout callout-danger" id="error-messages">
+    <p>{{ message }}</p>
+</div>
+{% else %}
+<div class="callout callout-{{ message.tags }}" id="error-messages">
+    <p>{{ message }}</p>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}

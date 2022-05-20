@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block style %}
+
 {% endblock %}
 
 
@@ -18,6 +19,8 @@
 
 
 {% block content %}
+{% include 'crm/inc/_messages.html' %}
+
 <div class="row">
     <div class="col-xs-12">
         <div class="pull-right margin-bottom">
@@ -37,7 +40,6 @@
                     </a>
                 </div>
             </div>
-
             <div id="w0" class="grid-view">
                 <div class="box-body table-responsive no-padding">
                     <table class="table table-bordered table-hover table-striped linkedRow">
@@ -56,10 +58,11 @@
                         </tr>
                         </thead>
                         <tbody>
+                        {% for house in houses %}
                         <tr data-href="/admin/house/68" data-key="68">
-                            <td>1</td>
-                            <td>павап</td>
-                            <td>вапвап</td>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ house.title }}</td>
+                            <td>{{ house.address }}</td>
                             <td>
                                 <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
                                                                      href="/admin/house/update/68" title="Редактировать"
@@ -70,342 +73,7 @@
                                             class="fa fa-trash"></i></a></div>
                             </td>
                         </tr>
-                        <tr data-href="/admin/house/65" data-key="65">
-                            <td>2</td>
-                            <td></td>
-                            <td>г. Одесса, ул. Преображенская 5</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/65" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/65" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/64" data-key="64">
-                            <td>3</td>
-                            <td>ЖК Тестовый</td>
-                            <td>город Одесса</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/64" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/64" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/63" data-key="63">
-                            <td>4</td>
-                            <td>Дом 2Ц</td>
-                            <td>Ново-Оскольськая</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/63" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/63" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/62" data-key="62">
-                            <td>5</td>
-                            <td>Н-О</td>
-                            <td>Богдана Хмельницкого</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/62" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/62" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/61" data-key="61">
-                            <td>6</td>
-                            <td>dfdsf</td>
-                            <td>dfdfdf</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/61" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/61" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/56" data-key="56">
-                            <td>7</td>
-                            <td>Дом 56</td>
-                            <td>Дом 56</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/56" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/56" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/51" data-key="51">
-                            <td>8</td>
-                            <td>cbdcbdf</td>
-                            <td>gdfgdfg</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/51" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/51" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/48" data-key="48">
-                            <td>9</td>
-                            <td>111</td>
-                            <td>1111</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/48" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/48" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/26" data-key="26">
-                            <td>10</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/26" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/26" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/25" data-key="25">
-                            <td>11</td>
-                            <td>ЖК Искринский</td>
-                            <td>ул. 10</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/25" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/25" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/24" data-key="24">
-                            <td>12</td>
-                            <td>Н-О</td>
-                            <td>Богдана Хмельницкого</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/24" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/24" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/23" data-key="23">
-                            <td>13</td>
-                            <td>ОСМД 1002 ЖК "Альтаир 2"</td>
-                            <td>Люстдорфская дорога, 90</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/23" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/23" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/20" data-key="20">
-                            <td>14</td>
-                            <td>ЖК "Альтаир 3"</td>
-                            <td>ул. Жаботинского, 54</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/20" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/20" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/19" data-key="19">
-                            <td>15</td>
-                            <td>ЖК "Скай Сити"</td>
-                            <td>ул. Варненская, 27-А/2</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/19" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/19" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/18" data-key="18">
-                            <td>16</td>
-                            <td>ЖК "Manhattan"</td>
-                            <td>ул. Академика Филатова, 2</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/18" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/18" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/14" data-key="14">
-                            <td>17</td>
-                            <td>ЖК "Новые Черемушки"</td>
-                            <td>ул. Маршала Малиновского, 55/1</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/14" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/14" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/13" data-key="13">
-                            <td>18</td>
-                            <td>ЖК "Адмирал" Дом №13</td>
-                            <td>ул. Пушкина, 4/13</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/13" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/13" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/12" data-key="12">
-                            <td>19</td>
-                            <td>ЖК "Адмирал" Дом №12</td>
-                            <td>ул. Пушкина, 4/12</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/12" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/12" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/11" data-key="11">
-                            <td>20</td>
-                            <td>ЖК "Адмирал" Дом №11</td>
-                            <td>ул. Пушкина, 4/11</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/11" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/11" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/1" data-key="1">
-                            <td>21</td>
-                            <td>ЖК "Башня Чкалов"</td>
-                            <td>ул. Большая Арнаутская, 21</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/1" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/1" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/2" data-key="2">
-                            <td>22</td>
-                            <td>ЖК "Морская Симфония"</td>
-                            <td>пер. Мореходный 2/2</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/2" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/2" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/3" data-key="3">
-                            <td>23</td>
-                            <td>ЖК "Дом Каркашадзе"</td>
-                            <td>Французский бульвар, 29</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/3" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/3" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/4" data-key="4">
-                            <td>24</td>
-                            <td>ЖК "Королевские сады"</td>
-                            <td>Французский бульвар, 60</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/4" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/4" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
-                        <tr data-href="/admin/house/6" data-key="6">
-                            <td>25</td>
-                            <td>ЖК "Балковский"</td>
-                            <td>ул. Балковская, 137Г</td>
-                            <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/6" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/6" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
-                            </td>
-                        </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>

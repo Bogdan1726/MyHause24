@@ -1,11 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, UpdateView, FormView
+from django.views.generic.edit import ModelFormMixin, ProcessFormView
+
 from .models import House, Section, Floor
-from .forms import HouseForm, SectionForm, FloorForm
+from .forms import HouseForm, SectionForm, FloorForm, UserFormSet
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 # Create your views here.
@@ -17,25 +22,35 @@ class HouseListView(ListView):
     context_object_name = 'houses'
 
 
-class HouseCreateView(CreateView):
+class HouseFormView(ModelFormMixin, ProcessFormView):
+    pass
+
+
+class HouseUpdateView(UpdateView):
     model = House
-    template_name = 'crm/pages/houses/create_house.html'
+    template_name = 'crm/pages/houses/update_house.html'
     form_class = HouseForm
     success_url = reverse_lazy('houses')
     formset_for_section = modelformset_factory(Section, form=SectionForm, extra=0, can_delete=True)
     formset_for_floor = modelformset_factory(Floor, form=FloorForm, extra=0, can_delete=True)
+    formset_for_user = formset_factory(form=UserFormSet, extra=0)
 
     def get_context_data(self, **kwargs):
-        context = super(HouseCreateView, self).get_context_data()
+        context = super(HouseUpdateView, self).get_context_data()
         context['formset_for_section'] = self.formset_for_section(
             self.request.POST or None,
-            queryset=Section.objects.none(),
+            queryset=Section.objects.filter(house=self.object),
             prefix='section'
         )
         context['formset_for_floor'] = self.formset_for_floor(
             self.request.POST or None,
-            queryset=Floor.objects.none(),
+            queryset=Floor.objects.filter(house=self.object),
             prefix='floor'
+        )
+        context['formset_for_user'] = self.formset_for_user(
+            self.request.POST or None,
+            initial=[{'user': x, 'role': x.role, 'id': x.id} for x in self.object.user.all().order_by('-id')],
+            prefix='user'
         )
         return context
 
@@ -43,7 +58,8 @@ class HouseCreateView(CreateView):
         context = self.get_context_data()
         formset_for_section = context['formset_for_section']
         formset_for_floor = context['formset_for_floor']
-        if formset_for_section.is_valid() and formset_for_floor.is_valid():
+        formset_for_user = context['formset_for_user']
+        if formset_for_section.is_valid() and formset_for_floor.is_valid() and formset_for_user.is_valid():
             house = form.save()
             for section in formset_for_section:
                 if section.cleaned_data:
@@ -57,6 +73,73 @@ class HouseCreateView(CreateView):
                         floor = floor.save(commit=False)
                         floor.house = house
                         floor.save()
+            house.user.clear()
+            for form_user in formset_for_user:
+                if form_user.cleaned_data:
+                    if form_user.is_valid():
+                        user = form_user.cleaned_data.get('user')
+                        house.user.add(user)
+            house.save()
+            messages.success(self.request, 'Succes')
+            return super().form_valid(form)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        print(form.errors)
+        messages.error(self.request, form.errors)
+        return super().form_invalid(form)
+
+
+class HouseCreateView(CreateView):
+    model = House
+    template_name = 'crm/pages/houses/create_house.html'
+    form_class = HouseForm
+    success_url = reverse_lazy('houses')
+    formset_for_section = modelformset_factory(Section, form=SectionForm, extra=0, can_delete=True)
+    formset_for_floor = modelformset_factory(Floor, form=FloorForm, extra=0, can_delete=True)
+    formset_for_user = formset_factory(form=UserFormSet, extra=0)
+
+    def get_context_data(self, **kwargs):
+        context = super(HouseCreateView, self).get_context_data()
+        context['formset_for_section'] = self.formset_for_section(
+            self.request.POST or None,
+            queryset=Section.objects.none(),
+            prefix='section'
+        )
+        context['formset_for_floor'] = self.formset_for_floor(
+            self.request.POST or None,
+            queryset=Floor.objects.none(),
+            prefix='floor'
+        )
+        context['formset_for_user'] = self.formset_for_user(
+            self.request.POST or None,
+            prefix='user'
+        )
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset_for_section = context['formset_for_section']
+        formset_for_floor = context['formset_for_floor']
+        formset_for_user = context['formset_for_user']
+        if formset_for_section.is_valid() and formset_for_floor.is_valid() and formset_for_user.is_valid():
+            house = form.save()
+            for section in formset_for_section:
+                if section.cleaned_data:
+                    if section.is_valid():
+                        section = section.save(commit=False)
+                        section.house = house
+                        section.save()
+            for floor in formset_for_floor:
+                if floor.cleaned_data:
+                    if floor.is_valid():
+                        floor = floor.save(commit=False)
+                        floor.house = house
+                        floor.save()
+            for form_user in formset_for_user:
+                if form_user.cleaned_data:
+                    user = form_user.cleaned_data.get('user')
+                    house.user.add(user)
             house.save()
             messages.success(self.request, 'Succes')
             return super().form_valid(form)

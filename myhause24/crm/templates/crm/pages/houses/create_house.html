@@ -167,24 +167,49 @@
                                 </button>
                             </div>
                             <div class="tab-pane clearfix" id="tab-houseuseradmins">
-                                <div id="form-houseuseradmin-rows">
+                                <div id="form-user-rows">
+                                    {{ formset_for_user.management_form }}
+                                    <div class="empty_form-{{ formset_for_user.prefix }}" style="display: none;">
+                                        <div id="form-user" class="row form-user">
+                                            <div class="col-xs-12 col-sm-7">
+                                                <div class="form-group">
+                                                    <label>ФИО</label>
+                                                    {{ formset_for_user.empty_form.user }}
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-12 col-sm-5">
+                                                <div class="form-group">
+                                                    <label>Роль</label>
+                                                    <div class="input-group">
+                                                        {{ formset_for_user.empty_form.role }}
+                                                        <span class="input-group-btn">
+                                                            <button type="button"
+                                                                    class="btn btn-danger form-row-remove-btn">
+                                                                <i class="fa fa-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <button class="btn btn-success pull-right form-row-add-houseuseradmin-btn"
+                                        onclick="addEmptyForm('{{ formset_for_user.prefix }}')"
                                         type="button">Добавить
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-12 text-right">
-                    <div class="form-group">
-                        <a href="{% url 'houses' %}" class="btn btn-default">Отменить</a>
-                        <button type="submit" class="btn btn-success">Сохранить</button>
+                <div class="row">
+                    <div class="col-xs-12 text-right">
+                        <div class="form-group">
+                            <a href="{% url 'houses' %}" class="btn btn-default">Отменить</a>
+                            <button type="submit" class="btn btn-success">Сохранить</button>
+                        </div>
                     </div>
                 </div>
-            </div>
         </form>
     </div>
 </div>
@@ -192,6 +217,7 @@
 
 {% block scripts %}
 <script>
+
 
     $('input[type=file]').on('change', function (event) {
         const img = $("img[id='" + this.id + "']")
@@ -202,14 +228,13 @@
         }
     })
 
+    function selectUser(index) {
+        const id = index.id.split("-").slice(0, 2).join("-") + "-role"
+        console.log(index)
+        $("input[id=" + id + "]").attr('value', index.value)
 
-    // $("#tab-sections button").on("click", function () {
-    //     const totalForms = $('#id_section-TOTAL_FORMS')
-    //     const form_idx = totalForms.val();
-    //     $("#form-section-rows").append($('.empty_form').html().replace(/__prefix__/g, form_idx))
-    //     $("input[name='section-" + form_idx + "-title']").attr('value', 'Секция ' + (parseInt(form_idx) + 1))
-    //     totalForms.val(parseInt(form_idx) + 1);
-    // })
+    }
+
 
     function addEmptyForm(prefix) {
         const totalForms = $('#id_' + prefix + '-TOTAL_FORMS')
@@ -218,7 +243,8 @@
         const input = $("input[name='" + prefix + '-' + form_idx + "-title']")
         if (prefix === 'section') {
             input.attr('value', 'Секция ' + (parseInt(form_idx) + 1))
-        }else{
+        }
+        if (prefix === 'floor') {
             input.attr('value', 'Этаж ' + (parseInt(form_idx) + 1))
         }
         totalForms.val(parseInt(form_idx) + 1);

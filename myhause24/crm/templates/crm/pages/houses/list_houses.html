@@ -64,13 +64,23 @@
                             <td>{{ house.title }}</td>
                             <td>{{ house.address }}</td>
                             <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/house/update/68" title="Редактировать"
-                                                                     data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
-                                    <a class="btn btn-default btn-sm" href="/admin/house/delete/68" title="Удалить"
-                                       data-toggle="tooltip" data-pjax="0" data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                            class="fa fa-trash"></i></a></div>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_house' house.id %}"
+                                       title="Редактировать"
+                                       data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       href="/admin/house/delete/68"
+                                       title="Удалить"
+                                       data-toggle="tooltip"
+                                       data-pjax="0"
+                                       data-method="post"
+                                       data-confirm="Вы уверены, что хотите удалить этот элемент?">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

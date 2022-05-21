@@ -32,6 +32,9 @@ class User(AbstractUser):
     about_owner = models.TextField(blank=True)
     role = models.ForeignKey('Role', null=True, blank=True, on_delete=models.SET_NULL)
 
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
     def get_full_name(self):
         """
           Return the first_name plus the last_name, with a space in between.

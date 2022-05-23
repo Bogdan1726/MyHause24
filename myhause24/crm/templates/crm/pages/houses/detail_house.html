@@ -1,0 +1,122 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+{{ house.title }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>{{ house.title }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'houses'%}">Дома</a></li>
+    <li class="active">{{ house.title }}</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title"></h3>
+        <div class="box-tools">
+            <a href="{% url 'update_house' house.id %}" class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать дом</span><i class="fa fa-pencil visible-xs"
+                                                                   aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <div class="box-body">
+        <div class="row">
+            <div class="col-xs-12 col-lg-4">
+                <table class="table table-bordered table-striped table-view">
+                    <tbody>
+                    <tr>
+                        <td>Название</td>
+                        <td>{{ house.title }}</td>
+                    </tr>
+                    <tr>
+                        <td>Адрес</td>
+                        <td>{{ house.address }}</td>
+                    </tr>
+                    <tr>
+                        <td>Секций</td>
+                        <td>{{ section|length }}</td>
+                    </tr>
+                    <tr>
+                        <td>Этажей</td>
+                        <td>{{ floor|length }}</td>
+                    </tr>
+                    <tr>
+                        <td>Пользователи</td>
+                        <td>
+                            {% for user in house.user.all %}
+                            <p class="no-margin"><strong>{{ user.role }}:</strong>
+                                <a href="#">{{ user }}</a>
+                            </p>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-xs-12 col-lg-8">
+                <div class="row">
+                    <div class="col-xs-12 col-md-6">
+                        {% if house.image1 %}
+                        <img src="{{ house.image1.url }}"
+                             class="img-responsive largeImg margin-bottom-30" alt="">
+                        {% else %}
+                        <img src="{% static 'crm/media/def_house.jpeg' %}"
+                             class="img-responsive largeImg margin-bottom-30" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        {% if house.image2 %}
+                        <img src="{{ house.image2.url }}"
+                             class="img-responsive smallImg margin-bottom-30" alt="">
+                        {% else %}
+                        <img src="{% static 'crm/media/def_house.jpeg' %}"
+                             class="img-responsive smallImg margin-bottom-30" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        {% if house.image3 %}
+                        <img src="{{ house.image3.url }}"
+                             class="img-responsive smallImg margin-bottom-30" alt="">
+                        {% else %}
+                        <img src="{% static 'crm/media/def_house.jpeg' %}"
+                             class="img-responsive smallImg margin-bottom-30" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        {% if house.image4 %}
+                        <img src="{{ house.image4.url }}"
+                             class="img-responsive smallImg margin-bottom-30" alt="">
+                        {% else %}
+                        <img src="{% static 'crm/media/def_house.jpeg' %}"
+                             class="img-responsive smallImg margin-bottom-30" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        {% if house.image5 %}
+                        <img src="{{ house.image5.url }}"
+                             class="img-responsive smallImg margin-bottom-30" alt="">
+                        {% else %}
+                        <img src="{% static 'crm/media/def_house.jpeg' %}"
+                             class="img-responsive smallImg margin-bottom-30" alt="">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

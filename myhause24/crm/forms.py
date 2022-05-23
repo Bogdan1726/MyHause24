@@ -13,8 +13,9 @@ class HouseForm(forms.ModelForm):
         exclude = ('user',)
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'address': forms.TextInput(attrs={'class': 'form-control'})
+            'address': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
 
 
 class SectionForm(forms.ModelForm):
@@ -36,8 +37,10 @@ class FloorForm(forms.ModelForm):
 
 
 class UserFormSet(forms.Form):
-    user = forms.ModelChoiceField(queryset=User.objects.all(),
+    user = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=True),
+                                  empty_label='Выберите...',
                                   widget=forms.Select(attrs={'class': 'form-control user-select',
+                                                             'data-attrs': 'test',
                                                              'onchange': "selectUser(this)"}))
     role = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control',
                                                                          'disabled': 'true'}))

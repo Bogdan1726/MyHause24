@@ -11,6 +11,7 @@ User = get_user_model()
 # region Housing
 
 class House(models.Model):
+    objects = None
     title = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     image1 = models.ImageField(upload_to='crm/house/', blank=True)

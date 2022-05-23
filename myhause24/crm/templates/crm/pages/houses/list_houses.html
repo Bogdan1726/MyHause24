@@ -1,11 +1,18 @@
 {% extends 'crm/elements/layout.html'%}
-
+{% load static %}
 {% block title %}
 Дома
 {% endblock %}
 
 {% block style %}
+<style>
+    input[name="custom_search"] {
+        width: 400px;
+        font-weight: normal;
+    }
 
+</style>
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
 {% endblock %}
 
 
@@ -31,35 +38,37 @@
 <div class="row">
     <div class="col-xs-12">
         <div class="box">
-            <div class="box-header with-border">
+            <div class="box-header">
                 <h3 class="box-title"></h3>
                 <div class="box-tools">
-                    <a href="/admin/house/index" class="btn btn-default btn-sm">
+                    <a id="clean" class="btn btn-default btn-sm">
                         <span class="hidden-xs">Очистить</span><i class="fa fa-eraser visible-xs"
                                                                   aria-hidden="true"></i>
                     </a>
                 </div>
             </div>
-            <div id="w0" class="grid-view">
+            <div id="list_houses" class="grid-view">
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-bordered table-hover table-striped linkedRow">
+                    <table id="table_houses" class="table table-bordered table-hover table-striped linkedRow">
                         <thead>
                         <tr>
                             <th style="width: 40px; min-width: 40px">#</th>
-                            <th><a href="/admin/house/index?sort=name" data-sort="name">Название</a></th>
-                            <th><a href="/admin/house/index?sort=address" data-sort="address">Адрес</a></th>
+                            <th><a>Название</a></th>
+                            <th><a>Адрес</a></th>
                             <th style="width: 80px; min-width: 80px">&nbsp;</th>
                         </tr>
-                        <tr id="w0-filters" class="filters">
-                            <td>&nbsp;</td>
-                            <td><input type="text" class="form-control" name="HouseSearch[name]"></td>
-                            <td><input type="text" class="form-control" name="HouseSearch[address]"></td>
-                            <td>&nbsp;</td>
-                        </tr>
                         </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <td></td>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                        </tr>
+                        </tfoot>
                         <tbody>
                         {% for house in houses %}
-                        <tr data-href="/admin/house/68" data-key="68">
+                        <tr data-href="{% url 'detail_house' house.id %}" data-key="68">
                             <td>{{ forloop.counter }}</td>
                             <td>{{ house.title }}</td>
                             <td>{{ house.address }}</td>
@@ -72,34 +81,104 @@
                                         <i class="fa fa-pencil"></i>
                                     </a>
                                     <a class="btn btn-default btn-sm"
-                                       href="/admin/house/delete/68"
                                        title="Удалить"
-                                       data-toggle="tooltip"
-                                       data-pjax="0"
-                                       data-method="post"
-                                       data-confirm="Вы уверены, что хотите удалить этот элемент?">
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
                                         <i class="fa fa-trash"></i>
                                     </a>
                                 </div>
                             </td>
                         </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление дома</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_house' house.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить этот {{ house.title }} ?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 <div class="box-footer clearfix"></div>
             </div>
-            <div class="box-footer">
-                <div>Количество домов: <span class="text-bold">25</span></div>
-            </div>
-
         </div>
     </div>
 </div>
+
+
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
 <script>
+    $(document).ready(function () {
+        // Setup - add a text input to each footer cell
+        $('#table_houses tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search" class="form-control"/>');
+        });
+
+        // DataTable
+        var table = $('#table_houses').DataTable({
+            "responsive": false,
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': false,
+            'info': true,
+            'autoWidth': false,
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "info": "Количество домов: <strong>_TOTAL_</stong>",
+                "infoEmpty": "Нет записей.",
+                "paginate": {
+                    "previous": "Предыдущая",
+                    "last": "Последняя",
+                    "next": "Следующая"
+                }
+            },
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+        $("#table_houses_filter").css('display', 'none')
+        $("#clean").on("click", function () {
+            $('input').val('');
+            table.columns().search("").draw();
+        })
+    });
 
 </script>
+
 {% endblock %}

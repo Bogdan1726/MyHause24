@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block style %}
+<style>
+    .errorlist {
+        color: red;
+    }
+</style>
 {% endblock %}
 
 
@@ -110,18 +115,21 @@
                             </li>
                         </ul>
                         <div class="tab-content">
+                            <div class="can-delete-list"></div>
                             <div class="tab-pane active clearfix" id="tab-sections">
+                                {% with formset_for_section as form %}
+                                {{ form.management_form }}
                                 <div id="form-section-rows">
-                                    {{ formset_for_section.management_form }}
-                                    <div class="empty_form-{{ formset_for_section.prefix }}" style="display: none;">
-                                        <div id="form-section" class="row form-section">
+                                    <div class="empty_form-{{ form.prefix }}" style="display: none;">
+                                        <div id="form-{{ form.empty_form.prefix }}" class="row form-section">
                                             <div class="col-xs-12">
                                                 <div class="form-group">
                                                     <label>Название</label>
                                                     <div class="input-group">
-                                                        {{ formset_for_section.empty_form.title }}
+                                                        {{ form.empty_form.title }}
                                                         <span class="input-group-btn">
                                                         <button type="button"
+                                                                onclick="delForm('{{ form.empty_form.prefix }}')"
                                                                 class="btn btn-danger form-row-remove-btn">
                                                             <i class="fa fa-trash"></i>
                                                         </button>
@@ -133,23 +141,26 @@
                                     </div>
                                 </div>
                                 <button class="btn btn-success pull-right form-row-add-section-btn"
-                                        onclick="addEmptyForm('{{ formset_for_section.prefix }}')"
+                                        onclick="addEmptyForm('{{ form.prefix }}')"
                                         type="button">
                                     Добавить
                                 </button>
+                                {% endwith %}
                             </div>
                             <div class="tab-pane clearfix" id="tab-floors">
+                                {% with formset_for_floor as form %}
                                 <div id="form-floor-rows">
-                                    {{ formset_for_floor.management_form }}
-                                    <div class="empty_form-{{ formset_for_floor.prefix }}" style="display: none;">
-                                        <div id="form-floor" class="row form-floor">
+                                    {{ form.management_form }}
+                                    <div class="empty_form-{{ form.prefix }}" style="display: none;">
+                                        <div id="form-{{ form.empty_form.prefix }}" class="row form-floor">
                                             <div class="col-xs-12">
                                                 <div class="form-group">
                                                     <label>Название</label>
                                                     <div class="input-group">
-                                                        {{ formset_for_floor.empty_form.title }}
+                                                        {{ form.empty_form.title }}
                                                         <span class="input-group-btn">
                                                         <button type="button"
+                                                                onclick="delForm('{{ form.empty_form.prefix }}')"
                                                                 class="btn btn-danger form-row-remove-btn">
                                                             <i class="fa fa-trash"></i>
                                                         </button>
@@ -161,29 +172,32 @@
                                     </div>
                                 </div>
                                 <button class="btn btn-success pull-right form-row-add-floor-btn"
-                                        onclick="addEmptyForm('{{ formset_for_floor.prefix }}')"
+                                        onclick="addEmptyForm('{{ form.prefix }}')"
                                         type="button">
                                     Добавить
                                 </button>
+                                {% endwith %}
                             </div>
                             <div class="tab-pane clearfix" id="tab-houseuseradmins">
+                                {% with formset_for_user as form %}
                                 <div id="form-user-rows">
-                                    {{ formset_for_user.management_form }}
-                                    <div class="empty_form-{{ formset_for_user.prefix }}" style="display: none;">
-                                        <div id="form-user" class="row form-user">
+                                    {{ form.management_form }}
+                                    <div class="empty_form-{{ form.prefix }}" style="display: none;">
+                                        <div id="form-{{ form.empty_form.prefix }}" class="row form-user">
                                             <div class="col-xs-12 col-sm-7">
                                                 <div class="form-group">
                                                     <label>ФИО</label>
-                                                    {{ formset_for_user.empty_form.user }}
+                                                    {{ form.empty_form.user }}
                                                 </div>
                                             </div>
                                             <div class="col-xs-12 col-sm-5">
                                                 <div class="form-group">
                                                     <label>Роль</label>
                                                     <div class="input-group">
-                                                        {{ formset_for_user.empty_form.role }}
+                                                        {{ form.empty_form.role }}
                                                         <span class="input-group-btn">
                                                             <button type="button"
+                                                                    onclick="delForm('{{ form.empty_form.prefix }}')"
                                                                     class="btn btn-danger form-row-remove-btn">
                                                                 <i class="fa fa-trash"></i>
                                                             </button>
@@ -195,9 +209,10 @@
                                     </div>
                                 </div>
                                 <button class="btn btn-success pull-right form-row-add-houseuseradmin-btn"
-                                        onclick="addEmptyForm('{{ formset_for_user.prefix }}')"
+                                        onclick="addEmptyForm('{{ form.prefix }}')"
                                         type="button">Добавить
                                 </button>
+                                {% endwith %}
                             </div>
                         </div>
                     </div>
@@ -218,7 +233,7 @@
 {% block scripts %}
 <script>
 
-
+    // loads preview images
     $('input[type=file]').on('change', function (event) {
         const img = $("img[id='" + this.id + "']")
         if (event.target.files[0]) {
@@ -227,19 +242,39 @@
             img.attr("src", "{% static 'crm/media/def_house.jpeg' %}")
         }
     })
+    // loads preview images end
 
+    // get role on user select
     function selectUser(index) {
         const id = index.id.split("-").slice(0, 2).join("-") + "-role"
-        console.log(index)
-        $("input[id=" + id + "]").attr('value', index.value)
-
+        if (index.value) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'load_role' %}",
+                data: {
+                    'user': index.value,
+                },
+                success: function (response) {
+                    $("input[id=" + id + "]").attr('value', response.role[0].role__name)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        } else {
+            $("input[id=" + id + "]").attr('value', '')
+        }
     }
 
+    // get role on user select end
 
+
+    // dynamic formset for (section, floor and user)
     function addEmptyForm(prefix) {
         const totalForms = $('#id_' + prefix + '-TOTAL_FORMS')
         const form_idx = totalForms.val();
         $("#form-" + prefix + "-rows").append($('.empty_form-' + prefix + '').html().replace(/__prefix__/g, form_idx))
+
         const input = $("input[name='" + prefix + '-' + form_idx + "-title']")
         if (prefix === 'section') {
             input.attr('value', 'Секция ' + (parseInt(form_idx) + 1))
@@ -249,6 +284,16 @@
         }
         totalForms.val(parseInt(form_idx) + 1);
     }
+
+
+    function delForm(prefix) {
+        $('.can-delete-list').append(
+            '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
+        );
+        $("input[name='" + prefix + "-title']").attr('value', '')
+        $("div[id='form-" + prefix + "']").css('display', 'none');
+    }
+
 
 </script>
 {% endblock %}

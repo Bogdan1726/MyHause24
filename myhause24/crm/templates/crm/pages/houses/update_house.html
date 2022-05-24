@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block style %}
+<style>
+    .errorlist {
+        color: red;
+    }
+</style>
 {% endblock %}
 
 
@@ -22,7 +27,6 @@
 
 {% block content %}
 {% include 'crm/inc/_messages.html' %}
-
 <div class="box">
     <div class="box-body">
         <form id="update_house" method="post" enctype="multipart/form-data">
@@ -66,36 +70,71 @@
                     </div>
                 </div>
                 <div class="col-xs-12 col-lg-8">
-                    <div class="row">
+                    <div class="row" id="image-block">
                         <div class="col-xs-12 col-md-6">
+                            {% if house.image1 %}
+                            <img src="{{ form.instance.image1.url }}"
+                                 class="img-responsive largeImg margin-bottom-30"
+                                 id="id_image1"
+                                 alt="Изображение #1. Размер: (522x350)">
+                            {% else %}
                             <img src="{% static 'crm/media/def_house.jpeg' %}"
                                  class="img-responsive largeImg margin-bottom-30"
                                  id="id_image1"
                                  alt="Изображение #1. Размер: (522x350)">
+                            {% endif %}
                         </div>
                         <div class="col-xs-6 col-md-3">
+                            {% if house.image2 %}
+                            <img src="{{ form.instance.image2.url }}"
+                                 class="img-responsive smallImg margin-bottom-30"
+                                 id="id_image2"
+                                 alt="Изображение #2. Размер: (248x160)">
+                            {% else %}
                             <img src="{% static 'crm/media/def_house.jpeg' %}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image2"
                                  alt="Изображение #2. Размер: (248x160)">
+                            {% endif %}
                         </div>
                         <div class="col-xs-6 col-md-3">
+                            {% if house.image3 %}
+                            <img src="{{ form.instance.image3.url }}"
+                                 class="img-responsive smallImg margin-bottom-30"
+                                 id="id_image3"
+                                 alt="Изображение #2. Размер: (248x160)">
+                            {% else %}
                             <img src="{% static 'crm/media/def_house.jpeg' %}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image3"
-                                 alt="Изображение #3. Размер: (248x160)">
+                                 alt="Изображение #2. Размер: (248x160)">
+                            {% endif %}
                         </div>
                         <div class="col-xs-6 col-md-3">
+                            {% if house.image4 %}
+                            <img src="{{ form.instance.image4.url }}"
+                                 class="img-responsive smallImg margin-bottom-30"
+                                 id="id_image4"
+                                 alt="Изображение #2. Размер: (248x160)">
+                            {% else %}
                             <img src="{% static 'crm/media/def_house.jpeg' %}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image4"
-                                 alt="Изображение #4. Размер: (248x160)">
+                                 alt="Изображение #2. Размер: (248x160)">
+                            {% endif %}
                         </div>
                         <div class="col-xs-6 col-md-3">
-                            <img src="{% static 'crm/media/def_house.jpeg' %}"
+                            {% if house.image5 %}
+                            <img src="{{ form.instance.image5.url }}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image5"
-                                 alt="Изображение #5. Размер: (248x160)">
+                                 alt="Изображение #2. Размер: (248x160)">
+                            {% else %}
+                            <img src="{% static 'crm/media/def_house.jpeg' %}"
+                                 class="img-responsive smallImg margin-bottom-30"
+                                 id="id_image6"
+                                 alt="Изображение #2. Размер: (248x160)">
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -133,6 +172,9 @@
                                                         </button>
                                                     </span>
                                                 </div>
+                                                <span class="help-block">
+                                                    {{ form.title.errors }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -184,6 +226,9 @@
                                                         </button>
                                                     </span>
                                                 </div>
+                                                <span class="help-block">
+                                                    {{ form.title.errors }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -226,6 +271,9 @@
                                                 <label>ФИО</label>
                                                 {{ form.id }}
                                                 {{ form.user }}
+                                                <span class="help-block">
+                                                    {{ form.user.errors }}
+                                                </span>
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-sm-5">
@@ -294,6 +342,35 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
+<script>
+    $(function () {
+        $('#update_house').validate({
+            rules: {
+                title: {
+                    required: true,
+                },
+                address: {
+                    required: true,
+                },
+
+                image1: {
+                    required: true,
+                }
+            },
+            messages: {
+                email: {
+                    required: "Please enter a email address",
+                    email: "Please enter a valid email address"
+                },
+                password: {
+                    required: "Please provide a password",
+                    minlength: "Your password must be at least 5 characters long"
+                },
+            },
+        });
+    });
+</script>
 <script>
 
     // loads preview images
@@ -350,11 +427,15 @@
 
 
     function delForm(prefix) {
-        $('.can-delete-list').append(
-            '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
-        );
-        $("input[name='" + prefix + "-title']").attr('value', '')
-        $("div[id='form-" + prefix + "']").css('display', 'none');
+        const result = confirm('Удалить?');
+        if (result) {
+            $('.can-delete-list').append(
+                '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
+            );
+            $("input[name='" + prefix + "-title']").attr('value', '')
+            $("div[id='form-" + prefix + "']").css('display', 'none');
+        } else {
+        }
     }
 
 

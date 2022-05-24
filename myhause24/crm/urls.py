@@ -1,8 +1,8 @@
 from django.urls import path, reverse_lazy
 from django.views.generic import DeleteView
-
 from .models import House
-from .views import HouseListView, index, HouseCreateView, HouseUpdateView, load_role, HouseDetailView
+from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView
+from .services.load_role_of_formset_house import load_role
 
 urlpatterns = [
     path('', index, name='admin'),

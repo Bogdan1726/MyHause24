@@ -69,7 +69,7 @@
                     </div>
                 </div>
                 <div class="col-xs-12 col-lg-8">
-                    <div class="row">
+                    <div class="row" id="image-block">
                         <div class="col-xs-12 col-md-6">
                             <img src="{% static 'crm/media/def_house.jpeg' %}"
                                  class="img-responsive largeImg margin-bottom-30"
@@ -232,6 +232,14 @@
 
 {% block scripts %}
 <script>
+
+    // $("#image-block img").on("click", function () {
+    //     alert(this.id)
+    //     const img = $("img[id='" + this.id + "']")
+    //     const input = $("input[id='" + this.id + "']")
+    //     img.attr("src", "{% static 'crm/media/def_house.jpeg' %}")
+    //     input.val("")
+    // })
 
     // loads preview images
     $('input[type=file]').on('change', function (event) {

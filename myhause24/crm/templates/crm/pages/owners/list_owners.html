@@ -1,0 +1,232 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Владельцы квартир
+{% endblock %}
+
+{% block style %}
+<style>
+    input[name="custom_search"] {
+        width: 400px;
+        font-weight: normal;
+    }
+
+</style>
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Владельцы квартир</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Владельцы квартир</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="btn-group pull-right margin-bottom">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Выберите действие <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'create_owner' %}">Добавить владельца квартиры</a></li>
+                <li><a href="#">Отправить сообщение должникам</a></li>
+                <li><a href="#">Отправить приглашение</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a id="clean" class="btn btn-default btn-sm">
+                        <span class="hidden-xs">Очистить</span><i class="fa fa-eraser visible-xs"
+                                                                  aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="list_owners" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="table_owners" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th style="width: 110px; min-width: 110px">ID</th>
+                            <th><a href="/admin/user/index?sort=searchFullname" data-sort="searchFullname">ФИО</a></th>
+                            <th style="width: 140px; min-width: 140px">Телефон</th>
+                            <th style="width: 140px; min-width: 140px">Email</th>
+                            <th style="min-width: 250px">Дом</th>
+                            <th style="min-width: 300px">Квартира</th>
+                            <th style="width: 110px; min-width: 110px"><a
+                                    href="/admin/user/index?sort=searchCreatedDate" data-sort="searchCreatedDate">Добавлен</a>
+                            </th>
+                            <th>Статус</th>
+                            <th style="width: 80px; min-width: 80px">Есть долг</th>
+                            <th style="width: 114px; min-width: 114px">&nbsp;</th>
+                        </tr>
+                        <tr id="w0-filters" class="filters">
+                            <td><input type="text" class="form-control" name="UserSearch[uid]"></td>
+                            <td><input type="text" class="form-control" name="UserSearch[searchFullname]"></td>
+                            <td><input type="text" class="form-control" name="UserSearch[searchPhone]"></td>
+                            <td><input type="text" class="form-control" name="UserSearch[email]"></td>
+                            <td><select id="usersearch-searchhouse" class="form-control select2-hidden-accessible"
+                                        name="UserSearch[searchHouse]" data-s2-options="s2options_7ebc6538"
+                                        data-krajee-select2="select2_0d896465" style="display:none" tabindex="-1"
+                                        aria-hidden="true">
+                            </select><span class="select2 select2-container select2-container--default" dir="ltr"
+                                           style="width: 100%;"><span class="selection"><span
+                                    class="select2-selection select2-selection--single" role="combobox"
+                                    aria-haspopup="true" aria-expanded="false" tabindex="0"
+                                    aria-labelledby="select2-usersearch-searchhouse-container"><span
+                                    class="select2-selection__rendered"
+                                    id="select2-usersearch-searchhouse-container"><span
+                                    class="select2-selection__placeholder"></span></span><span
+                                    class="select2-selection__arrow" role="presentation"><b
+                                    role="presentation"></b></span></span></span><span class="dropdown-wrapper"
+                                                                                       aria-hidden="true"></span></span>
+                            </td>
+                            <td><input type="text" class="form-control" name="UserSearch[searchFlat]"></td>
+                            <td><input type="text" id="usersearch-searchcreateddate"
+                                       class="form-control krajee-datepicker" name="UserSearch[searchCreatedDate]"
+                                       data-datepicker-source="usersearch-searchcreateddate" data-datepicker-type="1"
+                                       data-krajee-kvdatepicker="kvDatepicker_1643d6f1"></td>
+                            <td><select id="usersearch-status" class="form-control select2-hidden-accessible"
+                                        name="UserSearch[status]" data-s2-options="s2options_7ebc6538"
+                                        data-krajee-select2="select2_0d896465" style="display:none" tabindex="-1"
+                                        aria-hidden="true">
+                                <option value=""></option>
+                                <option value="10">Активен</option>
+                                <option value="5">Новый</option>
+                                <option value="0">Отключен</option>
+                            </select><span class="select2 select2-container select2-container--default" dir="ltr"
+                                           style="width: 100%;"><span class="selection"><span
+                                    class="select2-selection select2-selection--single" role="combobox"
+                                    aria-haspopup="true" aria-expanded="false" tabindex="0"
+                                    aria-labelledby="select2-usersearch-status-container"><span
+                                    class="select2-selection__rendered" id="select2-usersearch-status-container"><span
+                                    class="select2-selection__placeholder"></span></span><span
+                                    class="select2-selection__arrow" role="presentation"><b
+                                    role="presentation"></b></span></span></span><span class="dropdown-wrapper"
+                                                                                       aria-hidden="true"></span></span>
+                            </td>
+                            <td><select id="usersearch-searchhasdebt" class="form-control select2-hidden-accessible"
+                                        name="UserSearch[searchHasDebt]" data-s2-options="s2options_7ebc6538"
+                                        data-krajee-select2="select2_0d896465" style="display:none" tabindex="-1"
+                                        aria-hidden="true">
+                                <option value=""></option>
+                                <option value="1">Да</option>
+                            </select><span
+                                    class="select2 select2-container select2-container--default select2-container--below"
+                                    dir="ltr" style="width: 100%;"><span class="selection"><span
+                                    class="select2-selection select2-selection--single" role="combobox"
+                                    aria-haspopup="true" aria-expanded="false" tabindex="0"
+                                    aria-labelledby="select2-usersearch-searchhasdebt-container"><span
+                                    class="select2-selection__rendered" id="select2-usersearch-searchhasdebt-container"><span
+                                    class="select2-selection__placeholder"></span></span><span
+                                    class="select2-selection__arrow" role="presentation"><b
+                                    role="presentation"></b></span></span></span><span class="dropdown-wrapper"
+                                                                                       aria-hidden="true"></span></span>
+                            </td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-href="/admin/user/143" data-key="143">
+                            <td></td>
+                            <td><span class="not-set">(не задано)</span></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><small class="label label-danger">Отключен</small></td>
+                            <td></td>
+                            <td>
+                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
+                                                                     href="/admin/message/create?MessageAddress%5Buser_id%5D=143"
+                                                                     title="Отправить сообщение"
+                                                                     data-toggle="tooltip"><i
+                                        class="fa fa-envelope"></i></a> <a class="btn btn-default btn-sm"
+                                                                           href="/admin/user/update/143"
+                                                                           title="Редактировать"
+                                                                           data-toggle="tooltip"><i
+                                        class="fa fa-pencil"></i></a> <a class="btn btn-default btn-sm"
+                                                                         href="/admin/user/delete/143" title="Удалить"
+                                                                         data-toggle="tooltip" data-pjax="0"
+                                                                         data-method="post"
+                                                                         data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
+                                        class="fa fa-trash"></i></a></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        // Setup - add a text input to each footer cell
+        $('#table_houses tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search" class="form-control"/>');
+        });
+
+        // DataTable
+        var table = $('#table_houses').DataTable({
+            "responsive": false,
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': false,
+            'info': true,
+            'autoWidth': false,
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "info": "Количество домов: <strong>_TOTAL_</stong>",
+                "infoEmpty": "Нет записей.",
+                "paginate": {
+                    "previous": "Предыдущая",
+                    "last": "Последняя",
+                    "next": "Следующая"
+                }
+            },
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+        $("#table_houses_filter").css('display', 'none')
+        $("#clean").on("click", function () {
+            $('input').val('');
+            table.columns().search("").draw();
+        })
+    });
+
+</script>
+
+{% endblock %}

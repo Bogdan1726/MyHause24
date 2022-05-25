@@ -5,9 +5,9 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
-from django.views.generic.edit import ModelFormMixin, ProcessFormView
+from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import House, Section, Floor
-from .forms import HouseForm, SectionForm, FloorForm, UserFormSet
+from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -68,10 +68,11 @@ class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFo
         formset_for_floor = context['formset_for_floor']
         formset_for_user = context['formset_for_user']
         if formset_for_section.is_valid() and formset_for_floor.is_valid() and formset_for_user.is_valid():
-            house = form.save(commit=False)
+            house = form.save()
             for section in formset_for_section:
                 if section.cleaned_data:
                     if section.is_valid():
+                        print(section.cleaned_data)
                         section = section.save(commit=False)
                         section.house = house
                         section.save()
@@ -83,7 +84,6 @@ class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFo
                         floor.house = house
                         floor.save()
             formset_for_floor.save()
-            house.save()
             house.user.clear()
             for form_user in formset_for_user:
                 if form_user.cleaned_data and form_user.cleaned_data['DELETE'] is False:
@@ -143,6 +143,37 @@ class HouseCreateView(BaseHouseView):
 
 # endregion Houses
 
+# region Owners
+
+
+class OwnerListView(ListView):
+    model = User
+    template_name = 'crm/pages/owners/list_owners.html'
+    context_object_name = 'owners'
+
+    def get_queryset(self):
+        return self.model.objects.order_by('id')
+
+
+class OwnerCreateView(CreateView):
+    model = User
+    template_name = 'crm/pages/owners/create_owner.html'
+    form_class = OwnerForm
+    success_url = reverse_lazy('owners')
+
+
+    def form_valid(self, form):
+        print(form)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        print(form.error_messages)
+        return super().form_invalid(form)
+
+
+
+
+# endregion Owners
 
 @login_required(login_url='login')
 def index(request):

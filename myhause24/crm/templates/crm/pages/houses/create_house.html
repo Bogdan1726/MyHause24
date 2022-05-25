@@ -6,7 +6,7 @@
 
 {% block style %}
 <style>
-    .errorlist {
+    .error {
         color: red;
     }
 </style>
@@ -225,21 +225,15 @@
                         </div>
                     </div>
                 </div>
+            </div>
         </form>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
 <script>
-
-    // $("#image-block img").on("click", function () {
-    //     alert(this.id)
-    //     const img = $("img[id='" + this.id + "']")
-    //     const input = $("input[id='" + this.id + "']")
-    //     img.attr("src", "{% static 'crm/media/def_house.jpeg' %}")
-    //     input.val("")
-    // })
 
     // loads preview images
     $('input[type=file]').on('change', function (event) {
@@ -295,13 +289,45 @@
 
 
     function delForm(prefix) {
-        $('.can-delete-list').append(
-            '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
-        );
-        $("input[name='" + prefix + "-title']").attr('value', '')
-        $("div[id='form-" + prefix + "']").css('display', 'none');
+        const result = confirm('Удалить?');
+        if (result) {
+            $('.can-delete-list').append(
+                '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
+            );
+            $("input[name='" + prefix + "-title']").val('');
+            $("div[id='form-" + prefix + "']").css('display', 'none');
+        } else {
+
+        }
     }
 
+</script>
+<script>
+    $('#create_house').validate({
+        rules: {
+            title: {
+                required: true,
+            },
+            address: {
+                required: true,
+            },
+        },
+        messages: {
+            title: {
+                required: "Обязательное поле",
+            },
+            address: {
+                required: "Обязательное поле",
+            },
 
+        },
+        errorElement: 'span',
+        highlight: function (element) {
+            $(element).parent().addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).parent().removeClass('has-error');
+        }
+    });
 </script>
 {% endblock %}

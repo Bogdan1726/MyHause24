@@ -57,6 +57,8 @@
                             <p class="no-margin"><strong>{{ user.role }}:</strong>
                                 <a href="#">{{ user }}</a>
                             </p>
+                            {% empty %}
+                            <p class="no-margin">Не назначены</p>
                             {% endfor %}
                         </td>
                     </tr>

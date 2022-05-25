@@ -1,0 +1,165 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Новый владелец
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet"
+      href="{% static 'crm/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Новый владелец</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'owners'%}">Владельцы квартир</a></li>
+    <li class="active">Новый владелец</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-body">
+        <form id="create_owner" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="userAvatar">
+                        <img class="img-circle pull-left img-responsive" alt="user_picture"
+                             src="{% static 'crm/media/def_user.jpeg' %}">
+                        <div class="form-group">
+                            <label class="control-label">Сменить изображение</label>
+                            {{ form.profile_picture }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <div class="form-group">
+                        <label for="select-status">Статус</label>
+                        <select id="select-status" class="form-control">
+                            {% for status in form.status %}
+                            {{ status }}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group field-userform-uid">
+                        <label class="control-label">ID</label>
+                        {{ form.user_id }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label">Фамилия</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="form-group field-userform-firstname">
+                        <label class="control-label">Имя</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Отчество</label>
+                        {{ form.patronymic }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Дата рождения</label>
+                        <div class="input-group date">
+                            <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                            {{ form.date_of_birth }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label">О владельце (заметки)</label>
+                        {{ form.about_owner }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-md-6">
+                    <h2 class="page-header">Контактные данные</h2>
+                    <div class="form-group">
+                        <label class="control-label">Телефон</label>
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-phone"></i></span>
+                            {{ form.phone }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Viber</label>
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-phone"></i></span>
+                            {{ form.viber }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Telegram</label>
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-phone"></i></span>
+                            {{ form.telegram }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Email (логин)</label>
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                            {{ form.username }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-6">
+                    <h2 class="page-header">Изменить пароль</h2>
+                    <div class="form-group field-userform-password">
+                        <label class="control-label">Пароль</label>
+                        <div class="input-group">
+                            {{ form.password1 }}
+                            <span class="input-group-btn">
+                        <button class="btn btn-default"
+                                type="button"
+                                onclick="generatePassword()">
+                            Сгенерировать
+                        </button>
+                        <button type="button" class="btn btn-primary" id="showPass">
+                            <i class="fa fa-eye" aria-hidden="true"></i>
+                        </button>
+                    </span>
+                        </div>
+
+                    </div>
+                    <div class="form-group ">
+                        <label class="control-label">Повторить пароль</label>
+                        {{ form.password2 }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <a href="{% url 'owners' %}" class="btn btn-default">Отменить</a>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
+                </div>
+            </div>
+
+        </form>
+        <script>
+            function generatePassword() {
+                const password = Math.random().toString(36).slice(-8);
+                $('input[name="password1"]').val(password);
+                $('input[name="password2"]').val(password);
+            }
+        </script>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+{% endblock %}

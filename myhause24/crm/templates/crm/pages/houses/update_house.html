@@ -6,10 +6,11 @@
 
 {% block style %}
 <style>
-    .errorlist {
+    .error {
         color: red;
     }
 </style>
+
 {% endblock %}
 
 
@@ -336,41 +337,15 @@
                         </div>
                     </div>
                 </div>
+            </div>
         </form>
     </div>
 </div>
+
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
-<script>
-    $(function () {
-        $('#update_house').validate({
-            rules: {
-                title: {
-                    required: true,
-                },
-                address: {
-                    required: true,
-                },
-
-                image1: {
-                    required: true,
-                }
-            },
-            messages: {
-                email: {
-                    required: "Please enter a email address",
-                    email: "Please enter a valid email address"
-                },
-                password: {
-                    required: "Please provide a password",
-                    minlength: "Your password must be at least 5 characters long"
-                },
-            },
-        });
-    });
-</script>
 <script>
 
     // loads preview images
@@ -405,7 +380,6 @@
             $("input[id=" + id + "]").attr('value', '')
         }
     }
-
     // get role on user select end
 
 
@@ -432,12 +406,40 @@
             $('.can-delete-list').append(
                 '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
             );
-            $("input[name='" + prefix + "-title']").attr('value', '')
+            $("input[name='" + prefix + "-title']").val('');
             $("div[id='form-" + prefix + "']").css('display', 'none');
         } else {
         }
     }
 
 
+</script>
+<script>
+    $('#update_house').validate({
+        rules: {
+            title: {
+                required: true,
+            },
+            address: {
+                required: true,
+            },
+        },
+        messages: {
+            title: {
+                required: "Обязательное поле",
+            },
+            address: {
+                required: "Обязательное поле",
+            },
+
+        },
+        errorElement: 'span',
+        highlight: function (element) {
+            $(element).parent().addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).parent().removeClass('has-error');
+        }
+    });
 </script>
 {% endblock %}

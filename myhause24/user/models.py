@@ -11,9 +11,9 @@ class User(AbstractUser):
     DoesNotExist = None
 
     class Status(models.TextChoices):
-        ACTIVE = 'active', _("Active")
-        NEW = 'new', _("New")
-        DISABLED = 'disabled', _("Disabled")
+        ACTIVE = 'active', _("Активен")
+        NEW = 'new', _("Новый")
+        DISABLED = 'disabled', _("Отключен")
 
     username = models.CharField(_("username"), max_length=150, unique=True)
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
@@ -24,7 +24,7 @@ class User(AbstractUser):
     phone = PhoneNumberField(null=True, blank=True)
     viber = PhoneNumberField(null=True, blank=True)
     telegram = PhoneNumberField(null=True, blank=True)
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField(_('email address'), unique=True, blank=True)
     status = models.CharField(max_length=8,
                               choices=Status.choices,
                               default=Status.NEW)

@@ -28,7 +28,7 @@ class User(AbstractUser):
     status = models.CharField(max_length=8,
                               choices=Status.choices,
                               default=Status.NEW)
-    user_id = models.CharField(max_length=32, blank=True)
+    user_id = models.CharField(max_length=32, unique=True)
     about_owner = models.TextField(blank=True)
     role = models.ForeignKey('Role', null=True, blank=True, on_delete=models.SET_NULL)
 
@@ -39,7 +39,7 @@ class User(AbstractUser):
         """
           Return the first_name plus the last_name, with a space in between.
         """
-        full_name = f'{self.first_name} {self.last_name}'
+        full_name = f'{self.last_name} {self.first_name} {self.patronymic}'
         return full_name
 
 

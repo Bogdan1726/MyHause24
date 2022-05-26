@@ -29,7 +29,8 @@
 <div class="row">
     <div class="col-xs-12">
         <div class="btn-group pull-right margin-bottom">
-            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
                 Выберите действие <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
@@ -70,100 +71,82 @@
                             <th style="width: 80px; min-width: 80px">Есть долг</th>
                             <th style="width: 114px; min-width: 114px">&nbsp;</th>
                         </tr>
-                        <tr id="w0-filters" class="filters">
-                            <td><input type="text" class="form-control" name="UserSearch[uid]"></td>
-                            <td><input type="text" class="form-control" name="UserSearch[searchFullname]"></td>
-                            <td><input type="text" class="form-control" name="UserSearch[searchPhone]"></td>
-                            <td><input type="text" class="form-control" name="UserSearch[email]"></td>
-                            <td><select id="usersearch-searchhouse" class="form-control select2-hidden-accessible"
-                                        name="UserSearch[searchHouse]" data-s2-options="s2options_7ebc6538"
-                                        data-krajee-select2="select2_0d896465" style="display:none" tabindex="-1"
-                                        aria-hidden="true">
-                            </select><span class="select2 select2-container select2-container--default" dir="ltr"
-                                           style="width: 100%;"><span class="selection"><span
-                                    class="select2-selection select2-selection--single" role="combobox"
-                                    aria-haspopup="true" aria-expanded="false" tabindex="0"
-                                    aria-labelledby="select2-usersearch-searchhouse-container"><span
-                                    class="select2-selection__rendered"
-                                    id="select2-usersearch-searchhouse-container"><span
-                                    class="select2-selection__placeholder"></span></span><span
-                                    class="select2-selection__arrow" role="presentation"><b
-                                    role="presentation"></b></span></span></span><span class="dropdown-wrapper"
-                                                                                       aria-hidden="true"></span></span>
-                            </td>
-                            <td><input type="text" class="form-control" name="UserSearch[searchFlat]"></td>
-                            <td><input type="text" id="usersearch-searchcreateddate"
-                                       class="form-control krajee-datepicker" name="UserSearch[searchCreatedDate]"
-                                       data-datepicker-source="usersearch-searchcreateddate" data-datepicker-type="1"
-                                       data-krajee-kvdatepicker="kvDatepicker_1643d6f1"></td>
-                            <td><select id="usersearch-status" class="form-control select2-hidden-accessible"
-                                        name="UserSearch[status]" data-s2-options="s2options_7ebc6538"
-                                        data-krajee-select2="select2_0d896465" style="display:none" tabindex="-1"
-                                        aria-hidden="true">
-                                <option value=""></option>
-                                <option value="10">Активен</option>
-                                <option value="5">Новый</option>
-                                <option value="0">Отключен</option>
-                            </select><span class="select2 select2-container select2-container--default" dir="ltr"
-                                           style="width: 100%;"><span class="selection"><span
-                                    class="select2-selection select2-selection--single" role="combobox"
-                                    aria-haspopup="true" aria-expanded="false" tabindex="0"
-                                    aria-labelledby="select2-usersearch-status-container"><span
-                                    class="select2-selection__rendered" id="select2-usersearch-status-container"><span
-                                    class="select2-selection__placeholder"></span></span><span
-                                    class="select2-selection__arrow" role="presentation"><b
-                                    role="presentation"></b></span></span></span><span class="dropdown-wrapper"
-                                                                                       aria-hidden="true"></span></span>
-                            </td>
-                            <td><select id="usersearch-searchhasdebt" class="form-control select2-hidden-accessible"
-                                        name="UserSearch[searchHasDebt]" data-s2-options="s2options_7ebc6538"
-                                        data-krajee-select2="select2_0d896465" style="display:none" tabindex="-1"
-                                        aria-hidden="true">
-                                <option value=""></option>
-                                <option value="1">Да</option>
-                            </select><span
-                                    class="select2 select2-container select2-container--default select2-container--below"
-                                    dir="ltr" style="width: 100%;"><span class="selection"><span
-                                    class="select2-selection select2-selection--single" role="combobox"
-                                    aria-haspopup="true" aria-expanded="false" tabindex="0"
-                                    aria-labelledby="select2-usersearch-searchhasdebt-container"><span
-                                    class="select2-selection__rendered" id="select2-usersearch-searchhasdebt-container"><span
-                                    class="select2-selection__placeholder"></span></span><span
-                                    class="select2-selection__arrow" role="presentation"><b
-                                    role="presentation"></b></span></span></span><span class="dropdown-wrapper"
-                                                                                       aria-hidden="true"></span></span>
-                            </td>
-                            <td>&nbsp;</td>
-                        </tr>
                         </thead>
                         <tbody>
-                        <tr data-href="/admin/user/143" data-key="143">
-                            <td></td>
-                            <td><span class="not-set">(не задано)</span></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                        {% for owner in owners %}
+                        <tr data-href="{% url 'detail_owner' owner.id %}" data-key="68">
+                            <td>{{ owner.user_id }}</td>
+                            {% if owner.first_name or owner.last_name or owner.patronymic %}
+                            <td>{{ owner.get_full_name }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if owner.phone %}
+                            <td>{{ owner.phone }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            <td>{{ owner.email }}</td>
+                            <td>----</td>
+                            <td>----</td>
+                            <td>{{ owner.date_joined|date:"d.m.Y" }}</td>
+                            {% if owner.status == 'disabled' %}
                             <td><small class="label label-danger">Отключен</small></td>
-                            <td></td>
+                            {% elif owner.status == 'active' %}
+                            <td><small class="label label-success">Активен</small></td>
+                            {% else %}
+                            <td><small class="label label-warning">Новый</small></td>
+                            {% endif %}
+                            <td>----</td>
                             <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="/admin/message/create?MessageAddress%5Buser_id%5D=143"
-                                                                     title="Отправить сообщение"
-                                                                     data-toggle="tooltip"><i
-                                        class="fa fa-envelope"></i></a> <a class="btn btn-default btn-sm"
-                                                                           href="/admin/user/update/143"
-                                                                           title="Редактировать"
-                                                                           data-toggle="tooltip"><i
-                                        class="fa fa-pencil"></i></a> <a class="btn btn-default btn-sm"
-                                                                         href="/admin/user/delete/143" title="Удалить"
-                                                                         data-toggle="tooltip" data-pjax="0"
-                                                                         data-method="post"
-                                                                         data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                        class="fa fa-trash"></i></a></div>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="/admin/message/create?MessageAddress%5Buser_id%5D=143"
+                                       title="Отправить сообщение"
+                                       data-toggle="tooltip">
+                                        <i class="fa fa-envelope"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_owner' owner.id %}"
+                                       title="Редактировать"
+                                       data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                    <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление владельца</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_owner' owner.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить {{ owner.email }} ?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -186,7 +169,7 @@
         });
 
         // DataTable
-        var table = $('#table_houses').DataTable({
+        var table = $('#table_owners').DataTable({
             "responsive": false,
             'paging': true,
             'lengthChange': false,
@@ -220,7 +203,7 @@
                     });
             },
         });
-        $("#table_houses_filter").css('display', 'none')
+        $("#table_owners_filter").css('display', 'none')
         $("#clean").on("click", function () {
             $('input').val('');
             table.columns().search("").draw();

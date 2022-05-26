@@ -1,11 +1,11 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 from .models import House, Section, Floor
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-
 
 User = get_user_model()
 
@@ -59,7 +59,6 @@ class UserFormSet(forms.Form):
 
 
 class OwnerForm(UserCreationForm):
-
     password1 = forms.CharField(
         label=_("Password"),
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password',
@@ -73,14 +72,15 @@ class OwnerForm(UserCreationForm):
 
     class Meta:
         model = User
-        exclude = ('role', 'email')
+        fields = ('username', 'first_name', 'last_name', 'patronymic', 'password1', 'password2',
+                  'date_of_birth', 'user_id', 'about_owner', 'phone', 'telegram', 'viber',
+                  'status', 'profile_picture')
         widgets = {
             'status': forms.Select(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'patronymic': forms.TextInput(attrs={'class': 'form-control'}),
-            'date_of_birth': forms.DateInput(attrs={'class': 'form-control',
-                                                    'type': 'date'}),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control'}),
             'user_id': forms.TextInput(attrs={'class': 'form-control'}),
             'about_owner': forms.Textarea(attrs={'class': 'form-control', 'rows': '12'}),
             'phone': forms.TextInput(attrs={'class': 'form-control',
@@ -90,11 +90,9 @@ class OwnerForm(UserCreationForm):
             'telegram': forms.TextInput(attrs={'class': 'form-control',
                                                'data-mask': "+38(000) 000-00-00"}),
             'username': forms.EmailInput(attrs={'class': 'form-control'})
-
         }
 
     def clean_password2(self):
-        print(self.cleaned_data)
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
@@ -106,7 +104,71 @@ class OwnerForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.email = self.cleaned_data['username']
         user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+
+
+class OwnerUpdateForm(UserChangeForm):
+    error_messages = {
+        'password_mismatch': _('The two password fields didn’t match.'),
+        'duplicate_user_id': _('Владелец с данным ID уже существует!')
+    }
+
+    new_password1 = forms.CharField(
+        label=_("New password"),
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control pass-value',
+                                          'autocomplete': 'new-password'}),
+    )
+    new_password2 = forms.CharField(
+        label=_("New password confirmation"),
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control pass-value',
+                                          'autocomplete': 'new-password'}),
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'patronymic', 'new_password1', 'new_password2',
+                  'date_of_birth', 'user_id', 'about_owner', 'phone', 'telegram', 'viber',
+                  'status', 'profile_picture')
+
+        widgets = {
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'patronymic': forms.TextInput(attrs={'class': 'form-control'}),
+            'profile_picture': forms.FileInput(),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control'}),
+            'user_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'about_owner': forms.Textarea(attrs={'class': 'form-control', 'rows': '12'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control',
+                                            'data-mask': "+38(000) 000-00-00"}),
+            'viber': forms.TextInput(attrs={'class': 'form-control',
+                                            'data-mask': "+38(000) 000-00-00"}),
+            'telegram': forms.TextInput(attrs={'class': 'form-control',
+                                               'data-mask': "+38(000) 000-00-00"}),
+            'username': forms.EmailInput(attrs={'class': 'form-control'})
+        }
+
+    def clean_new_password2(self):
+        new_password1 = self.cleaned_data.get("new_password1")
+        new_password2 = self.cleaned_data.get("new_password2")
+        if new_password1 and new_password2 and new_password1 != new_password2:
+            raise ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+        return new_password2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['username']
+        if self.cleaned_data.get('new_password1') != '':
+            user.set_password(self.cleaned_data["new_password1"])
         if commit:
             user.save()
         return user

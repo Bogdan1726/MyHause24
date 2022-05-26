@@ -3,11 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, UpdateView
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import House, Section, Floor
-from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm
+from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -152,25 +152,44 @@ class OwnerListView(ListView):
     context_object_name = 'owners'
 
     def get_queryset(self):
-        return self.model.objects.order_by('id')
+        return self.model.objects.filter(is_staff=False).order_by('id')
+
+
+class OwnerDetailView(DetailView):
+    model = User
+    template_name = 'crm/pages/owners/detail_owner.html'
+    context_object_name = 'owner'
 
 
 class OwnerCreateView(CreateView):
     model = User
     template_name = 'crm/pages/owners/create_owner.html'
     form_class = OwnerForm
-    success_url = reverse_lazy('owners')
+
+    def get_success_url(self):
+        return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
 
 
     def form_valid(self, form):
-        print(form)
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        print(form.error_messages)
         return super().form_invalid(form)
 
 
+class OwnerUpdateView(UpdateView):
+    model = User
+    template_name = 'crm/pages/owners/update_owner.html'
+    form_class = OwnerUpdateForm
+
+    def get_success_url(self):
+        return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
 
 
 # endregion Owners

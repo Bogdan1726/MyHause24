@@ -1,7 +1,7 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
 {% block title %}
-Новый владелец
+Профиль владельца
 {% endblock %}
 
 {% block style %}
@@ -12,11 +12,11 @@
 
 
 {% block content-header %}
-<h1>Новый владелец</h1>
+<h1>Профиль владельца</h1>
 <ul class="breadcrumb">
     <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
     <li><a href="{% url 'owners'%}">Владельцы квартир</a></li>
-    <li class="active">Новый владелец</li>
+    <li class="active">Профиль владельца</li>
 </ul>
 {% endblock %}
 
@@ -29,8 +29,17 @@
             <div class="row">
                 <div class="col-xs-12 col-sm-6">
                     <div class="userAvatar">
-                        <img class="img-circle pull-left img-responsive" alt="user_picture"
+                        {% if user.profile_picture %}
+                        <img class="img-circle pull-left img-responsive"
+                             style="width: 160px; height: 160px"
+                             alt="user_picture"
+                             src="{{ user.profile_picture.url }}">
+                        {% else %}
+                        <img class="img-circle pull-left img-responsive"
+                             style="width: 160px; height: 160px"
+                             alt="user_picture"
                              src="{% static 'crm/media/def_user.jpeg' %}">
+                        {% endif %}
                         <div class="form-group">
                             <label class="control-label">Сменить изображение</label>
                             {{ form.profile_picture }}
@@ -117,7 +126,7 @@
                     <div class="form-group field-userform-password">
                         <label class="control-label">Пароль</label>
                         <div class="input-group">
-                            {{ form.password1 }}
+                            {{ form.new_password1 }}
                             <span class="input-group-btn">
                         <button class="btn btn-default"
                                 type="button"
@@ -133,7 +142,7 @@
                     </div>
                     <div class="form-group ">
                         <label class="control-label">Повторить пароль</label>
-                        {{ form.password2 }}
+                        {{ form.new_password2 }}
                     </div>
                 </div>
             </div>
@@ -148,8 +157,8 @@
         <script>
             function generatePassword() {
                 const password = Math.random().toString(36).slice(-8);
-                $('input[name="password1"]').val(password);
-                $('input[name="password2"]').val(password);
+                $('input[name="new_password1"]').val(password);
+                $('input[name="new_password2"]').val(password);
             }
         </script>
     </div>

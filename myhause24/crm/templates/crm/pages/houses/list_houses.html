@@ -7,10 +7,17 @@
 {% block style %}
 <style>
     input[name="custom_search"] {
-        width: 400px;
+        width: 100%;
         font-weight: normal;
+        padding: 5px;
+        border: 1px solid #d2d6de;
     }
 
+    input[name="custom_search"]:focus {
+        color: #212529;
+        border-color: #bdbdbd;
+        outline: 0;
+    }
 </style>
 <link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
 {% endblock %}
@@ -27,7 +34,6 @@
 
 {% block content %}
 {% include 'crm/inc/_messages.html' %}
-
 <div class="row">
     <div class="col-xs-12">
         <div class="pull-right margin-bottom">
@@ -134,7 +140,7 @@
     $(document).ready(function () {
         // Setup - add a text input to each footer cell
         $('#table_houses tfoot th').each(function () {
-            $(this).html('<input type="text" name="custom_search" class="form-control"/>');
+            $(this).html('<input type="text" name="custom_search"/>');
         });
 
         // DataTable
@@ -172,7 +178,6 @@
                     });
             },
         });
-        $("#table_houses_filter").css('display', 'none')
         $("#clean").on("click", function () {
             $('input').val('');
             table.columns().search("").draw();

@@ -1,13 +1,51 @@
+<!--{% if messages %}-->
+<!--{% for message in messages %}-->
+<!--{% if message.tags == 'error' %}-->
+<!--<div class="callout callout-danger" id="error-messages">-->
+<!--    <p>{{ message }}</p>-->
+<!--</div>-->
+<!--{% else %}-->
+<!--<div class="callout callout-{{ message.tags }}" id="error-messages">-->
+<!--    <p>{{ message }}</p>-->
+<!--</div>-->
+<!--{% endif %}-->
+<!--{% endfor %}-->
+<!--{% endif %}-->
+
+
 {% if messages %}
 {% for message in messages %}
 {% if message.tags == 'error' %}
-<div class="callout callout-danger" id="error-messages">
-    <p>{{ message }}</p>
-</div>
-{% else %}
-<div class="callout callout-{{ message.tags }}" id="error-messages">
-    <p>{{ message }}</p>
-</div>
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: '{{ message.tags }}',
+            title: '<h5>{{ message }}</h5>'
+        })
+    });
+</script>
+{% endif %}
+{% if message.tags == 'success' %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: '{{ message.tags }}',
+            title: '<h5>{{ message }}</h5>'
+        })
+    });
+</script>
 {% endif %}
 {% endfor %}
 {% endif %}

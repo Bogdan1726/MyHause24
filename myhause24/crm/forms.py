@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
+from django.core.files.images import get_image_dimensions
 from django.shortcuts import get_object_or_404
 
 from .models import House, Section, Floor
@@ -14,6 +15,10 @@ User = get_user_model()
 
 
 class HouseForm(forms.ModelForm):
+    error_messages = {
+        'error_image': 'Размер изображений не соответствует параметрам',
+    }
+
     class Meta:
         model = House
         exclude = ('user',)
@@ -26,6 +31,23 @@ class HouseForm(forms.ModelForm):
             'image4': forms.FileInput(attrs={'type': 'file'}),
             'image5': forms.FileInput(attrs={'type': 'file'}),
         }
+
+    def clean(self):
+        images = ['image1', 'image2', 'image3', 'image4', 'image5']
+        for image in images:
+            if self.cleaned_data[image]:
+                width, height = get_image_dimensions(self.cleaned_data[image])
+                if image == 'image1':
+                    if width != 522 or height != 350:
+                        raise forms.ValidationError(
+                            self.error_messages['error_image']
+                        )
+                else:
+                    if width != 248 or height != 160:
+                        raise forms.ValidationError(
+                            self.error_messages['error_image']
+                        )
+        return self.cleaned_data
 
 
 class SectionForm(forms.ModelForm):
@@ -52,7 +74,7 @@ class UserFormSet(forms.Form):
                                   widget=forms.Select(attrs={'class': 'form-control user-select',
                                                              'onchange': "selectUser(this)"}))
     role = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control',
-                                                                         'disabled': 'true'}))
+                                                                         'readonly': 'true'}))
 
 
 # endregion House Forms

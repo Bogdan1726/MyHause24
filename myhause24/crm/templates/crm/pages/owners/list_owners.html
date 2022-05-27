@@ -5,11 +5,38 @@
 {% endblock %}
 
 {% block style %}
+
 <style>
+
     input[name="custom_search"] {
-        width: 400px;
+        width: 100%;
         font-weight: normal;
+        padding: 5px;
+        border: 1px solid #d2d6de;
     }
+
+    input[name="custom_search"]:focus {
+        color: #212529;
+        border-color: #bdbdbd;
+        outline: 0;
+    }
+
+    select[name="custom_select"] {
+        width: 100%;
+        font-weight: normal;
+        padding: 5px;
+        border: 1px solid #d2d6de;
+    }
+
+    select[name="custom_select"] {
+        color: #212529;
+        border-color: #bdbdbd;
+        outline: 0;
+    }
+
+
+
+
 
 </style>
 <link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
@@ -58,20 +85,34 @@
                     <table id="table_owners" class="table table-bordered table-hover table-striped linkedRow">
                         <thead>
                         <tr>
-                            <th style="width: 110px; min-width: 110px">ID</th>
-                            <th><a href="/admin/user/index?sort=searchFullname" data-sort="searchFullname">ФИО</a></th>
+                            <th style="width: 100px; min-width: 100px">ID</th>
+                            <th>ФИО</th>
                             <th style="width: 140px; min-width: 140px">Телефон</th>
                             <th style="width: 140px; min-width: 140px">Email</th>
                             <th style="min-width: 250px">Дом</th>
-                            <th style="min-width: 300px">Квартира</th>
-                            <th style="width: 110px; min-width: 110px"><a
-                                    href="/admin/user/index?sort=searchCreatedDate" data-sort="searchCreatedDate">Добавлен</a>
-                            </th>
-                            <th>Статус</th>
-                            <th style="width: 80px; min-width: 80px">Есть долг</th>
+                            <th style="min-width: 250px">Квартира</th>
+                            <th style="width: 90px; min-width: 90px">Добавлен</th>
+                            <th style="width: 90px; min-width: 90px">Статус</th>
+                            <th style="width: 90px; min-width: 90px">Есть долг</th>
                             <th style="width: 114px; min-width: 114px">&nbsp;</th>
                         </tr>
                         </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td style="z-index: 9999">
+                                <input type="text" name="custom_search" id="id_date">
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                        </tr>
+                        </tfoot>
                         <tbody>
                         {% for owner in owners %}
                         <tr data-href="{% url 'detail_owner' owner.id %}" data-key="68">
@@ -87,7 +128,7 @@
                             <td>(не задано)</td>
                             {% endif %}
                             <td>{{ owner.email }}</td>
-                            <td>----</td>
+                            <td>Жк Тестовый</td>
                             <td>----</td>
                             <td>{{ owner.date_joined|date:"d.m.Y" }}</td>
                             {% if owner.status == 'disabled' %}
@@ -97,7 +138,7 @@
                             {% else %}
                             <td><small class="label label-warning">Новый</small></td>
                             {% endif %}
-                            <td>----</td>
+                            <td>нет</td>
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
@@ -116,7 +157,7 @@
                                        title="Удалить"
                                        data-toggle="modal"
                                        data-target="#modal-default-{{ forloop.counter }}">
-                                    <i class="fa fa-trash"></i>
+                                        <i class="fa fa-trash"></i>
                                     </a>
                                 </div>
                             </td>
@@ -164,8 +205,8 @@
 <script>
     $(document).ready(function () {
         // Setup - add a text input to each footer cell
-        $('#table_houses tfoot th').each(function () {
-            $(this).html('<input type="text" name="custom_search" class="form-control"/>');
+        $('#table_owners tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search"/>');
         });
 
         // DataTable
@@ -176,7 +217,7 @@
             'searching': true,
             'ordering': false,
             'info': true,
-            'autoWidth': false,
+            'autoWidth': true,
             "language": {
                 "infoFiltered": "(Отфильтровано _MAX_ записей)",
                 "zeroRecords": "Записей не найдено",
@@ -191,7 +232,7 @@
             initComplete: function () {
                 // Apply the search
                 this.api()
-                    .columns()
+                    .columns([0, 1, 2, 3, 5, 6])
                     .every(function () {
                         var that = this;
 
@@ -201,14 +242,67 @@
                             }
                         });
                     });
+                //
+                this.api()
+                    .columns([4, 7, 8])
+                    .every(function () {
+                        var column = this;
+                        var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+
+                        column
+                            .data()
+                            .unique()
+                            .sort()
+                            .each(function (d, j) {
+                                var val = $('<div/>').html(d).text();
+                                console.log(val)
+                                select.append('<option value="' + val + '">' + val + '</option>');
+                            });
+                    });
             },
         });
         $("#table_owners_filter").css('display', 'none')
         $("#clean").on("click", function () {
             $('input').val('');
+            $('select').val('');
             table.columns().search("").draw();
         })
     });
+
+</script>
+<script>
+
+    !function (a) {
+        a.fn.datepicker.dates.ru = {
+            days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+            daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
+            daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+            today: "Сегодня",
+            clear: "Очистить",
+            format: "dd.mm.yyyy",
+            weekStart: 1,
+            monthsTitle: "Месяцы"
+        }
+    }(jQuery);
+
+
+    $('#id_date').datepicker({
+        format: 'dd.mm.yyyy',
+        startDate: '-100y',
+        endDate: '+0d',
+        language: 'ru',
+    });
+
+
+
 
 </script>
 

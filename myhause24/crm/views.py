@@ -72,7 +72,6 @@ class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFo
             for section in formset_for_section:
                 if section.cleaned_data:
                     if section.is_valid():
-                        print(section.cleaned_data)
                         section = section.save(commit=False)
                         section.house = house
                         section.save()
@@ -89,11 +88,12 @@ class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFo
                 if form_user.cleaned_data and form_user.cleaned_data['DELETE'] is False:
                     user = form_user.cleaned_data.get('user')
                     house.user.add(user)
+            messages.success(self.request, f'{self.object.title} успешно обновлён!')
             return super().form_valid(form)
         return self.form_invalid(form)
 
     def form_invalid(self, form):
-        messages.warning(self.request, form.non_field_errors())
+        messages.error(self.request, form.non_field_errors())
         return super().form_invalid(form)
 
 
@@ -141,6 +141,7 @@ class HouseCreateView(BaseHouseView):
         )
         return context
 
+
 # endregion Houses
 
 # region Owners
@@ -169,11 +170,12 @@ class OwnerCreateView(CreateView):
     def get_success_url(self):
         return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
 
-
     def form_valid(self, form):
+        messages.success(self.request, f'{self.object.email} успешно создан!')
         return super().form_valid(form)
 
     def form_invalid(self, form):
+        messages.error(self.request, form.non_field_errors())
         return super().form_invalid(form)
 
 
@@ -186,9 +188,11 @@ class OwnerUpdateView(UpdateView):
         return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
 
     def form_valid(self, form):
+        messages.success(self.request, f'{self.object.email} успешно обновлён!')
         return super().form_valid(form)
 
     def form_invalid(self, form):
+        messages.error(self.request, form.non_field_errors())
         return super().form_invalid(form)
 
 

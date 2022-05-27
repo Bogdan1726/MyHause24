@@ -27,7 +27,6 @@
 
 
 {% block content %}
-{% include 'crm/inc/_messages.html' %}
 <div class="box">
     <div class="box-body">
         <form id="update_house" method="post" enctype="multipart/form-data">
@@ -74,7 +73,7 @@
                     <div class="row" id="image-block">
                         <div class="col-xs-12 col-md-6">
                             {% if house.image1 %}
-                            <img src="{{ form.instance.image1.url }}"
+                            <img src="{{ house.image1.url }}"
                                  class="img-responsive largeImg margin-bottom-30"
                                  id="id_image1"
                                  alt="Изображение #1. Размер: (522x350)">
@@ -87,7 +86,7 @@
                         </div>
                         <div class="col-xs-6 col-md-3">
                             {% if house.image2 %}
-                            <img src="{{ form.instance.image2.url }}"
+                            <img src="{{ house.image2.url }}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image2"
                                  alt="Изображение #2. Размер: (248x160)">
@@ -100,41 +99,41 @@
                         </div>
                         <div class="col-xs-6 col-md-3">
                             {% if house.image3 %}
-                            <img src="{{ form.instance.image3.url }}"
+                            <img src="{{ house.image3.url }}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image3"
-                                 alt="Изображение #2. Размер: (248x160)">
+                                 alt="Изображение #3. Размер: (248x160)">
                             {% else %}
                             <img src="{% static 'crm/media/def_house.jpeg' %}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image3"
-                                 alt="Изображение #2. Размер: (248x160)">
+                                 alt="Изображение #3. Размер: (248x160)">
                             {% endif %}
                         </div>
                         <div class="col-xs-6 col-md-3">
                             {% if house.image4 %}
-                            <img src="{{ form.instance.image4.url }}"
+                            <img src="{{ house.image4.url }}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image4"
-                                 alt="Изображение #2. Размер: (248x160)">
+                                 alt="Изображение #4. Размер: (248x160)">
                             {% else %}
                             <img src="{% static 'crm/media/def_house.jpeg' %}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image4"
-                                 alt="Изображение #2. Размер: (248x160)">
+                                 alt="Изображение #4. Размер: (248x160)">
                             {% endif %}
                         </div>
                         <div class="col-xs-6 col-md-3">
                             {% if house.image5 %}
-                            <img src="{{ form.instance.image5.url }}"
+                            <img src="{{ house.image5.url }}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image5"
-                                 alt="Изображение #2. Размер: (248x160)">
+                                 alt="Изображение #5. Размер: (248x160)">
                             {% else %}
                             <img src="{% static 'crm/media/def_house.jpeg' %}"
                                  class="img-responsive smallImg margin-bottom-30"
                                  id="id_image6"
-                                 alt="Изображение #2. Размер: (248x160)">
+                                 alt="Изображение #5. Размер: (248x160)">
                             {% endif %}
                         </div>
                     </div>
@@ -341,11 +340,11 @@
         </form>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
+
 <script>
 
     // loads preview images
@@ -380,6 +379,7 @@
             $("input[id=" + id + "]").attr('value', '')
         }
     }
+
     // get role on user select end
 
 
@@ -423,6 +423,7 @@
             address: {
                 required: true,
             },
+
         },
         messages: {
             title: {
@@ -442,4 +443,7 @@
         }
     });
 </script>
+
+{% include 'crm/inc/_messages.html' %}
+
 {% endblock %}

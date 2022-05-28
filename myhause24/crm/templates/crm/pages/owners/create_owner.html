@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block style %}
+<style>
+    .error {
+        color: red;
+    }
+</style>
 <link rel="stylesheet"
       href="{% static 'crm/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
 <link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
@@ -185,6 +190,55 @@
     });
 
 
+</script>
+<script>
+
+    $('#create_owner').validate({
+        // submitHandler: function (form) {
+        //     form.submit();
+        // },
+        rules: {
+            user_id: {
+                required: true,
+                minlength: 5
+            },
+            username: {
+                required: true,
+                email: true
+            },
+            password1: {
+                required: true,
+            },
+            password2: {
+                required: true
+            }
+
+        },
+        messages: {
+            user_id: {
+                required: "",
+                minlength: "Пожалуйста, введите не менее 5 символов."
+            },
+            username: {
+                required: "",
+                email: ""
+            },
+            password1: {
+                required: "",
+            },
+            password2: {
+                required: ""
+            }
+
+        },
+        errorElement: 'span',
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
 </script>
 {% include 'crm/inc/_messages.html' %}
 

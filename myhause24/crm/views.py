@@ -171,7 +171,7 @@ class OwnerCreateView(CreateView):
         return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
 
     def form_valid(self, form):
-        messages.success(self.request, f'{self.object.email} успешно создан!')
+        messages.success(self.request, f"{form.cleaned_data['username']} успешно создан!")
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -192,7 +192,7 @@ class OwnerUpdateView(UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, form.non_field_errors())
+        messages.error(self.request,  form.errors)
         return super().form_invalid(form)
 
 

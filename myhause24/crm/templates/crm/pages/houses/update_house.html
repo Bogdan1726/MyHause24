@@ -343,15 +343,15 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
-
 <script>
+
 
     // loads preview images
     $('input[type=file]').on('change', function (event) {
         const img = $("img[id='" + this.id + "']")
         if (event.target.files[0]) {
             img.attr("src", URL.createObjectURL(event.target.files[0]))
+
         } else {
             img.attr("src", "{% static 'crm/media/def_house.jpeg' %}")
         }
@@ -412,9 +412,16 @@
         }
     }
 
-
 </script>
+
+
 <script>
+
+    //  jQuery Validations Form
+
+
+
+
     $('#update_house').validate({
         rules: {
             title: {
@@ -423,6 +430,9 @@
             address: {
                 required: true,
             },
+            image1: {
+                extension: "jpg|jpeg|png|",
+            }
 
         },
         messages: {
@@ -432,16 +442,21 @@
             address: {
                 required: "Обязательное поле",
             },
+            image1: {
+                extension: "Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.\n",
+            }
 
         },
         errorElement: 'span',
         highlight: function (element) {
-            $(element).parent().addClass('has-error');
+            $(element).closest('.form-group').addClass('has-error');
         },
         unhighlight: function (element) {
-            $(element).parent().removeClass('has-error');
-        }
+            $(element).closest('.form-group').removeClass('has-error');
+        },
     });
+
+
 </script>
 
 {% include 'crm/inc/_messages.html' %}

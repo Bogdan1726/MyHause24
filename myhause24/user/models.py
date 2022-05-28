@@ -15,7 +15,7 @@ class User(AbstractUser):
         NEW = 'new', _("Новый")
         DISABLED = 'disabled', _("Отключен")
 
-    username = models.CharField(_("username"), max_length=150, unique=True)
+    username = models.CharField(_("email"), max_length=150, unique=True)
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
     patronymic = models.CharField(max_length=150, blank=True)
@@ -24,11 +24,11 @@ class User(AbstractUser):
     phone = PhoneNumberField(null=True, blank=True)
     viber = PhoneNumberField(null=True, blank=True)
     telegram = PhoneNumberField(null=True, blank=True)
-    email = models.EmailField(_('email address'), unique=True, blank=True)
+    email = models.EmailField(_('email address'), blank=True)
     status = models.CharField(max_length=8,
                               choices=Status.choices,
                               default=Status.NEW)
-    user_id = models.CharField(max_length=32, unique=True)
+    user_id = models.CharField(max_length=6, verbose_name='ID', unique=True)
     about_owner = models.TextField(blank=True)
     role = models.ForeignKey('Role', null=True, blank=True, on_delete=models.SET_NULL)
 

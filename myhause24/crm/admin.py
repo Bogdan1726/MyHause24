@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import House, Section, Floor
+from .models import House, Section, Floor, Apartment
+
+
 # Register your models here.
 
 
@@ -15,4 +17,9 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(Floor)
 class FloorAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Apartment)
+class ApartmentAdmin(admin.ModelAdmin):
     pass

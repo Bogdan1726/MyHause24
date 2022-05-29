@@ -33,7 +33,6 @@ DEBUG = int(os.getenv('DEBUG', 0))
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -48,8 +47,10 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'crm.apps.CrmConfig',
     'cabinet.apps.CabinetConfig',
+    # apps
     'phonenumber_field',
     'snowpenguin.django.recaptcha3',
+    # 'django_select2'
 
 ]
 
@@ -83,7 +84,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myhause24.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -97,6 +97,28 @@ DATABASES = {
         'PORT': os.getenv('PORT')
     }
 }
+
+# Cache
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     },
+#     "select2": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/2",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
+#
+# # Tell select2 which cache configuration to use:
+# SELECT2_CACHE_BACKEND = "select2"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -123,8 +145,6 @@ AUTHENTICATION_BACKENDS = (
     'user.authentication.EmailAuthBackend',
 )
 
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -137,7 +157,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -152,7 +171,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 RECAPTCHA_PRIVATE_KEY = os.getenv('GOOGLE_RECAPTCHA_SECRET_KEY')
 RECAPTCHA_PUBLIC_KEY = os.getenv('GOOGLE_RECAPTCHA_PUBLIC_KEY')

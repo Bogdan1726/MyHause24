@@ -33,7 +33,9 @@ class User(AbstractUser):
     role = models.ForeignKey('Role', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return f'{self.first_name} {self.last_name}'
+        if self.first_name or self.last_name:
+            return f'{self.first_name} {self.last_name}'
+        return f'{self.username}'
 
     def get_full_name(self):
         """

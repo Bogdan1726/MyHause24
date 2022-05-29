@@ -1,0 +1,173 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Новая квартира
+{% endblock %}
+
+{% block style %}
+<style>
+    .error {
+        color: red;
+    }
+</style>
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Новая квартира</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'apartments' %}">Квартиры</a></li>
+    <li class="active">Новая квартира</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-body">
+        <form id="create_apartment" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-sm-6 col-sm-push-6">
+                    <div class="form-group">
+                        <label class="control-label">Лицевой счет</label>
+                        {{ form.personal_account }}
+                    </div>
+                    <div class="form-group" data-select2-id="29">
+                        <label>Disabled Result</label>
+                        <select class="form-control select2 select2-hidden-accessible" style="width: 100%;"
+                                data-select2-id="9" tabindex="-1" aria-hidden="true">
+                            <option selected="selected" data-select2-id="11">Alabama</option>
+                            <option data-select2-id="30">Alaska</option>
+                            <option disabled="disabled" data-select2-id="31">California (disabled)</option>
+                            <option data-select2-id="32">Delaware</option>
+                            <option data-select2-id="33">Tennessee</option>
+                            <option data-select2-id="34">Texas</option>
+                            <option data-select2-id="35">Washington</option>
+                        </select><span
+                            class="select2 select2-container select2-container--default select2-container--below select2-container--focus"
+                            dir="ltr" data-select2-id="10" style="width: 100%;"><span class="selection"><span
+                            class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true"
+                            aria-expanded="false" tabindex="0" aria-labelledby="select2-mvew-container"><span
+                            class="select2-selection__rendered" id="select2-mvew-container" role="textbox"
+                            aria-readonly="true" title="Alabama">Alabama</span><span class="select2-selection__arrow"
+                                                                                     role="presentation"><b
+                            role="presentation"></b></span></span></span><span class="dropdown-wrapper"
+                                                                               aria-hidden="true"></span></span>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6 col-sm-pull-6">
+                    <div class="form-group">
+                        <label class="control-label">Номер квартиры</label>
+                        {{ form.number }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Площадь (кв.м.)</label>
+                        {{ form.area }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Дом</label>
+                        {{ form.house }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Секция</label>
+                        {{ form.section }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Этаж</label>
+                        {{ form.floor }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Владелец</label>
+                        {{ form.owner }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Тариф</label>
+                        {{ form.tariff }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <div class="form-group">
+                        <a href="{% url 'apartments' %}" class="btn btn-default margin-bottom-15">Отменить</a>
+                        <input type="submit"
+                               class="btn btn-success margin-bottom-15"
+                               name="action_save"
+                               value="Сохранить">
+                        <input type="submit"
+                               class="btn btn-success margin-bottom-15 bg-green-active"
+                               name="action_save_add"
+                               value="Сохранить и добавить новую">
+                    </div>
+                </div>
+            </div>
+        </form>
+        <script>
+            function generatePassword() {
+                const password = Math.random().toString(36).slice(-8);
+                $('input[name="password1"]').val(password);
+                $('input[name="password2"]').val(password);
+            }
+        </script>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+    $(document).ready(function () {
+
+        var select_section = $("select[name='section']")
+        var select_floor = $("select[name='floor']")
+
+        $("select[name='house']").on('change', function () {
+            if (this.value) {
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'loading_floor_section' %}",
+                    data: {
+                        'house_id': this.value,
+                    },
+                    success: function (response) {
+                        section_select(response.section)
+                        floor_select(response.floor)
+                    },
+                    error: function (response) {
+                        console.log(response.error)
+                    }
+                })
+            } else {
+                select_section.find('option').slice(1).remove();
+                select_floor.find('option').slice(1).remove();
+            }
+        });
+
+        function section_select(data) {
+            select_section.find('option').slice(1).remove();
+            for (section in data) {
+                select_section.append(
+                    '<option value="' + data[section].id + '">' + data[section].title + '</option>\n'
+                )
+            }
+        }
+
+        function floor_select(data) {
+            select_floor.find('option').slice(1).remove();
+            for (floor in data) {
+                select_floor.append(
+                    '<option value="' + data[floor].id + '">' + data[floor].title + '</option>\n'
+                )
+            }
+        }
+    });
+
+
+</script>
+
+{% include 'crm/inc/_messages.html' %}
+
+{% endblock %}

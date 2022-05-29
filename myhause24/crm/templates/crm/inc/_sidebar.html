@@ -14,7 +14,12 @@
                 <span>Квитанции на оплату</span></a></li>
             <li><a href="/admin/account/index"><i class="fa fa-credit-card"></i> <span>Лицевые счета</span></a>
             </li>
-            <li><a href="/admin/flat/index"><i class="fa fa-key"></i> <span>Квартиры</span></a></li>
+            <li class="{% if url in '[apartments, create_apartment, update_apartment, detail_apartment]' %}active{% endif %}">
+                <a href="{% url 'apartments' %}">
+                    <i class="fa fa-key"></i>
+                    <span>Квартиры</span>
+                </a>
+            </li>
             <li class="{% if url in '[owners, create_owner, update_owner, detail_owner]' %}active{% endif %}">
                 <a href="{% url 'owners' %}">
                     <i class="fa fa-users"></i>

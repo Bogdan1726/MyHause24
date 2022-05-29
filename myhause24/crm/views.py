@@ -6,8 +6,9 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, UpdateView
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
-from .models import House, Section, Floor
-from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm
+from .models import House, Section, Floor, Apartment
+from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
+    ApartmentForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -197,6 +198,24 @@ class OwnerUpdateView(UpdateView):
 
 
 # endregion Owners
+
+
+
+# region Apartment
+
+class ApartmentListView(ListView):
+    model = Apartment
+    template_name = 'crm/pages/apartments/list_apartments.html'
+    context_object_name = 'apartments'
+
+
+class ApartmentCreateView(CreateView):
+    model = Apartment
+    form_class = ApartmentForm
+    template_name = 'crm/pages/apartments/create_apartment.html'
+
+
+# endregion Apartment
 
 @login_required(login_url='login')
 def index(request):

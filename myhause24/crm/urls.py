@@ -2,8 +2,8 @@ from django.urls import path, reverse_lazy
 from django.views.generic import DeleteView
 from .models import House
 from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView, \
-    OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView
-from .services.load_role_of_formset_house import load_role
+    OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView
+from .api_views import load_role, loading_floor_section
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -28,6 +28,12 @@ urlpatterns = [
     path('owner/update/<int:pk>/', OwnerUpdateView.as_view(), name='update_owner'),
     path('owner/delete/<int:pk>/', DeleteView.as_view(
         model=User, success_url=reverse_lazy('owners')), name='delete_owner'),
-
     # owners end
+
+    # apartments
+    path('loading_floor_section/', loading_floor_section, name='loading_floor_section'),
+    path('apartments/', ApartmentListView.as_view(), name='apartments'),
+    path('apartment/create/', ApartmentCreateView.as_view(), name='create_apartment'),
+
+    # apartments end
 ]

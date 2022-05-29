@@ -9,7 +9,9 @@ urlpatterns = [
     path('', include('main.urls')),
     path('account/', include('user.urls')),
     path('admin/', include('crm.urls')),
-    path('cabinet/', include('cabinet.urls'))
+    path('cabinet/', include('cabinet.urls')),
+    # path("select2/", include("django_select2.urls")),
+
 ]
 
 if settings.DEBUG:

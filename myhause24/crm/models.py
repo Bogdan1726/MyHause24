@@ -5,6 +5,7 @@ from user.models import Role
 
 User = get_user_model()
 
+
 # Create your models here.
 
 
@@ -20,6 +21,9 @@ class House(models.Model):
     image4 = models.ImageField(upload_to='crm/house/', blank=True)
     image5 = models.ImageField(upload_to='crm/house/', blank=True)
     user = models.ManyToManyField(User, blank=True)
+
+    def __str__(self):
+        return f'{self.title}'
 
 
 class Apartment(models.Model):
@@ -38,11 +42,17 @@ class Section(models.Model):
     title = models.CharField(max_length=64)
     house = models.ForeignKey('House', on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f'{self.title}'
+
 
 class Floor(models.Model):
     objects = None
     title = models.CharField(max_length=64)
     house = models.ForeignKey('House', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.title}'
 
 
 # endregion Housing
@@ -52,6 +62,7 @@ class Floor(models.Model):
 
 
 class Tariff(models.Model):
+    objects = None
     title = models.CharField(max_length=64)
     description = models.TextField()
     date_edit = models.DateTimeField(auto_now=True)
@@ -154,6 +165,7 @@ class Requisites(models.Model):
     title = models.CharField(max_length=64)
     description = models.TextField()
 
+
 # endregion Payments
 
 
@@ -187,13 +199,4 @@ class Message(models.Model):
     floor = models.ForeignKey('Floor', blank=True, null=True, on_delete=models.SET_NULL)
     sender = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
-
-
 # endregion CallRequest and Messages
-
-
-
-
-
-
-

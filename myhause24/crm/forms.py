@@ -2,9 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
-from django.shortcuts import get_object_or_404
-
-from .models import House, Section, Floor
+from .models import House, Section, Floor, Apartment, Tariff
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
@@ -79,7 +77,7 @@ class UserFormSet(forms.Form):
 
 # endregion House Forms
 
-
+# region Owner Form
 class OwnerForm(UserCreationForm):
     password1 = forms.CharField(
         label=_("Password"),
@@ -194,3 +192,40 @@ class OwnerUpdateForm(UserChangeForm):
         if commit:
             user.save()
         return user
+
+
+# endregion Owner Form
+
+
+# region Apartment Form
+
+
+class ApartmentForm(forms.ModelForm):
+    section = forms.ModelChoiceField(queryset=Section.objects.none(),
+                                     empty_label='Выберите...',
+                                     widget=forms.Select(attrs={'class': 'form-control'}))
+    floor = forms.ModelChoiceField(queryset=Floor.objects.none(),
+                                   empty_label='Выберите...',
+                                   widget=forms.Select(attrs={'class': 'form-control'}))
+    house = forms.ModelChoiceField(queryset=House.objects.all(),
+                                   empty_label='Выберите...',
+                                   widget=forms.Select(attrs={'class': 'form-control'}))
+    owner = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False),
+                                   empty_label='Выберите...',
+                                   widget=forms.Select(attrs={'class': 'form-control'}))
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(),
+                                    required=False,
+                                    empty_label='Выберите...',
+                                    widget=forms.Select(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = Apartment
+        fields = "__all__"
+        widgets = {
+            'number': forms.NumberInput(attrs={'class': 'form-control'}),
+            'area': forms.NumberInput(attrs={'class': 'form-control'}),
+            'owner': forms.Select(attrs={'class': 'form-control'}),
+            'personal_account': forms.TextInput(attrs={'class': 'form-control'})
+        }
+
+# endregion Apartment Form

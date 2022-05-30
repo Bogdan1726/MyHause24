@@ -34,7 +34,6 @@ class Apartment(models.Model):
     floor = models.ForeignKey('Floor', blank=True, null=True, on_delete=models.SET_NULL)
     section = models.ForeignKey('Section', blank=True, null=True, on_delete=models.SET_NULL)
     tariff = models.ForeignKey('Tariff', blank=True, null=True, on_delete=models.SET_NULL)
-    personal_account = models.ForeignKey('PersonalAccount', blank=True, null=True, on_delete=models.SET_NULL)
 
 
 class Section(models.Model):
@@ -130,12 +129,19 @@ class CalculateReceiptService(models.Model):
 
 
 class PersonalAccount(models.Model):
+    objects = None
+
     class AccountStatus(models.TextChoices):
         ACTIVE = 'active', _("Active")
         INACTIVE = 'inactive', _("Inactive")
 
     number = models.CharField(max_length=64)
     status = models.CharField(max_length=8, choices=AccountStatus.choices, default=AccountStatus.ACTIVE)
+    apartment = models.OneToOneField('Apartment', null=True, blank=True, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return f'{self.number}'
 
 
 class CashBox(models.Model):

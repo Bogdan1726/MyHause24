@@ -6,9 +6,9 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, UpdateView
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
-from .models import House, Section, Floor, Apartment
+from .models import House, Section, Floor, Apartment, PersonalAccount
 from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
-    ApartmentForm
+    ApartmentForm, ApartmentUpdateForm, PersonalAccountForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -193,12 +193,11 @@ class OwnerUpdateView(UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request,  form.errors)
+        messages.error(self.request, form.errors)
         return super().form_invalid(form)
 
 
 # endregion Owners
-
 
 
 # region Apartment
@@ -208,11 +207,46 @@ class ApartmentListView(ListView):
     template_name = 'crm/pages/apartments/list_apartments.html'
     context_object_name = 'apartments'
 
+    def get_queryset(self):
+        return self.model.objects.order_by('id')
+
 
 class ApartmentCreateView(CreateView):
     model = Apartment
     form_class = ApartmentForm
+    success_url = reverse_lazy('apartments')
     template_name = 'crm/pages/apartments/create_apartment.html'
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        print(form.non_field_errors())
+        return super().form_invalid(form)
+
+
+class ApartmentUpdateView(UpdateView):
+    model = Apartment
+    form_class = ApartmentUpdateForm
+    success_url = reverse_lazy('apartments')
+    template_name = 'crm/pages/apartments/update_apartment.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(ApartmentUpdateView, self).get_context_data()
+        context['personal_account'] = PersonalAccountForm(
+            self.request.POST or None,
+            instance=PersonalAccount.objects.get(apartment=self.object),
+            prefix='account_form'
+        )
+        return context
+
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        print(form.errors)
+        return super().form_invalid(form)
 
 
 # endregion Apartment

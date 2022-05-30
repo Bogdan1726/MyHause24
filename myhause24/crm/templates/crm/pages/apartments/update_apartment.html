@@ -1,10 +1,180 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Новая квартира
+{% endblock %}
 
-</body>
-</html>
+{% block style %}
+<style>
+    .error {
+        color: red;
+    }
+</style>
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Новая квартира</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'apartments' %}">Квартиры</a></li>
+    <li class="active">Новая квартира</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-body">
+        <form id="create_apartment" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-sm-6 col-sm-push-6">
+                    <div class="form-group">
+                        <label class="control-label">Лицевой счет</label>
+                        {{ personal_account.number }}
+                        {{ personal_account.list_personal_accounts }}
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6 col-sm-pull-6">
+                    <div class="form-group">
+                        <label class="control-label">Номер квартиры</label>
+                        {{ form.number }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Площадь (кв.м.)</label>
+                        {{ form.area }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Дом</label>
+                        {{ form.house }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Секция</label>
+                        {{ form.section }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Этаж</label>
+                        {{ form.floor }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Владелец</label>
+                        {{ form.owner }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Тариф</label>
+                        {{ form.tariff }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <div class="form-group">
+                        <a href="{% url 'apartments' %}" class="btn btn-default margin-bottom-15">Отменить</a>
+                        <input type="submit"
+                               class="btn btn-success margin-bottom-15"
+                               name="action_save"
+                               value="Сохранить">
+                        <input type="submit"
+                               class="btn btn-success margin-bottom-15 bg-green-active"
+                               name="action_save_add"
+                               value="Сохранить и добавить новую">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+    //Initialize Select2 Elements
+
+    $(function () {
+        $('.select2').select2({
+            placeholder: "или выберите из списка...",
+            language: {
+                noResults: function () {
+                    return "Совавдений не найдено";
+                }
+            }
+        })
+    })
+
+
+    $('select[name="account_form-list_personal_accounts"]').on('change', function () {
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'loading_personal_account' %}",
+            data: {
+                'id': this.value
+            },
+            success: function (response) {
+                $('input[name="account_form-number"]').val(response.personal_account[0].number);
+            },
+            error: function (response) {
+                console.log(response.error)
+            }
+        })
+        $(this).val(null);
+    })
+
+
+    $(document).ready(function () {
+
+        var select_section = $("select[name='section']")
+        var select_floor = $("select[name='floor']")
+        var select_house = $("select[name='house']")
+
+
+        select_house.on('change', function () {
+            if (this.value) {
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'loading_floor_section' %}",
+                    data: {
+                        'house_id': this.value,
+                    },
+                    success: function (response) {
+                        section_select(response.section)
+                        floor_select(response.floor)
+                    },
+                    error: function (response) {
+                        console.log(response.error)
+                    }
+                })
+            } else {
+                select_section.find('option').slice(1).remove();
+                select_floor.find('option').slice(1).remove();
+            }
+        });
+
+
+        function section_select(data) {
+            select_section.find('option').slice(1).remove();
+            for (section in data) {
+                select_section.append(
+                    '<option value="' + data[section].id + '">' + data[section].title + '</option>\n'
+                )
+            }
+        }
+
+        function floor_select(data) {
+            select_floor.find('option').slice(1).remove();
+            for (floor in data) {
+                select_floor.append(
+                    '<option value="' + data[floor].id + '">' + data[floor].title + '</option>\n'
+                )
+            }
+        }
+    });
+
+
+</script>
+
+{% include 'crm/inc/_messages.html' %}
+
+{% endblock %}

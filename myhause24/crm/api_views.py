@@ -1,5 +1,5 @@
 from django.http import JsonResponse, HttpResponse
-from .models import Section, Floor
+from .models import Section, Floor, PersonalAccount
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -23,6 +23,17 @@ def loading_floor_section(request):
         response = {
             'section': list(section),
             'floor': list(floor)
+        }
+        return JsonResponse(response, status=200)
+    return HttpResponse()
+
+
+def loading_personal_account(request):
+    if request.is_ajax():
+        pk = request.GET.get('id')
+        obj = PersonalAccount.objects.filter(id=pk).values('id', 'number')
+        response = {
+            'personal_account': list(obj)
         }
         return JsonResponse(response, status=200)
     return HttpResponse()

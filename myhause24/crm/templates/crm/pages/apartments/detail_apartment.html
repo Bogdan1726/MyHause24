@@ -1,10 +1,111 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Квартира №{{ apartment.number }},{{ apartment.house }}
+{% endblock %}
 
-</body>
-</html>
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Квартира №{{ object.number }},{{ object.house }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'apartments' %}">Квартиры</a></li>
+    <li class="active">Квартира №{{ apartment.number }},{{ apartment.house }}</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title">Просмотр квартиры</h3>
+        <div class="box-tools">
+            <button class="btn btn-default btn-sm disabled" data-confirm="Лицевой счет неактивен"><span
+                    class="hidden-xs"><i class="fa fa-dollar"></i> Принять платеж</span><i
+                    class="fa fa-pencil visible-xs" aria-hidden="true"></i></button>
+            <button class="btn btn-default btn-sm disabled" data-confirm="Лицевой счет неактивен"><span
+                    class="hidden-xs"><i class="fa fa-files-o"></i> Оформить квитанцию</span><i
+                    class="fa fa-pencil visible-xs" aria-hidden="true"></i></button>
+            <a href="{% url 'update_apartment' apartment.id %}" class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать квартиру</span><i class="fa fa-pencil visible-xs"
+                                                                        aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <div class="box-body">
+        <div class="row">
+            <div class="col-xs-12">
+                <table class="table table-bordered table-striped table-view">
+                    <tbody>
+                    <tr>
+                        <td>Лицевой счет</td>
+                        <td>
+                            <a href="#">{{ personal_account }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Номер квартиры</td>
+                        <td>{{ apartment.number }}</td>
+                    </tr>
+                    <tr>
+                        <td>Площадь</td>
+                        <td>{{ apartment.area }}м<sup>2</sup></td>
+                    </tr>
+                    <tr>
+                        <td>Дом</td>
+                        <td>
+                            <a href="{% url 'detail_house' apartment.house_id %}">{{ apartment.house }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Секция</td>
+                        <td>{{ apartment.section }}</td>
+                    </tr>
+                    <tr>
+                        <td>Этаж</td>
+                        <td>{{ apartment.floor }}</td>
+                    </tr>
+                    <tr>
+                        <td>Владелец</td>
+                        <td>
+                            <a href="{% url 'detail_owner' apartment.owner_id %}">{{ apartment.owner }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Тариф</td>
+                        {% if apartment.tariff %}
+                        <td>
+                            {{ apartment.tariff }}
+                        </td>
+                        {% else %}
+                        <td>
+                            не указано
+                        </td>
+                        {% endif %}
+                    </tr>
+                    </tbody>
+                </table>
+                <div>
+                    <p>
+                        <a href="#">Посмотреть показания счетчиков</a>
+                    </p>
+                    <p>
+                        <a href="#">Посмотреть приходы</a>
+                    </p>
+                    <p>
+                        <a href="#">Посмотреть квитанции</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% include 'crm/inc/_messages.html' %}
+{% endblock %}

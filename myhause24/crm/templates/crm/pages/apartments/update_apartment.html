@@ -1,7 +1,7 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
 {% block title %}
-Новая квартира
+Квартира №{{ object.number }},{{ object.house }}
 {% endblock %}
 
 {% block style %}
@@ -14,11 +14,12 @@
 
 
 {% block content-header %}
-<h1>Новая квартира</h1>
+<h1>Квартира №{{ object.number }},{{ object.house }}</h1>
 <ul class="breadcrumb">
     <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
     <li><a href="{% url 'apartments' %}">Квартиры</a></li>
-    <li class="active">Новая квартира</li>
+    <li><a href="#">Квартира №{{ object.number }},{{ object.house }}</a></li>
+    <li class="active">Редактирование</li>
 </ul>
 {% endblock %}
 
@@ -26,7 +27,7 @@
 {% block content %}
 <div class="box">
     <div class="box-body">
-        <form id="create_apartment" method="post">
+        <form id="update_apartment" method="post">
             {% csrf_token %}
             <div class="row">
                 <div class="col-xs-12 col-sm-6 col-sm-push-6">
@@ -71,14 +72,16 @@
                 <div class="col-xs-12 text-right">
                     <div class="form-group">
                         <a href="{% url 'apartments' %}" class="btn btn-default margin-bottom-15">Отменить</a>
-                        <input type="submit"
+                        <button type="submit"
                                class="btn btn-success margin-bottom-15"
                                name="action_save"
-                               value="Сохранить">
-                        <input type="submit"
+                                value="Сохранить">Сохранить
+                        </button>
+                        <button type="submit"
                                class="btn btn-success margin-bottom-15 bg-green-active"
                                name="action_save_add"
-                               value="Сохранить и добавить новую">
+                                value="Сохранить и добавить новую">Сохранить и добавить новую
+                        </button>
                     </div>
                 </div>
             </div>
@@ -91,83 +94,109 @@
 
 
 <script>
-    //Initialize Select2 Elements
-
-    $(function () {
-        $('.select2').select2({
-            placeholder: "или выберите из списка...",
-            language: {
-                noResults: function () {
-                    return "Совавдений не найдено";
-                }
-            }
-        })
-    })
-
-
-    $('select[name="account_form-list_personal_accounts"]').on('change', function () {
-        $.ajax({
-            type: 'GET',
-            url: "{% url 'loading_personal_account' %}",
-            data: {
-                'id': this.value
-            },
-            success: function (response) {
-                $('input[name="account_form-number"]').val(response.personal_account[0].number);
-            },
-            error: function (response) {
-                console.log(response.error)
-            }
-        })
-        $(this).val(null);
-    })
-
 
     $(document).ready(function () {
 
-        var select_section = $("select[name='section']")
         var select_floor = $("select[name='floor']")
         var select_house = $("select[name='house']")
+        var select_section = $("select[name='section']")
+        var account_input = $('input[name="account_form-number"]')
+        var select_personal_account = $('select[name="account_form-list_personal_accounts"]')
+
+
+        //Initialize Select2 Elements
+
+        $(function () {
+            $('.select2').select2({
+                placeholder: "или выберите из списка...",
+                language: {
+                    noResults: function () {
+                        return "Совпавдений не найдено";
+                    }
+                }
+            })
+        })
+
+        select_personal_account.on('change', function () {
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'loading_personal_account' %}",
+                data: {
+                    'id': this.value
+                },
+                success: function (response) {
+                    account_input.val(response.personal_account[0].number);
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+            $(this).val(null);
+        })
+
+        select_section.find('option:not([selected])').slice(1).remove();
+        select_floor.find('option:not([selected])').slice(1).remove();
+
+        if (select_house.val()) {
+            send_ajax(select_house.val(), true)
+        }
 
 
         select_house.on('change', function () {
             if (this.value) {
-                $.ajax({
-                    type: "GET",
-                    url: "{% url 'loading_floor_section' %}",
-                    data: {
-                        'house_id': this.value,
-                    },
-                    success: function (response) {
-                        section_select(response.section)
-                        floor_select(response.floor)
-                    },
-                    error: function (response) {
-                        console.log(response.error)
-                    }
-                })
+                send_ajax(this.value, false);
             } else {
                 select_section.find('option').slice(1).remove();
                 select_floor.find('option').slice(1).remove();
             }
         });
 
+        function send_ajax(data, flag) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_floor_section' %}",
+                data: {
+                    'house_id': data,
+                },
+                success: function (response) {
+                    section_select(response.section, flag)
+                    floor_select(response.floor, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
 
-        function section_select(data) {
-            select_section.find('option').slice(1).remove();
+
+        function section_select(data, flag) {
+            if (flag) {
+                select_section.find('option:not([selected])').slice(1).remove();
+            } else {
+                select_section.find('option').slice(1).remove();
+            }
             for (section in data) {
-                select_section.append(
-                    '<option value="' + data[section].id + '">' + data[section].title + '</option>\n'
-                )
+                if (!select_section.find('option[value="' + data[section].id + '"]').length) {
+                    select_section.append(
+                        '<option value="' + data[section].id + '">' + data[section].title + '</option>\n'
+                    )
+                }
             }
         }
 
-        function floor_select(data) {
-            select_floor.find('option').slice(1).remove();
+        function floor_select(data, flag) {
+            if (flag) {
+                select_floor.find('option:not([selected])').slice(1).remove();
+            } else {
+                select_floor.find('option').slice(1).remove();
+            }
+            select_floor.find('option:not([selected])').slice(1).remove();
             for (floor in data) {
-                select_floor.append(
-                    '<option value="' + data[floor].id + '">' + data[floor].title + '</option>\n'
-                )
+                if (!select_floor.find('option[value="' + data[floor].id + '"]').length) {
+                    select_floor.append(
+                        '<option value="' + data[floor].id + '">' + data[floor].title + '</option>\n'
+                    )
+                }
             }
         }
     });

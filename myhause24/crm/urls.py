@@ -3,7 +3,7 @@ from django.views.generic import DeleteView
 from .models import House
 from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView, \
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
-    ApartmentUpdateView
+    ApartmentUpdateView, ApartmentDetailView, ApartmentDelete
 from .api_views import load_role, loading_floor_section, loading_personal_account
 from django.contrib.auth import get_user_model
 
@@ -36,7 +36,9 @@ urlpatterns = [
     path('loading_personal_account/', loading_personal_account, name='loading_personal_account'),
     path('apartments/', ApartmentListView.as_view(), name='apartments'),
     path('apartment/create/', ApartmentCreateView.as_view(), name='create_apartment'),
+    path('apartment/<int:pk>/', ApartmentDetailView.as_view(), name='detail_apartment'),
     path('apartment/update/<int:pk>/', ApartmentUpdateView.as_view(), name='update_apartment'),
+    path('apartment/delete/<int:pk>/', ApartmentDelete.as_view(), name='delete_apartment'),
 
     # apartments end
 ]

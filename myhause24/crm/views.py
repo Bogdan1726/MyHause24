@@ -3,12 +3,13 @@ from django.contrib.auth.decorators import login_required
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, UpdateView
+from django.shortcuts import get_object_or_404
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import House, Section, Floor, Apartment, PersonalAccount
 from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
-    ApartmentForm, ApartmentUpdateForm, PersonalAccountForm
+    ApartmentForm, PersonalAccountForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -199,7 +200,6 @@ class OwnerUpdateView(UpdateView):
 
 # endregion Owners
 
-
 # region Apartment
 
 class ApartmentListView(ListView):
@@ -211,23 +211,67 @@ class ApartmentListView(ListView):
         return self.model.objects.order_by('id')
 
 
+class ApartmentDetailView(DetailView):
+    model = Apartment
+    template_name = 'crm/pages/apartments/detail_apartment.html'
+    context_object_name = 'apartment'
+
+    def get_context_data(self, **kwargs):
+        context = super(ApartmentDetailView, self).get_context_data()
+        context['personal_account'] = PersonalAccount.objects.filter(apartment=self.object).first()
+        return context
+
+
 class ApartmentCreateView(CreateView):
     model = Apartment
     form_class = ApartmentForm
     success_url = reverse_lazy('apartments')
     template_name = 'crm/pages/apartments/create_apartment.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(ApartmentCreateView, self).get_context_data()
+        context['personal_account'] = PersonalAccountForm(
+            self.request.POST or None,
+            prefix='account_form'
+        )
+        return context
+
+    def get_success_url(self):
+        if 'action_save' in self.request.POST:
+            return reverse_lazy('detail_apartment', kwargs={'pk': self.object.id})
+        return reverse_lazy('create_apartment')
+
     def form_valid(self, form):
+        context = self.get_context_data()
+        personal_account = context['personal_account']
+        account = PersonalAccount.objects.all()
+        if personal_account.is_valid():
+            try:
+                obj = account.get(number=personal_account.cleaned_data['number'])
+                if obj.apartment:
+                    messages.error(self.request, 'К этому лицевому счету уже закреплена квартира')
+                    return super().form_invalid(form)
+                self.object = form.save()
+                account.filter(number=personal_account.cleaned_data['number']).update(
+                    apartment=self.object
+                )
+            except PersonalAccount.DoesNotExist:
+                self.object = form.save()
+                account.create(
+                    number=personal_account.cleaned_data['number'],
+                    apartment=self.object
+                )
+        messages.success(self.request, f"Квартира №{self.object} успешно создана!")
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        print(form.non_field_errors())
+        messages.error(self.request, form.non_field_errors())
         return super().form_invalid(form)
 
 
 class ApartmentUpdateView(UpdateView):
     model = Apartment
-    form_class = ApartmentUpdateForm
+    form_class = ApartmentForm
     success_url = reverse_lazy('apartments')
     template_name = 'crm/pages/apartments/update_apartment.html'
 
@@ -240,14 +284,46 @@ class ApartmentUpdateView(UpdateView):
         )
         return context
 
+    def get_success_url(self):
+        if 'action_save' in self.request.POST:
+            return reverse_lazy('detail_apartment', kwargs={'pk': self.object.id})
+        return reverse_lazy('create_apartment')
 
     def form_valid(self, form):
+        context = self.get_context_data()
+        personal_account = context['personal_account']
+        account = PersonalAccount.objects.all()
+        if personal_account.is_valid():
+            try:
+                obj = account.get(number=personal_account.cleaned_data['number'])
+                if obj.apartment and obj.apartment != self.object:
+                    messages.error(self.request, 'К этому лицевому счету уже закреплена квартира')
+                    return super().form_invalid(form)
+                account.filter(apartment=self.object).update(apartment=None)
+                account.filter(
+                    number=personal_account.cleaned_data['number']
+                ).update(apartment=self.object)
+
+            except PersonalAccount.DoesNotExist:
+                account.filter(apartment=self.object).update(apartment=None)
+                account.create(
+                    number=personal_account.cleaned_data['number'],
+                    apartment=self.object
+                )
+        messages.success(self.request, f"Квартира №{self.object} успешно обновлена!")
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        print(form.errors)
+        messages.error(self.request, form.non_field_errors())
         return super().form_invalid(form)
 
+
+class ApartmentDelete(DeleteView):
+    model = Apartment
+
+    def get_success_url(self):
+        messages.success(self.request, f'Квартира  {self.object} удалена!')
+        return reverse_lazy('apartments')
 
 # endregion Apartment
 

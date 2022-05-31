@@ -199,58 +199,11 @@ class OwnerUpdateForm(UserChangeForm):
 
 # region Apartment Form
 
-
 class ApartmentForm(forms.ModelForm):
-    section = forms.ModelChoiceField(queryset=Section.objects.all(),
-                                     empty_label='Выберите...',
-                                     widget=forms.Select(attrs={'class': 'form-control'}))
-    floor = forms.ModelChoiceField(queryset=Floor.objects.all(),
-                                   empty_label='Выберите...',
-                                   widget=forms.Select(attrs={'class': 'form-control'}))
-    house = forms.ModelChoiceField(queryset=House.objects.all(),
-                                   empty_label='Выберите...',
-                                   widget=forms.Select(attrs={'class': 'form-control'}))
-    owner = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False),
-                                   empty_label='Выберите...',
-                                   widget=forms.Select(attrs={'class': 'form-control'}))
-    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(),
-                                    required=False,
-                                    empty_label='Выберите...',
-                                    widget=forms.Select(attrs={'class': 'form-control'}))
-    list_personal_accounts = forms.ModelChoiceField(queryset=PersonalAccount.objects.all(),
-                                                    required=False,
-                                                    widget=forms.Select(attrs={
-                                                        'class': 'form-control select2 select2-hidden-accessible',
-                                                        'style': 'width: 100%;'
-                                                    }))
-
-    class Meta:
-        model = Apartment
-        fields = "__all__"
-        widgets = {
-            'number': forms.NumberInput(attrs={'class': 'form-control'}),
-            'area': forms.NumberInput(attrs={'class': 'form-control'}),
-            'owner': forms.Select(attrs={'class': 'form-control'}),
-            'personal_account': forms.TextInput(attrs={'class': 'form-control'}),
-        }
-
-    def clean(self):
-        print(self.cleaned_data)
-        return self.cleaned_data
-
-
-class ApartmentUpdateForm(forms.ModelForm):
-    house = forms.ModelChoiceField(queryset=House.objects.all(),
-                                   empty_label='Выберите...',
-                                   widget=forms.Select(attrs={'class': 'form-control'}))
     owner = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False),
                                    empty_label='Выберите...',
                                    widget=forms.Select(attrs={'class': 'form-control select2 select2-hidden-accessible',
                                                               'style': 'width: 100%;'}))
-    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(),
-                                    required=False,
-                                    empty_label='Выберите...',
-                                    widget=forms.Select(attrs={'class': 'form-control'}))
 
     class Meta:
         model = Apartment
@@ -259,29 +212,33 @@ class ApartmentUpdateForm(forms.ModelForm):
             'number': forms.NumberInput(attrs={'class': 'form-control'}),
             'area': forms.NumberInput(attrs={'class': 'form-control'}),
             'owner': forms.Select(attrs={'class': 'form-control'}),
+            'house': forms.Select(attrs={'class': 'form-control'}),
             'section': forms.Select(attrs={'class': 'form-control'}),
             'floor': forms.Select(attrs={'class': 'form-control'}),
+            'tariff': forms.Select(attrs={'class': 'form-control'})
         }
 
     def __init__(self, *args, **kwargs):
-        house_id = kwargs['instance'].house_id
-        super(ApartmentUpdateForm, self).__init__(*args, **kwargs)
-        self.fields['section'].queryset = Section.objects.filter(house_id=house_id)
-        self.fields['floor'].queryset = Floor.objects.filter(house_id=house_id)
+        super(ApartmentForm, self).__init__(*args, **kwargs)
         self.fields['section'].empty_label = 'Выберите...'
         self.fields['floor'].empty_label = 'Выберите...'
+        self.fields['house'].empty_label = 'Выберите...'
+        self.fields['tariff'].empty_label = 'Выберите...'
 
     def clean(self):
-        print(self.cleaned_data)
         return self.cleaned_data
 
 
 class PersonalAccountForm(forms.ModelForm):
-    list_personal_accounts = forms.ModelChoiceField(queryset=PersonalAccount.objects.all(),
-                                                    required=False,
-                                                    widget=forms.Select(attrs={
-                                                        'class': 'form-control select2 select2-hidden-accessible',
-                                                        'style': 'width: 100%;'}))
+
+    list_personal_accounts = forms.ModelChoiceField(queryset=PersonalAccount.objects.filter(
+        status='active',
+        apartment=None
+    ),
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control select2 select2-hidden-accessible',
+            'style': 'width: 100%;'}))
 
     class Meta:
         model = PersonalAccount
@@ -290,5 +247,9 @@ class PersonalAccountForm(forms.ModelForm):
         widgets = {
             'number': forms.TextInput(attrs={'class': 'form-control'})
         }
+
+    def clean(self):
+        print(self.cleaned_data)
+        return self.cleaned_data
 
 # endregion Apartment Form

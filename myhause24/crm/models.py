@@ -35,6 +35,9 @@ class Apartment(models.Model):
     section = models.ForeignKey('Section', blank=True, null=True, on_delete=models.SET_NULL)
     tariff = models.ForeignKey('Tariff', blank=True, null=True, on_delete=models.SET_NULL)
 
+    def __str__(self):
+        return f'{self.number}'
+
 
 class Section(models.Model):
     objects = None
@@ -137,7 +140,7 @@ class PersonalAccount(models.Model):
 
     number = models.CharField(max_length=64)
     status = models.CharField(max_length=8, choices=AccountStatus.choices, default=AccountStatus.ACTIVE)
-    apartment = models.OneToOneField('Apartment', null=True, blank=True, on_delete=models.CASCADE)
+    apartment = models.OneToOneField('Apartment', null=True, blank=True, on_delete=models.SET_NULL)
 
 
     def __str__(self):

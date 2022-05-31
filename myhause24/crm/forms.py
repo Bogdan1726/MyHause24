@@ -194,6 +194,15 @@ class OwnerUpdateForm(UserChangeForm):
         return user
 
 
+class InviteOwnerForm(forms.Form):
+    phone = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control',
+                                      'placeholder': '+380991234567',
+                                      'data-mask': "+38(000) 000-00-00"})
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'info@example.com'})
+    )
 # endregion Owner Form
 
 

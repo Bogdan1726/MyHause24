@@ -9,8 +9,10 @@ from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import House, Section, Floor, Apartment, PersonalAccount
 from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
-    ApartmentForm, PersonalAccountForm
+    ApartmentForm, PersonalAccountForm, InviteOwnerForm
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+
 
 User = get_user_model()
 
@@ -157,6 +159,11 @@ class OwnerListView(ListView):
     def get_queryset(self):
         return self.model.objects.filter(is_staff=False).order_by('id')
 
+    def get_context_data(self, **kwargs):
+        context = super(OwnerListView, self).get_context_data()
+        context['apartments'] = Apartment.objects.all()
+        return context
+
 
 class OwnerDetailView(DetailView):
     model = User
@@ -197,6 +204,20 @@ class OwnerUpdateView(UpdateView):
         messages.error(self.request, form.errors)
         return super().form_invalid(form)
 
+
+def invite_owner(request):
+    if request.method == 'POST':
+        print(request.POST)
+        messages.success(request, 'Приглашение отправлено')
+        send_mail('Приглашение в CRM 24',
+                  'Приглашение в CRM 24',
+                  None,
+                  [request.POST['email']],
+                  fail_silently=False)
+    context = {
+        'form': InviteOwnerForm(request.POST or None)
+    }
+    return render(request, 'crm/pages/owners/invite_owner.html', context)
 
 # endregion Owners
 

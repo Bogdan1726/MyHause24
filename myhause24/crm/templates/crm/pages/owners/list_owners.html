@@ -35,9 +35,6 @@
     }
 
 
-
-
-
 </style>
 <link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
 {% endblock %}
@@ -63,7 +60,7 @@
             <ul class="dropdown-menu">
                 <li><a href="{% url 'create_owner' %}">Добавить владельца квартиры</a></li>
                 <li><a href="#">Отправить сообщение должникам</a></li>
-                <li><a href="#">Отправить приглашение</a></li>
+                <li><a href="{% url 'invite_owner' %}">Отправить приглашение</a></li>
             </ul>
         </div>
     </div>
@@ -92,8 +89,8 @@
                             <th style="min-width: 250px">Дом</th>
                             <th style="min-width: 250px">Квартира</th>
                             <th style="width: 90px; min-width: 90px">Добавлен</th>
-                            <th style="width: 90px; min-width: 90px">Статус</th>
-                            <th style="width: 90px; min-width: 90px">Есть долг</th>
+                            <th style="width: 100px; min-width: 100px">Статус</th>
+                            <th style="width: 100px; min-width: 100px">Есть долг</th>
                             <th style="width: 114px; min-width: 114px">&nbsp;</th>
                         </tr>
                         </thead>
@@ -115,7 +112,7 @@
                         </tfoot>
                         <tbody>
                         {% for owner in owners %}
-                        <tr data-href="{% url 'detail_owner' owner.id %}" data-key="68">
+                        <tr data-href="{% url 'detail_owner' owner.id %}">
                             <td>{{ owner.user_id }}</td>
                             {% if owner.first_name or owner.last_name or owner.patronymic %}
                             <td>{{ owner.get_full_name }}</td>
@@ -128,8 +125,25 @@
                             <td>(не задано)</td>
                             {% endif %}
                             <td>{{ owner.email }}</td>
-                            <td>Жк Тестовый</td>
-                            <td>----</td>
+                            <td>
+                                {% for apartment in apartments %}
+                                {% if apartment.owner == owner %}
+                                <a href="{% url 'detail_house' apartment.house_id %}">{{ apartment.house }}</a>
+                                <br>
+                                {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for apartment in apartments %}
+                                {% if apartment.owner == owner %}
+                                <p>
+                                    <a href="{% url 'detail_apartment' apartment.id %}">
+                                        №{{ apartment.number }}, {{ apartment.house }}
+                                    </a>
+                                </p>
+                                {% endif %}
+                                {% endfor %}
+                            </td>
                             <td>{{ owner.date_joined|date:"d.m.Y" }}</td>
                             {% if owner.status == 'disabled' %}
                             <td><small class="label label-danger">Отключен</small></td>
@@ -142,7 +156,7 @@
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
-                                       href="/admin/message/create?MessageAddress%5Buser_id%5D=143"
+                                       href="#"
                                        title="Отправить сообщение"
                                        data-toggle="tooltip">
                                         <i class="fa fa-envelope"></i>
@@ -232,7 +246,7 @@
             initComplete: function () {
                 // Apply the search
                 this.api()
-                    .columns([0, 1, 2, 3, 5, 6])
+                    .columns([0, 1, 2, 3, 4, 5, 6])
                     .every(function () {
                         var that = this;
 
@@ -244,7 +258,7 @@
                     });
                 //
                 this.api()
-                    .columns([4, 7, 8])
+                    .columns([7, 8])
                     .every(function () {
                         var column = this;
                         var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
@@ -261,7 +275,6 @@
                             .sort()
                             .each(function (d, j) {
                                 var val = $('<div/>').html(d).text();
-                                console.log(val)
                                 select.append('<option value="' + val + '">' + val + '</option>');
                             });
                     });
@@ -300,8 +313,6 @@
         endDate: '+0d',
         language: 'ru',
     });
-
-
 
 
 </script>

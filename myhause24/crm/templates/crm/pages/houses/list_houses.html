@@ -59,8 +59,8 @@
                         <thead>
                         <tr>
                             <th style="width: 40px; min-width: 40px">#</th>
-                            <th><a>Название</a></th>
-                            <th><a>Адрес</a></th>
+                            <th style="width: 50%;">Название</th>
+                            <th style="width: 50%;">Адрес</th>
                             <th style="width: 80px; min-width: 80px">&nbsp;</th>
                         </tr>
                         </thead>
@@ -178,6 +178,7 @@
                     });
             },
         });
+        $("#table_houses_filter").css('display', 'none')
         $("#clean").on("click", function () {
             $('input').val('');
             table.columns().search("").draw();

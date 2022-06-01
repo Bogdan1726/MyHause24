@@ -6,6 +6,8 @@ from .models import House, Section, Floor, Apartment, Tariff, PersonalAccount
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
+from .task import send_new_password_owner
+
 User = get_user_model()
 
 
@@ -189,6 +191,10 @@ class OwnerUpdateForm(UserChangeForm):
         user.email = self.cleaned_data['username']
         if self.cleaned_data.get('new_password1') != '':
             user.set_password(self.cleaned_data["new_password1"])
+            send_new_password_owner.delay(
+                self.cleaned_data['username'],
+                self.cleaned_data['new_password1']
+            )
         if commit:
             user.save()
         return user
@@ -211,7 +217,7 @@ class InviteOwnerForm(forms.Form):
 class ApartmentForm(forms.ModelForm):
     owner = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False),
                                    empty_label='Выберите...',
-                                   widget=forms.Select(attrs={'class': 'form-control select2 select2-hidden-accessible',
+                                   widget=forms.Select(attrs={'class': 'form-control',
                                                               'style': 'width: 100%;'}))
 
     class Meta:
@@ -220,7 +226,6 @@ class ApartmentForm(forms.ModelForm):
         widgets = {
             'number': forms.NumberInput(attrs={'class': 'form-control'}),
             'area': forms.NumberInput(attrs={'class': 'form-control'}),
-            'owner': forms.Select(attrs={'class': 'form-control'}),
             'house': forms.Select(attrs={'class': 'form-control'}),
             'section': forms.Select(attrs={'class': 'form-control'}),
             'floor': forms.Select(attrs={'class': 'form-control'}),

@@ -137,7 +137,7 @@
                 </div>
                 <h4>Квартиры</h4>
                 <div class="table-responsive no-padding margin-top-15">
-                    <table class="table table-bordered table-striped">
+                    <table id="apartment" class="table table-bordered table-striped">
                         <thead>
                         <tr>
                             <th>#</th>
@@ -148,13 +148,21 @@
                         </tr>
                         </thead>
                         <tbody>
+                        {% for apartment in apartments %}
+                        {% if apartment.owner == owner %}
                         <tr role="row">
-                            <td>1</td>
-                            <td><a href="#">----</a></td>
-                            <td>---</td>
-                            <td><a href="#">----</a></td>
-                            <td><a href="#">-----</a></td>
+                            <td></td>
+                            <td><a href="{% url 'detail_house' apartment.house_id %}">{{ apartment.house }}</a></td>
+                            <td>{{ apartment.section }}</td>
+                            <td><a href="{% url 'detail_apartment' apartment.id %}">{{ apartment }}</a></td>
+                            {% for personal_account in personal_account %}
+                            {% if personal_account.apartment == apartment %}
+                            <td><a href="#">{{ personal_account }}</a></td>
+                            {% endif %}
+                            {% endfor %}
                         </tr>
+                        {% endif %}
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -165,6 +173,14 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+    var l = $("#apartment tr").length;
+    for (var i = 1; i <= l; i++) {
+        $('#apartment tbody tr').each(function (i) {
+            $(this).find('td:first').text(i+1);
+        });
+    }
+</script>
 {% include 'crm/inc/_messages.html' %}
 {% endblock %}
 

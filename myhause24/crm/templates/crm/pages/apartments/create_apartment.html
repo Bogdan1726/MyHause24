@@ -90,7 +90,66 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
 
+    //  jQuery Validations Form
+
+    $('#create_apartment').validate({
+        rules: {
+            number: {
+                required: true,
+            },
+            house: {
+                required: true,
+            },
+            section: {
+                required: true,
+            },
+            floor: {
+                required: true,
+            },
+            owner: {
+                required: true,
+            },
+            'account_form-number': {
+                required: true,
+            }
+
+
+        },
+        messages: {
+            number: {
+                required: "Обязательное поле",
+            },
+            house: {
+                required: "Обязательное поле",
+            },
+            section: {
+                required: "Обязательное поле",
+            },
+            floor: {
+                required: "Обязательное поле",
+            },
+            owner: {
+                required: "Обязательное поле",
+            },
+            'account_form-number': {
+                required: "Обязательное поле",
+            },
+
+
+        },
+        errorElement: 'span',
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
+
+</script>
 
 <script>
     $(document).ready(function () {

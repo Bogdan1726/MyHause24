@@ -12,6 +12,7 @@ from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, Ow
     ApartmentForm, PersonalAccountForm, InviteOwnerForm
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from .task import send_email
 
 
 User = get_user_model()
@@ -145,7 +146,12 @@ class HouseCreateView(BaseHouseView):
         )
         return context
 
+class HouseDelete(DeleteView):
+    model = House
 
+    def get_success_url(self):
+        messages.success(self.request, f'Дом  {self.object} удалён!')
+        return reverse_lazy('houses')
 # endregion Houses
 
 # region Owners
@@ -169,6 +175,12 @@ class OwnerDetailView(DetailView):
     model = User
     template_name = 'crm/pages/owners/detail_owner.html'
     context_object_name = 'owner'
+
+    def get_context_data(self, **kwargs):
+        context = super(OwnerDetailView, self).get_context_data()
+        context['apartments'] = Apartment.objects.all()
+        context['personal_account'] = PersonalAccount.objects.all()
+        return context
 
 
 class OwnerCreateView(CreateView):
@@ -205,15 +217,18 @@ class OwnerUpdateView(UpdateView):
         return super().form_invalid(form)
 
 
+class OwnerDelete(DeleteView):
+    model = User
+
+    def get_success_url(self):
+        messages.success(self.request, f'Владелец  {self.object} удалён!')
+        return reverse_lazy('owners')
+
+
 def invite_owner(request):
     if request.method == 'POST':
-        print(request.POST)
         messages.success(request, 'Приглашение отправлено')
-        send_mail('Приглашение в CRM 24',
-                  'Приглашение в CRM 24',
-                  None,
-                  [request.POST['email']],
-                  fail_silently=False)
+        send_email.delay(request.POST['email'])
     context = {
         'form': InviteOwnerForm(request.POST or None)
     }

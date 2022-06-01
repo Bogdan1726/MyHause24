@@ -33,7 +33,6 @@
 
 
 {% block content %}
-{% include 'crm/inc/_messages.html' %}
 <div class="row">
     <div class="col-xs-12">
         <div class="pull-right margin-bottom">
@@ -74,7 +73,7 @@
                         </tfoot>
                         <tbody>
                         {% for house in houses %}
-                        <tr data-href="{% url 'detail_house' house.id %}" data-key="68">
+                        <tr data-href="{% url 'detail_house' house.id %}">
                             <td>{{ forloop.counter }}</td>
                             <td>{{ house.title }}</td>
                             <td>{{ house.address }}</td>

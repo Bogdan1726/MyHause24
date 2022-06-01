@@ -73,13 +73,13 @@
                     <div class="form-group">
                         <a href="{% url 'apartments' %}" class="btn btn-default margin-bottom-15">Отменить</a>
                         <button type="submit"
-                               class="btn btn-success margin-bottom-15"
-                               name="action_save"
+                                class="btn btn-success margin-bottom-15"
+                                name="action_save"
                                 value="Сохранить">Сохранить
                         </button>
                         <button type="submit"
-                               class="btn btn-success margin-bottom-15 bg-green-active"
-                               name="action_save_add"
+                                class="btn btn-success margin-bottom-15 bg-green-active"
+                                name="action_save_add"
                                 value="Сохранить и добавить новую">Сохранить и добавить новую
                         </button>
                     </div>
@@ -199,6 +199,66 @@
                 }
             }
         }
+    });
+
+
+</script>
+<script>
+
+    //  jQuery Validations Form
+
+    $('#update_apartment').validate({
+        rules: {
+            number: {
+                required: true,
+            },
+            house: {
+                required: true,
+            },
+            section: {
+                required: true,
+            },
+            floor: {
+                required: true,
+            },
+            owner: {
+                required: true,
+            },
+            'account_form-number': {
+                required: true,
+            }
+
+
+        },
+        messages: {
+            number: {
+                required: "Обязательное поле",
+            },
+            house: {
+                required: "Обязательное поле",
+            },
+            section: {
+                required: "Обязательное поле",
+            },
+            floor: {
+                required: "Обязательное поле",
+            },
+            owner: {
+                required: "Обязательное поле",
+            },
+            'account_form-number': {
+                required: "Обязательное поле",
+            },
+
+
+        },
+        errorElement: 'span',
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
     });
 
 

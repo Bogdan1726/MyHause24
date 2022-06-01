@@ -3,7 +3,7 @@ from django.views.generic import DeleteView
 from .models import House
 from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView, \
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
-    ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner
+    ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete
 from .api_views import load_role, loading_floor_section, loading_personal_account
 from django.contrib.auth import get_user_model
 
@@ -18,8 +18,7 @@ urlpatterns = [
     path('house/create/', HouseCreateView.as_view(), name='create_house'),
     path('house/<int:pk>/', HouseDetailView.as_view(), name='detail_house'),
     path('house/update/<int:pk>/', HouseUpdateView.as_view(), name='update_house'),
-    path('house/delete/<int:pk>/', DeleteView.as_view(
-        model=House, success_url=reverse_lazy('houses')), name='delete_house'),
+    path('house/delete/<int:pk>/', HouseDelete.as_view(), name='delete_house'),
     # houses end
 
     # owners
@@ -28,8 +27,7 @@ urlpatterns = [
     path('owner/create/', OwnerCreateView.as_view(), name='create_owner'),
     path('owner/<int:pk>/', OwnerDetailView.as_view(), name='detail_owner'),
     path('owner/update/<int:pk>/', OwnerUpdateView.as_view(), name='update_owner'),
-    path('owner/delete/<int:pk>/', DeleteView.as_view(
-        model=User, success_url=reverse_lazy('owners')), name='delete_owner'),
+    path('owner/delete/<int:pk>/', OwnerDelete.as_view(), name='delete_owner'),
     # owners end
 
     # apartments

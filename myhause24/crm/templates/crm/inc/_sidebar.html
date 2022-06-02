@@ -12,7 +12,11 @@
             </li>
             <li><a href="/admin/invoice/index"><i class="fa fa-files-o"></i>
                 <span>Квитанции на оплату</span></a></li>
-            <li><a href="/admin/account/index"><i class="fa fa-credit-card"></i> <span>Лицевые счета</span></a>
+            <li class="{% if url in '[accounts, create_accounts, update_accounts, detail_accounts]' %}active{% endif %}">
+                <a href="{% url 'accounts' %}">
+                    <i class="fa fa-credit-card"></i>
+                    <span>Лицевые счета</span>
+                </a>
             </li>
             <li class="{% if url in '[apartments, create_apartment, update_apartment, detail_apartment]' %}active{% endif %}">
                 <a href="{% url 'apartments' %}">

@@ -28,7 +28,7 @@ class House(models.Model):
 
 class Apartment(models.Model):
     number = models.PositiveIntegerField()
-    area = models.DecimalField(max_digits=7, decimal_places=2, blank=True)
+    area = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     house = models.ForeignKey('House', null=True, on_delete=models.CASCADE)
     floor = models.ForeignKey('Floor', blank=True, null=True, on_delete=models.SET_NULL)

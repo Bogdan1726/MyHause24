@@ -93,7 +93,7 @@ class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFo
                 if form_user.cleaned_data and form_user.cleaned_data['DELETE'] is False:
                     user = form_user.cleaned_data.get('user')
                     house.user.add(user)
-            messages.success(self.request, f'{self.object.title} успешно обновлён!')
+            messages.success(self.request, 'Успешно!')
             return super().form_valid(form)
         return self.form_invalid(form)
 
@@ -167,7 +167,8 @@ class OwnerListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(OwnerListView, self).get_context_data()
-        context['apartments'] = Apartment.objects.all()
+        context['apartments'] = Apartment.objects.all().select_related(
+            'section', 'house', 'floor', 'tariff', 'house', 'owner')
         return context
 
 
@@ -178,8 +179,10 @@ class OwnerDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(OwnerDetailView, self).get_context_data()
-        context['apartments'] = Apartment.objects.all()
-        context['personal_account'] = PersonalAccount.objects.all()
+        context['apartments'] = Apartment.objects.all().select_related(
+            'section', 'house', 'floor', 'tariff', 'house', 'owner')
+        context['personal_account'] = PersonalAccount.objects.all().select_related(
+            'apartment')
         return context
 
 
@@ -244,7 +247,9 @@ class ApartmentListView(ListView):
     context_object_name = 'apartments'
 
     def get_queryset(self):
-        return self.model.objects.order_by('id')
+        return self.model.objects.order_by('id').select_related(
+            'section', 'floor', 'house', 'owner', 'tariff'
+        )
 
 
 class ApartmentDetailView(DetailView):
@@ -252,9 +257,16 @@ class ApartmentDetailView(DetailView):
     template_name = 'crm/pages/apartments/detail_apartment.html'
     context_object_name = 'apartment'
 
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'section', 'floor', 'house', 'owner', 'tariff'
+        )
+
     def get_context_data(self, **kwargs):
         context = super(ApartmentDetailView, self).get_context_data()
-        context['personal_account'] = PersonalAccount.objects.filter(apartment=self.object).first()
+        context['personal_account'] = PersonalAccount.objects.filter(apartment=self.object).select_related(
+            'apartment'
+        ).first()
         return context
 
 
@@ -362,6 +374,23 @@ class ApartmentDelete(DeleteView):
         return reverse_lazy('apartments')
 
 # endregion Apartment
+
+
+# region Accounts
+
+class AccountsListView(ListView):
+    model = PersonalAccount
+    template_name = 'crm/pages/accounts/list_accounts.html'
+    context_object_name = 'accounts'
+
+    def get_queryset(self):
+        return self.model.objects.order_by('id').select_related(
+            'apartment'
+        )
+
+# endregion Accounts
+
+
 
 @login_required(login_url='login')
 def index(request):

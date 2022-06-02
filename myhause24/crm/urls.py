@@ -1,9 +1,8 @@
-from django.urls import path, reverse_lazy
-from django.views.generic import DeleteView
-from .models import House
+from django.urls import path
 from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView, \
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
-    ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete
+    ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete, \
+    AccountsListView
 from .api_views import load_role, loading_floor_section, loading_personal_account
 from django.contrib.auth import get_user_model
 
@@ -38,6 +37,10 @@ urlpatterns = [
     path('apartment/<int:pk>/', ApartmentDetailView.as_view(), name='detail_apartment'),
     path('apartment/update/<int:pk>/', ApartmentUpdateView.as_view(), name='update_apartment'),
     path('apartment/delete/<int:pk>/', ApartmentDelete.as_view(), name='delete_apartment'),
-
     # apartments end
+
+    # accounts
+    path('accounts/', AccountsListView.as_view(), name='accounts')
+
+    # accounts end
 ]

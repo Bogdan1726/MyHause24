@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     # apps
     'phonenumber_field',
     'snowpenguin.django.recaptcha3',
-    # 'django_select2'
+    'debug_toolbar',
 
 ]
 
@@ -62,6 +62,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
 ]
 
 ROOT_URLCONF = 'myhause24.urls'
@@ -80,6 +82,12 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
 ]
 
 WSGI_APPLICATION = 'myhause24.wsgi.application'

@@ -1,7 +1,7 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
 {% block title %}
-Квартиры
+Лицевые счета
 {% endblock %}
 
 {% block style %}
@@ -34,6 +34,10 @@
         outline: 0;
     }
 
+    #export:hover{
+        cursor: pointer;
+    }
+
 
 </style>
 <link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
@@ -41,19 +45,70 @@
 
 
 {% block content-header %}
-<h1>Квартиры</h1>
+<h1>Лицевые счета</h1>
 <ul class="breadcrumb">
     <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
-    <li class="active">Квартиры</li>
+    <li class="active">Лицевые счета</li>
 </ul>
 {% endblock %}
 
 
 {% block content %}
 <div class="row">
-    <div class="col-xs-12">
-        <div class="pull-right margin-bottom">
-            <a class="btn btn-success" href="{% url 'create_apartment' %}">Добавить квартиру</a>
+    <!--<div class="col-xs-12 col-sm-6">-->
+    <!--<h2 class="page-header">Квартиры</h2>-->
+    <!--</div>-->
+    <div class="col-xs-12 col-lg-9">
+
+        <div class="row">
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-green overflow-hidden">
+                    <div class="inner">
+                        <h3>0</h3>
+                        <p>Состояние кассы</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                    <!--<span class="small-box-footer">&nbsp;</span>-->
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-blue overflow-hidden">
+                    <div class="inner">
+                        <h3>0</h3>
+                        <p>Баланс по счетам</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                    <!--<span class="small-box-footer">&nbsp;</span>-->
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-red overflow-hidden">
+                    <div class="inner">
+                        <h3>0</h3>
+                        <p>Задолженность по счетам</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                    <!--<span class="small-box-footer">&nbsp;</span>-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-lg-3">
+        <div class="btn-group pull-right margin-bottom">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+                Выберите действие <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="/admin/account/create">Добавить лицевой счет</a></li>
+                <li><a id="export">Выгрузить в Excel</a></li>
+            </ul>
         </div>
     </div>
 </div>
@@ -69,16 +124,17 @@
                     </a>
                 </div>
             </div>
-            <div id="list_apartment" class="grid-view">
+            <div id="list_accounts" class="grid-view">
                 <div class="box-body table-responsive no-padding">
-                    <table id="table_apartment" class="table table-bordered table-hover table-striped linkedRow">
+                    <table id="table_accounts" class="table table-bordered table-hover table-striped linkedRow">
                         <thead>
                         <tr>
-                            <th style="width: 80px; min-width: 80px">№ квартиры</th>
-                            <th style="width: 240px; min-width:240px">Дом</th>
-                            <th style="width: 140px; min-width: 140px">Секция</th>
-                            <th style="width: 140px; min-width: 140px">Этаж</th>
-                            <th style="min-width: 250px">Владелец</th>
+                            <th style="width: 80px; min-width: 80px">№</th>
+                            <th style="width: 150px; min-width:150px">Статус</th>
+                            <th style="width: 140px; min-width: 140px">Квартира</th>
+                            <th style="width: 200px; min-width: 200px">Дом</th>
+                            <th style="width: 200px; min-width: 200px">Секция</th>
+                            <th style="width: 200px; min-width: 200px">Владелец</th>
                             <th style="width: 100px; min-width: 100px">Остаток</th>
                             <th style="width: 114px; min-width: 114px">&nbsp;</th>
                         </tr>
@@ -91,21 +147,34 @@
                             <th></th>
                             <th></th>
                             <th></th>
+                            <th></th>
                         </tr>
                         </tfoot>
                         <tbody>
-                        {% for apartment in apartments %}
-                        <tr data-href="{% url 'detail_apartment' apartment.id %}">
-                            <td>{{ apartment.number }}</td>
-                            <td>{{ apartment.house }}</td>
-                            <td>{{ apartment.section }}</td>
-                            <td>{{ apartment.floor }}</td>
-                            <td>{{ apartment.owner }}</td>
+                        {% for account in accounts %}
+                        <tr data-href="#">
+                            <td>{{ account.number }}</td>
+                            {% if account.status == 'active' %}
+                            <td><small class="label label-success">Активен</small></td>
+                            {% else %}
+                            <td><small class="label label-danger">Неактивен</small></td>
+                            {% endif %}
+                            {% if account.apartment %}
+                            <td>{{ account.apartment }}</td>
+                            <td>{{ account.apartment.house }}</td>
+                            <td>{{ account.apartment.section }}</td>
+                            <td>{{ account.apartment.owner }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            <td>(не задано)</td>
+                            <td>(не задано)</td>
+                            <td>(не задано)</td>
+                            {% endif %}
                             <td>0</td>
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
-                                       href="{% url 'update_apartment' apartment.id %}"
+                                       href="#"
                                        title="Редактировать"
                                        data-toggle="tooltip">
                                         <i class="fa fa-pencil"></i>
@@ -127,12 +196,12 @@
                                         <button type="button" class="close" data-dismiss="modal"
                                                 aria-label="Close">
                                             <span aria-hidden="true">×</span></button>
-                                        <h4 class="modal-title">Удаление квартиры</h4>
+                                        <h4 class="modal-title">Удаление лицевого счета</h4>
                                     </div>
-                                    <form method="post" action="{% url 'delete_apartment' apartment.id %}">
+                                    <form method="post" action="#">
                                         {% csrf_token %}
                                         <div class="modal-body">
-                                            <p>Вы уверены, что хотите удалить квартиру №{{ apartment }} ?</p>
+                                            <p>Вы уверены, что хотите удалить лицевой счет №{{ account }} ?</p>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-default pull-left"
@@ -154,24 +223,32 @@
     </div>
 </div>
 
-
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
 
 
 <script>
 
+
     $(document).ready(function () {
         // Setup - add a text input to each footer cell
-        $('#table_apartment tfoot th').each(function () {
+        $('#table_accounts tfoot th').each(function () {
             $(this).html('<input type="text" name="custom_search"/>');
         });
 
+
         // DataTable
-        var table = $('#table_apartment').DataTable({
+        var table = $('#table_accounts').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                'excel'
+            ],
             "responsive": false,
             'paging': true,
             'lengthChange': false,
@@ -193,7 +270,7 @@
             initComplete: function () {
                 // Apply the search
                 this.api()
-                    .columns([0])
+                    .columns([0, 2])
                     .every(function () {
                         var that = this;
 
@@ -205,7 +282,7 @@
                     });
                 //
                 this.api()
-                    .columns([1, 2, 3, 4, 5])
+                    .columns([1, 3, 4, 5, 6])
                     .every(function () {
                         var column = this;
                         var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
@@ -220,14 +297,20 @@
                             .data()
                             .unique()
                             .sort()
-                            .each(function (d, j) {
+                            .each(function (d) {
                                 var val = $('<div/>').html(d).text();
                                 select.append('<option value="' + val + '">' + val + '</option>');
                             });
                     });
             },
         });
-        $("#table_apartment_filter").css('display', 'none')
+        $('.buttons-excel').css('display', 'none')
+
+        $('#export').on("click", function () {
+            table.buttons('.buttons-excel').trigger('click');
+        })
+
+        $("#table_accounts_filter").css('display', 'none')
         $("#clean").on("click", function () {
             $('input').val('');
             $('select').val('');

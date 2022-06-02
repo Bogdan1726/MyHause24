@@ -346,19 +346,6 @@
 <script>
 
 
-    // loads preview images
-    $('input[type=file]').on('change', function (element) {
-        const img = $("img[id='" + this.id + "']")
-        if (element.target.files[0]) {
-            img.attr("src", URL.createObjectURL(element.target.files[0]))
-        } else {
-            img.attr("src", "{% static 'crm/media/def_house.jpeg' %}")
-        }
-    })
-
-
-    // loads preview images end
-
     // get role on user select
     function selectUser(index) {
         const id = index.id.split("-").slice(0, 2).join("-") + "-role"
@@ -417,10 +404,26 @@
 
 
 <script>
-
     //  jQuery Validations Form
+    $.validator.addMethod("height", function (value, element, param) {
+        if ($(element).data('height')) {
+            if ($(element).data('height') !== param) {
+                return false
+            }
+        }
+        return true;
+    });
 
-    $('#update_house').validate({
+    $.validator.addMethod("width", function (value, element, param) {
+        if ($(element).data('width')) {
+            if ($(element).data('width') !== param) {
+                return false
+            }
+        }
+        return true;
+    });
+
+    var validator = $('#update_house').validate({
         rules: {
             title: {
                 required: true,
@@ -430,8 +433,29 @@
             },
             image1: {
                 extension: "jpg|jpeg|png|",
+                height: 350,
+                width: 522
+            },
+            image2: {
+                extension: "jpg|jpeg|png|",
+                height: 160,
+                width: 248
+            },
+            image3: {
+                extension: "jpg|jpeg|png|",
+                height: 160,
+                width: 248
+            },
+            image4: {
+                extension: "jpg|jpeg|png|",
+                height: 160,
+                width: 248
+            },
+            image5: {
+                extension: "jpg|jpeg|png|",
+                height: 160,
+                width: 248
             }
-
         },
         messages: {
             title: {
@@ -441,11 +465,31 @@
                 required: "Обязательное поле",
             },
             image1: {
-                extension: "Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.\n",
-            }
-
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (522х250)',
+                with: 'Разрешена загрузка изображения размер которого (522х250)'
+            },
+            image2: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (248x160)',
+                with: 'Разрешена загрузка изображения размер которого (248x160)'
+            },
+            image3: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (248x160)',
+                with: 'Разрешена загрузка изображения размер которого (248x160)'
+            },
+            image4: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (248x160)',
+                with: 'Разрешена загрузка изображения размер которого (248x160)'
+            },
+            image5: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (248x160)',
+                with: 'Разрешена загрузка изображения размер которого (248x160)'
+            },
         },
-        errorElement: 'span',
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');
         },
@@ -454,6 +498,24 @@
         },
     });
 
+    // loads preview images
+    $('input[type=file]').on('change', function (element) {
+        const img = $("img[id='" + this.id + "']")
+        var image = new Image();
+        image.src = URL.createObjectURL(element.target.files[0])
+        if (element.target.files[0]) {
+            img.attr("src", URL.createObjectURL(element.target.files[0]))
+            image.onload = function () {
+                $(element.currentTarget).data('height', this.height)
+                $(element.currentTarget).data('width', this.width)
+                validator.element($(element.currentTarget));
+            }
+        } else {
+            img.attr("src", "{% static 'crm/media/def_house.jpeg' %}")
+        }
+    })
+
+    // loads preview images end
 
 </script>
 

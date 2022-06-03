@@ -1,10 +1,135 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Лицевой счет
+{% endblock %}
 
-</body>
-</html>
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Лицевой счет</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'apartments' %}">Лицевые счета</a></li>
+    <li class="active">Лицевой счет №{{ accounts }}</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12 col-md-7 col-lg-6">
+        <div class="page-header-spec">
+            <div class="form-group">
+                <div class="input-group date">
+                    <div class="input-group-addon">
+                        №
+                    </div>
+                    <div class="form-control pull-right">{{ accounts }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title">Просмотр лицевого счета</h3>
+        <div class="box-tools">
+            <a href="#" class="btn btn-default btn-sm">
+                <span class="hidden-xs"><i class="fa fa-dollar"></i> Принять платеж</span><i
+                    class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+            <a href="#" class="btn btn-default btn-sm">
+                <span class="hidden-xs"><i class="fa fa-files-o"></i> Оформить квитанцию</span><i
+                    class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+            <a href="#" class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать счет</span><i class="fa fa-pencil visible-xs"
+                                                                    aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <div class="box-body">
+        <div class="row">
+            <div class="col-xs-12">
+                <table class="table table-bordered table-striped table-view">
+                    <tbody>
+                    <tr>
+                        <td>Статус</td>
+                        {% if accounts.status == 'active' %}
+                        <td><small class="label label-success">Активен</small></td>
+                        {% else %}
+                        <td><small class="label label-danger">Неактивен</small></td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Дом</td>
+                        {% if accounts.apartment %}
+                        <td>
+                            <a href="{% url 'detail_house' accounts.apartment.house_id %}">
+                                {{ accounts.apartment.house }}
+                            </a>
+                        </td>
+                        {% else %}
+                        <td>(не задано)</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Секция</td>
+                        {% if accounts.apartment %}
+                        <td>{{ accounts.apartment.section }}</td>
+                        {% else %}
+                        <td>(не задано)</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Квартира</td>
+                        {% if accounts.apartment %}
+                        <td>
+                            <a href="{% url 'detail_apartment' accounts.apartment_id %}">
+                                {{ accounts.apartment }}
+                            </a>
+                        </td>
+                        {% else %}
+                        <td>(не задано)</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Владелец</td>
+                        {% if accounts.apartment %}
+                        <td>
+                            <a href="{% url 'detail_owner' accounts.apartment.owner_id %}">
+                                {{ accounts.apartment.owner }}
+                            </a>
+                        </td>
+                        {% else %}
+                        <td>(не задано)</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Остаток, грн.</td>
+                        <td>
+                            <span class="text-default">0.00</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div>
+                    <p><a href="#">Посмотреть показания
+                        счетчиков</a></p>
+                    <p>
+                        <a href="#">Посмотреть
+                            приходы</a></p>
+                    <p><a href="#">Посмотреть квитанции</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% include 'crm/inc/_messages.html' %}
+{% endblock %}

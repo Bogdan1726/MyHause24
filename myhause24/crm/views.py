@@ -9,11 +9,10 @@ from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import House, Section, Floor, Apartment, PersonalAccount
 from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
-    ApartmentForm, PersonalAccountForm, InviteOwnerForm
+    ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from .task import send_email
-
 
 User = get_user_model()
 
@@ -146,12 +145,15 @@ class HouseCreateView(BaseHouseView):
         )
         return context
 
+
 class HouseDelete(DeleteView):
     model = House
 
     def get_success_url(self):
         messages.success(self.request, f'Дом  {self.object} удалён!')
         return reverse_lazy('houses')
+
+
 # endregion Houses
 
 # region Owners
@@ -236,6 +238,7 @@ def invite_owner(request):
         'form': InviteOwnerForm(request.POST or None)
     }
     return render(request, 'crm/pages/owners/invite_owner.html', context)
+
 
 # endregion Owners
 
@@ -373,6 +376,7 @@ class ApartmentDelete(DeleteView):
         messages.success(self.request, f'Квартира  {self.object} удалена!')
         return reverse_lazy('apartments')
 
+
 # endregion Apartment
 
 
@@ -388,8 +392,24 @@ class AccountsListView(ListView):
             'apartment'
         )
 
-# endregion Accounts
 
+class AccountsDetailView(DeleteView):
+    model = PersonalAccount
+    template_name = 'crm/pages/accounts/detail_accounts.html'
+    context_object_name = 'accounts'
+
+
+class AccountsCreateView(CreateView):
+    model = PersonalAccount
+    template_name = 'crm/pages/accounts/create_accounts.html'
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return AccountsForm(self.request.POST or None,
+                                initial={'number': '12345123'})
+
+
+# endregion Accounts
 
 
 @login_required(login_url='login')

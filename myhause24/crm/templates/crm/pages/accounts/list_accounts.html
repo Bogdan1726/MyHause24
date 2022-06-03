@@ -106,7 +106,7 @@
                 Выберите действие <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
-                <li><a href="/admin/account/create">Добавить лицевой счет</a></li>
+                <li><a href="{% url 'create_accounts' %}">Добавить лицевой счет</a></li>
                 <li><a id="export">Выгрузить в Excel</a></li>
             </ul>
         </div>
@@ -152,7 +152,7 @@
                         </tfoot>
                         <tbody>
                         {% for account in accounts %}
-                        <tr data-href="#">
+                        <tr data-href="{% url 'detail_accounts' account.id %}">
                             <td>{{ account.number }}</td>
                             {% if account.status == 'active' %}
                             <td><small class="label label-success">Активен</small></td>

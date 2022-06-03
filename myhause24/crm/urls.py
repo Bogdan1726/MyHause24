@@ -2,7 +2,7 @@ from django.urls import path
 from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView, \
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
     ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete, \
-    AccountsListView
+    AccountsListView, AccountsDetailView, AccountsCreateView
 from .api_views import load_role, loading_floor_section, loading_personal_account
 from django.contrib.auth import get_user_model
 
@@ -40,7 +40,9 @@ urlpatterns = [
     # apartments end
 
     # accounts
-    path('accounts/', AccountsListView.as_view(), name='accounts')
+    path('accounts/', AccountsListView.as_view(), name='accounts'),
+    path('accounts/<int:pk>/', AccountsDetailView.as_view(), name='detail_accounts'),
+    path('accounts/create/', AccountsCreateView.as_view(), name='create_accounts')
 
     # accounts end
 ]

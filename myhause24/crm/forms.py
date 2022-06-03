@@ -209,6 +209,8 @@ class InviteOwnerForm(forms.Form):
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'info@example.com'})
     )
+
+
 # endregion Owner Form
 
 
@@ -244,7 +246,6 @@ class ApartmentForm(forms.ModelForm):
 
 
 class PersonalAccountForm(forms.ModelForm):
-
     list_personal_accounts = forms.ModelChoiceField(queryset=PersonalAccount.objects.filter(
         status='active',
         apartment=None
@@ -266,4 +267,37 @@ class PersonalAccountForm(forms.ModelForm):
         print(self.cleaned_data)
         return self.cleaned_data
 
+
 # endregion Apartment Form
+
+
+# region Accounts Form
+
+
+class AccountsForm(forms.ModelForm):
+    house = forms.ModelChoiceField(queryset=House.objects.all(),
+                                   empty_label='Выберите...',
+                                   required=False,
+                                   widget=forms.Select(attrs={'class': 'form-control'}))
+    section = forms.ModelChoiceField(queryset=Section.objects.none(),
+                                     empty_label='Выберите...',
+                                     required=False,
+                                     widget=forms.Select(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = PersonalAccount
+        fields = '__all__'
+
+        widgets = {
+            'number': forms.TextInput(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'apartment': forms.Select(attrs={'class': 'form-control'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(AccountsForm, self).__init__(*args, **kwargs)
+        self.fields['apartment'].empty_label = 'Выберите...'
+
+
+
+# endregion Accounts Form

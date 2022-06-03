@@ -135,8 +135,8 @@ class PersonalAccount(models.Model):
     objects = None
 
     class AccountStatus(models.TextChoices):
-        ACTIVE = 'active', _("Active")
-        INACTIVE = 'inactive', _("Inactive")
+        ACTIVE = 'active', _("Активен")
+        INACTIVE = 'inactive', _("Неактивен")
 
     number = models.CharField(max_length=8)
     status = models.CharField(max_length=8, choices=AccountStatus.choices, default=AccountStatus.ACTIVE)

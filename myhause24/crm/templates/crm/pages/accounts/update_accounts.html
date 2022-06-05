@@ -1,10 +1,287 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Лицевой счет
+{% endblock %}
 
-</body>
-</html>
+{% block style %}
+
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Лицевой счет</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'accounts' %}">Лицевые счета</a></li>
+    <li><a href="{% url 'detail_accounts' object.id %}">Лицевой счет №{{ object }}</a></li>
+    <li class="active">Редактирование</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<form id="create_accounts" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-xs-12 col-md-7 col-lg-6">
+            <div class="page-header-spec">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">
+                            №
+                        </div>
+                        {{ form.number }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="box">
+        <div class="box-body">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label">Статус</label>
+                        {{ form.status }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Дом</label>
+                        {{ form.house }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Секция</label>
+                        {{ form.section }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Квартира</label>
+                        {{ form.apartment }}
+                    </div>
+                    {% if object.apartment.owner %}
+                    <p><b>Владелец: </b><span id="owner-fullname">
+                        <a href="{% url 'detail_owner' object.apartment.owner_id %}">
+                            {{ object.apartment.owner }}
+                        </a>
+                    </span></p>
+                    {% else %}
+                    <p><b>Владелец:</b> <span id="owner-fullname">не выбран</span></p>
+                    {% endif %}
+                    {% if object.apartment.owner.phone %}
+                    <p><b>Телефон:</b> <span id="owner-phone">
+                        <a href="tel:{{ object.apartment.owner.phone }}">
+                            {{ object.apartment.owner.phone }}
+                        </a>
+                    </span></p>
+                    {% else %}
+                    <p><b>Телефон:</b> <span id="owner-phone">не выбран</span></p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <div class="form-group">
+                        <a href="{% url 'accounts' %}" class="btn btn-default">Отменить</a>
+                        <button type="submit" class="btn btn-success">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var fullname = $("#owner-fullname")
+        var phone = $("#owner-phone")
+        var select_house = $("select[name='house']")
+        var select_section = $("select[name='section']")
+        var select_apartment = $("select[name='apartment']")
+
+        function clear_owner_data() {
+            fullname.html('не выбран')
+            phone.html('не выбран')
+        }
+
+        if (select_house.val()) {
+            select_apartment.find('option:not([selected])').slice(1).remove();
+            select_section.find('option:not([selected])').slice(1).remove();
+            send_ajax_for_section(select_house.val(), true)
+        } else {
+            select_apartment.find('option:not([selected])').remove();
+            select_section.find('option:not([selected])').remove();
+        }
+
+
+        if (select_section.val()) {
+            send_ajax_for_apartment(select_section.val(), true)
+        }
+
+
+        select_house.on("change", function () {
+            select_apartment.find('option').slice(1).remove();
+            clear_owner_data()
+            if (this.value) {
+                send_ajax_for_section(this.value, false)
+            } else {
+                select_section.find('option').slice(1).remove();
+                select_apartment.find('option').slice(1).remove();
+            }
+        })
+
+        select_section.on('change', function () {
+            clear_owner_data()
+            if (this.value) {
+                send_ajax_for_apartment(this.value, false)
+            } else {
+                select_apartment.find('option').slice(1).remove();
+                select_apartment.find('option').slice(1).remove();
+            }
+        })
+
+        select_apartment.on('change', function () {
+            clear_owner_data()
+            if (this.value) {
+                send_ajax_for_owner(this.value, false);
+            } else {
+                clear_owner_data()
+            }
+        })
+
+        function send_ajax_for_section(data, flag) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_section_for_house' %}",
+                data: {
+                    'house_id': data,
+                },
+                success: function (response) {
+                    section_select(response.section, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function send_ajax_for_apartment(data, flag) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_apartment_for_section' %}",
+                data: {
+                    'section_id': data,
+                },
+                success: function (response) {
+                    apartment_select(response.apartment, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function send_ajax_for_owner(data) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_apartment_owner' %}",
+                data: {
+                    'apartment_id': data,
+                },
+                success: function (response) {
+                    show_owner(response.owner)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function show_owner(data) {
+            if (data[0].owner__first_name || data[0].owner__last_name) {
+                fullname.html(
+                    '<a href="/admin/owner/' + data[0].owner_id + '/">' + data[0].owner__last_name + ' ' + data[0].owner__first_name + '</a>'
+                )
+            } else {
+                fullname.html(
+                    '<a href="/admin/owner/' + data[0].owner_id + '/">' + data[0].owner__username + '</a>'
+                )
+            }
+            if (data[0].owner__phone) {
+                phone.html(
+                    '<a href="tel:' + data[0].owner__phone + '">' + data[0].owner__phone + '</a>'
+                )
+            }
+        }
+
+
+        function section_select(data, flag) {
+            if (flag) {
+                select_section.find('option:not([selected])').slice(1).remove();
+            } else {
+                select_section.find('option').slice(1).remove();
+            }
+            for (section in data) {
+                if (!select_section.find('option[value="' + data[section].id + '"]').length) {
+                    select_section.append(
+                        '<option value="' + data[section].id + '">' + data[section].title + '</option>\n'
+                    )
+                }
+            }
+        }
+
+        function apartment_select(data, flag) {
+            if (flag) {
+                select_apartment.find('option:not([selected])').slice(1).remove();
+            } else {
+                select_apartment.find('option').slice(1).remove();
+            }
+            for (apartment in data) {
+                if (!select_apartment.find('option[value="' + data[apartment].id + '"]').length) {
+                    select_apartment.append(
+                        '<option value="' + data[apartment].id + '">' + data[apartment].number + '</option>\n'
+                    )
+                }
+            }
+        }
+    });
+</script>
+
+<script>
+
+    //  jQuery Validations Form
+
+    $('#create_accounts').validate({
+        rules: {
+            number: {
+                required: true,
+                minlength: 11,
+            }
+        },
+        messages: {
+            number: {
+                required: "",
+                minlength: 'Пожалуйста, введите не менее 11 символов.'
+            }
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
+
+</script>
+
+
+{% include 'crm/inc/_messages.html' %}
+
+{% endblock %}

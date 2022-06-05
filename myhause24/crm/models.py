@@ -27,6 +27,7 @@ class House(models.Model):
 
 
 class Apartment(models.Model):
+    objects = None
     number = models.PositiveIntegerField()
     area = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
@@ -138,7 +139,7 @@ class PersonalAccount(models.Model):
         ACTIVE = 'active', _("Активен")
         INACTIVE = 'inactive', _("Неактивен")
 
-    number = models.CharField(max_length=8)
+    number = models.CharField(max_length=11)
     status = models.CharField(max_length=8, choices=AccountStatus.choices, default=AccountStatus.ACTIVE)
     apartment = models.OneToOneField('Apartment', null=True, blank=True, on_delete=models.SET_NULL)
 

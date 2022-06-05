@@ -2,10 +2,10 @@ from django.urls import path
 from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView, \
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
     ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete, \
-    AccountsListView, AccountsDetailView, AccountsCreateView
-from .api_views import load_role, loading_floor_section, loading_personal_account
+    AccountsListView, AccountsDetailView, AccountsCreateView, AccountsUpdateView
+from .api_views import load_role, loading_floor_section, loading_personal_account, loading_section_for_house, \
+    loading_apartment_for_section, loading_apartment_owner
 from django.contrib.auth import get_user_model
-
 User = get_user_model()
 
 urlpatterns = [
@@ -40,9 +40,13 @@ urlpatterns = [
     # apartments end
 
     # accounts
+    path('loading_section_for_house/', loading_section_for_house, name='loading_section_for_house'),
+    path('loading_apartment_for_section/', loading_apartment_for_section, name='loading_apartment_for_section'),
+    path('loading_apartment_owner/', loading_apartment_owner, name='loading_apartment_owner'),
     path('accounts/', AccountsListView.as_view(), name='accounts'),
     path('accounts/<int:pk>/', AccountsDetailView.as_view(), name='detail_accounts'),
-    path('accounts/create/', AccountsCreateView.as_view(), name='create_accounts')
+    path('accounts/create/', AccountsCreateView.as_view(), name='create_accounts'),
+    path('accounts/update/<int:pk>/', AccountsUpdateView.as_view(), name='update_accounts')
 
     # accounts end
 ]

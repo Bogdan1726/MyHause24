@@ -155,7 +155,7 @@ select.form-control {
   -webkit-appearance: none;
   -moz-appearance: none;
   -webkit-border-radius: 0;
-  background-image: url("../img/caret.svg");
+  background-image: url("/media/logo.svg");
   background-position: calc(100% - 10px) 50%;
   background-repeat: no-repeat;
   background-size: 7px;

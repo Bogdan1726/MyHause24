@@ -45,9 +45,9 @@
                 <span class="hidden-xs"><i class="fa fa-files-o"></i> Оформить квитанцию</span><i
                     class="fa fa-pencil visible-xs" aria-hidden="true"></i>
             </a>
-            <a href="#" class="btn btn-primary btn-sm">
-                <span class="hidden-xs">Редактировать счет</span><i class="fa fa-pencil visible-xs"
-                                                                    aria-hidden="true"></i>
+            <a href="{% url 'update_accounts' accounts.id %}" class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать счет</span>
+                <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>
             </a>
         </div>
     </div>

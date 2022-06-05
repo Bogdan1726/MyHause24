@@ -13,6 +13,7 @@ from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, Ow
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from .task import send_email
+import random
 
 User = get_user_model()
 
@@ -312,7 +313,7 @@ class ApartmentCreateView(CreateView):
                     number=personal_account.cleaned_data['number'],
                     apartment=self.object
                 )
-        messages.success(self.request, f"Квартира №{self.object} успешно создана!")
+        messages.success(self.request, f"Квартира успешно создана!")
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -330,7 +331,7 @@ class ApartmentUpdateView(UpdateView):
         context = super(ApartmentUpdateView, self).get_context_data()
         context['personal_account'] = PersonalAccountForm(
             self.request.POST or None,
-            instance=PersonalAccount.objects.get(apartment=self.object),
+            instance=PersonalAccount.objects.filter(apartment=self.object).first(),
             prefix='account_form'
         )
         return context
@@ -403,10 +404,31 @@ class AccountsCreateView(CreateView):
     model = PersonalAccount
     template_name = 'crm/pages/accounts/create_accounts.html'
 
+    def get_success_url(self):
+        return reverse_lazy('detail_accounts', kwargs={'pk': self.object.id})
+
+    @staticmethod
+    def generate_number():
+        return f"{random.randint(10000, 99999)}-{random.randint(10000, 99999)}"
+
     def get_form(self, form_class=None):
         if form_class is None:
             return AccountsForm(self.request.POST or None,
-                                initial={'number': '12345123'})
+                                initial={'number': self.generate_number()})
+
+
+class AccountsUpdateView(UpdateView):
+    model = PersonalAccount
+    template_name = 'crm/pages/accounts/update_accounts.html'
+
+
+    def get_success_url(self):
+        return reverse_lazy('detail_accounts', kwargs={'pk': self.object.id})
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return AccountsForm(self.request.POST or None,
+                                instance=self.object)
 
 
 # endregion Accounts

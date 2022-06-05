@@ -42,9 +42,15 @@
                     <tbody>
                     <tr>
                         <td>Лицевой счет</td>
+                        {% if personal_account %}
                         <td>
-                            <a href="#">{{ personal_account }}</a>
+                            <a href="{% url 'detail_accounts' personal_account.id %}">{{ personal_account }}</a>
                         </td>
+                        {% else %}
+                        <td>
+                            не указано
+                        </td>
+                        {% endif %}
                     </tr>
                     <tr>
                         <td>Номер квартиры</td>
@@ -52,7 +58,13 @@
                     </tr>
                     <tr>
                         <td>Площадь</td>
+                        {% if apartment.area %}
                         <td>{{ apartment.area }}м<sup>2</sup></td>
+                        {% else %}
+                        <td>
+                            не указано
+                        </td>
+                        {% endif %}
                     </tr>
                     <tr>
                         <td>Дом</td>

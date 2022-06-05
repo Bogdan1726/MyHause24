@@ -260,7 +260,8 @@ class PersonalAccountForm(forms.ModelForm):
         exclude = ('status', 'apartment')
 
         widgets = {
-            'number': forms.TextInput(attrs={'class': 'form-control'})
+            'number': forms.TextInput(attrs={'class': 'form-control',
+                                             'data-mask': "00000-00000"})
         }
 
     def clean(self):
@@ -279,7 +280,7 @@ class AccountsForm(forms.ModelForm):
                                    empty_label='Выберите...',
                                    required=False,
                                    widget=forms.Select(attrs={'class': 'form-control'}))
-    section = forms.ModelChoiceField(queryset=Section.objects.none(),
+    section = forms.ModelChoiceField(queryset=Section.objects.all(),
                                      empty_label='Выберите...',
                                      required=False,
                                      widget=forms.Select(attrs={'class': 'form-control'}))
@@ -289,7 +290,8 @@ class AccountsForm(forms.ModelForm):
         fields = '__all__'
 
         widgets = {
-            'number': forms.TextInput(attrs={'class': 'form-control'}),
+            'number': forms.TextInput(attrs={'class': 'form-control',
+                                             'data-mask': '00000-00000'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'apartment': forms.Select(attrs={'class': 'form-control'})
         }

@@ -74,35 +74,207 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 
 <script>
+    $(document).ready(function () {
+        var fullname = $("#owner-fullname")
+        var phone = $("#owner-phone")
+        var is_account = false
+        var select_house = $("select[name='house']")
+        var select_section = $("select[name='section']")
+        var select_apartment = $("select[name='apartment']")
+
+        function clear_owner_data() {
+            fullname.html('не выбран')
+            phone.html('не выбран')
+        }
 
 
-    //  jQuery Validations Form
+        if (select_house.val()) {
+            select_apartment.find('option:not([selected])').slice(1).remove();
+            select_section.find('option:not([selected])').slice(1).remove();
+            send_ajax_for_section(select_house.val(), true)
+        } else {
+            select_apartment.find('option:not([selected])').remove();
+            select_section.find('option:not([selected])').remove();
+        }
 
-    $('#create_accounts').validate({
-        rules: {
-            number: {
-                required: true,
+
+        select_house.on("change", function () {
+            clear_owner_data();
+            select_apartment.find('option').slice(1).remove();
+            if (this.value) {
+                send_ajax_for_section(this.value, false)
+            } else {
+                select_section.find('option').slice(1).remove();
+                select_apartment.find('option').slice(1).remove();
             }
-        },
-        messages: {
-            number: {
-                required: "",
+        })
+
+        select_section.on('change', function () {
+            clear_owner_data();
+            if (this.value) {
+                send_ajax_for_apartment(this.value, false)
+            } else {
+                select_apartment.find('option').slice(1).remove();
+                select_apartment.find('option').slice(1).remove();
             }
-        },
-        errorElement: 'span',
-        highlight: function (element) {
-            $(element).closest('.form-group').addClass('has-error');
-        },
-        unhighlight: function (element) {
-            $(element).closest('.form-group').removeClass('has-error');
-        },
+        })
+
+        select_apartment.on('change', function () {
+            if (this.value) {
+                send_ajax_for_owner(this.value, false);
+            } else {
+                clear_owner_data();
+            }
+        })
+
+        function send_ajax_for_section(data, flag) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_section_for_house' %}",
+                data: {
+                    'house_id': data,
+                },
+                success: function (response) {
+                    section_select(response.section, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function send_ajax_for_apartment(data, flag) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_apartment_for_section' %}",
+                data: {
+                    'section_id': data,
+                },
+                success: function (response) {
+                    apartment_select(response.apartment, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function send_ajax_for_owner(data) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_apartment_owner' %}",
+                data: {
+                    'apartment_id': data,
+                },
+                success: function (response) {
+                    show_owner(response.owner)
+                    is_account = response.is_accounts
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function section_select(data, flag) {
+            if (flag) {
+                select_section.find('option:not([selected])').slice(1).remove();
+            } else {
+                select_section.find('option').slice(1).remove();
+            }
+            for (section in data) {
+                if (!select_section.find('option[value="' + data[section].id + '"]').length) {
+                    select_section.append(
+                        '<option value="' + data[section].id + '">' + data[section].title + '</option>\n'
+                    )
+                }
+            }
+        }
+
+        function apartment_select(data, flag) {
+            if (flag) {
+                select_apartment.find('option:not([selected])').slice(1).remove();
+            } else {
+                select_apartment.find('option').slice(1).remove();
+            }
+            for (apartment in data) {
+                if (!select_apartment.find('option[value="' + data[apartment].id + '"]').length) {
+                    select_apartment.append(
+                        '<option value="' + data[apartment].id + '">' + data[apartment].number + '</option>\n'
+                    )
+                }
+            }
+        }
+
+        function show_owner(data) {
+            if (data[0].owner__first_name || data[0].owner__last_name) {
+                fullname.html(
+                    '<a href="/admin/owner/' + data[0].owner_id + '/">' + data[0].owner__last_name + ' ' + data[0].owner__first_name + '</a>'
+                )
+            } else {
+                fullname.html(
+                    '<a href="/admin/owner/' + data[0].owner_id + '/">' + data[0].owner__username + '</a>'
+                )
+            }
+            if (data[0].owner__phone) {
+                phone.html(
+                    '<a href="tel:' + data[0].owner__phone + '">' + data[0].owner__phone + '</a>'
+                )
+            }
+        }
+
+        $.validator.addMethod("apartment", function (value) {
+            if (value) {
+                if (is_account) {
+                    return false
+                }
+            }
+            return true;
+        });
+
+        //  jQuery Validations Form
+        $('#create_accounts').validate({
+            rules: {
+                number: {
+                    required: true,
+                    minlength: 11,
+                },
+                apartment: {
+                    apartment: true,
+                }
+            },
+            messages: {
+                number: {
+                    required: "",
+                    minlength: 'Пожалуйста, введите не менее 11 символов.'
+                },
+                apartment: {
+                    apartment: "К этой квартире уже привязан счет."
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element) {
+                $(element).closest('.form-group').addClass('has-error');
+            },
+            unhighlight: function (element) {
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+        });
+
     });
 
 </script>
 
+<script>
+
+
+</script>
 
 {% include 'crm/inc/_messages.html' %}
-
 {% endblock %}

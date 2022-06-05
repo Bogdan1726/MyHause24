@@ -90,6 +90,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 <script>
 
     //  jQuery Validations Form
@@ -112,7 +113,8 @@
                 required: true,
             },
             'account_form-number': {
-                required: true,
+                required: false,
+                minlength: 11
             }
 
 
@@ -134,7 +136,7 @@
                 required: "Обязательное поле",
             },
             'account_form-number': {
-                required: "Обязательное поле",
+                minlength: "Пожалуйста, введите не менее 11 символов.",
             },
 
 

@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
+from django.http import HttpResponseRedirect
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import House, Section, Floor, Apartment, PersonalAccount
@@ -28,7 +29,7 @@ class HouseListView(ListView):
     context_object_name = 'houses'
 
     def get_queryset(self):
-        return self.model.objects.order_by('id')
+        return self.model.objects.order_by('-id')
 
 
 class HouseDetailView(DetailView):
@@ -36,10 +37,13 @@ class HouseDetailView(DetailView):
     template_name = 'crm/pages/houses/detail_house.html'
     context_object_name = 'house'
 
+    def get_queryset(self):
+        return self.model.objects.prefetch_related('user__role')
+
     def get_context_data(self, **kwargs):
         context = super(HouseDetailView, self).get_context_data()
-        context['section'] = Section.objects.filter(house=self.object)
-        context['floor'] = Floor.objects.filter(house=self.object)
+        context['section'] = Section.objects.filter(house=self.object).select_related('house')
+        context['floor'] = Floor.objects.filter(house=self.object).select_related('house')
         return context
 
 
@@ -65,6 +69,10 @@ class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFo
         return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
+        if self.request.resolver_match.url_name == 'update_house':
+            messages.success(self.request, f'Дом {self.object} обновлён!')
+        else:
+            messages.success(self.request, f'Дом {self.object} создан!')
         return reverse_lazy('detail_house', kwargs={'pk': self.object.id})
 
     def form_valid(self, form):
@@ -93,13 +101,8 @@ class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFo
                 if form_user.cleaned_data and form_user.cleaned_data['DELETE'] is False:
                     user = form_user.cleaned_data.get('user')
                     house.user.add(user)
-            messages.success(self.request, 'Успешно!')
             return super().form_valid(form)
         return self.form_invalid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, form.non_field_errors())
-        return super().form_invalid(form)
 
 
 class HouseUpdateView(BaseHouseView):
@@ -119,7 +122,14 @@ class HouseUpdateView(BaseHouseView):
         )
         context['formset_for_user'] = self.formset_for_user(
             self.request.POST or None,
-            initial=[{'user': x, 'role': x.role, 'id': x.id} for x in self.object.user.all().order_by('house')],
+            initial=[
+                {
+                    'user': x,
+                    'role': x.role,
+                    'id': x.id
+                }
+                for x in self.object.user.all().select_related('role').order_by('house')
+            ],
             prefix='user'
         )
         return context
@@ -166,7 +176,7 @@ class OwnerListView(ListView):
     context_object_name = 'owners'
 
     def get_queryset(self):
-        return self.model.objects.filter(is_staff=False).order_by('id')
+        return self.model.objects.filter(is_staff=False).order_by('-id')
 
     def get_context_data(self, **kwargs):
         context = super(OwnerListView, self).get_context_data()
@@ -195,15 +205,8 @@ class OwnerCreateView(CreateView):
     form_class = OwnerForm
 
     def get_success_url(self):
+        messages.success(self.request, f"{self.object.username} успешно создан!")
         return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
-
-    def form_valid(self, form):
-        messages.success(self.request, f"{form.cleaned_data['username']} успешно создан!")
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, form.non_field_errors())
-        return super().form_invalid(form)
 
 
 class OwnerUpdateView(UpdateView):
@@ -212,15 +215,9 @@ class OwnerUpdateView(UpdateView):
     form_class = OwnerUpdateForm
 
     def get_success_url(self):
+        messages.success(self.request, f'{self.object.username} успешно обновлён!')
         return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
 
-    def form_valid(self, form):
-        messages.success(self.request, f'{self.object.email} успешно обновлён!')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, form.errors)
-        return super().form_invalid(form)
 
 
 class OwnerDelete(DeleteView):
@@ -229,6 +226,14 @@ class OwnerDelete(DeleteView):
     def get_success_url(self):
         messages.success(self.request, f'Владелец  {self.object} удалён!')
         return reverse_lazy('owners')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if Apartment.objects.filter(owner=self.object).exists():
+            messages.error(request, 'Нельзя удалить владельца, за которым закреплена квартира')
+            return HttpResponseRedirect(reverse_lazy('owners'))
+        self.object.delete()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 def invite_owner(request):
@@ -251,7 +256,7 @@ class ApartmentListView(ListView):
     context_object_name = 'apartments'
 
     def get_queryset(self):
-        return self.model.objects.order_by('id').select_related(
+        return self.model.objects.order_by('-id').select_related(
             'section', 'floor', 'house', 'owner', 'tariff'
         )
 
@@ -289,6 +294,7 @@ class ApartmentCreateView(CreateView):
         return context
 
     def get_success_url(self):
+        messages.success(self.request, f"Квартира №{self.object.number} успешно создана!")
         if 'action_save' in self.request.POST:
             return reverse_lazy('detail_apartment', kwargs={'pk': self.object.id})
         return reverse_lazy('create_apartment')
@@ -313,12 +319,7 @@ class ApartmentCreateView(CreateView):
                     number=personal_account.cleaned_data['number'],
                     apartment=self.object
                 )
-        messages.success(self.request, f"Квартира успешно создана!")
         return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, form.non_field_errors())
-        return super().form_invalid(form)
 
 
 class ApartmentUpdateView(UpdateView):
@@ -337,6 +338,7 @@ class ApartmentUpdateView(UpdateView):
         return context
 
     def get_success_url(self):
+        messages.success(self.request, f"Квартира №{self.object} успешно обновлена!")
         if 'action_save' in self.request.POST:
             return reverse_lazy('detail_apartment', kwargs={'pk': self.object.id})
         return reverse_lazy('create_apartment')
@@ -362,24 +364,19 @@ class ApartmentUpdateView(UpdateView):
                     number=personal_account.cleaned_data['number'],
                     apartment=self.object
                 )
-        messages.success(self.request, f"Квартира №{self.object} успешно обновлена!")
         return super().form_valid(form)
 
-    def form_invalid(self, form):
-        messages.error(self.request, form.non_field_errors())
-        return super().form_invalid(form)
 
 
 class ApartmentDelete(DeleteView):
     model = Apartment
 
     def get_success_url(self):
-        messages.success(self.request, f'Квартира  {self.object} удалена!')
+        messages.success(self.request, f'Квартира №{self.object.number} удалена!')
         return reverse_lazy('apartments')
 
 
 # endregion Apartment
-
 
 # region Accounts
 
@@ -389,8 +386,8 @@ class AccountsListView(ListView):
     context_object_name = 'accounts'
 
     def get_queryset(self):
-        return self.model.objects.order_by('id').select_related(
-            'apartment'
+        return self.model.objects.order_by('-id').select_related(
+            'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
         )
 
 
@@ -399,17 +396,25 @@ class AccountsDetailView(DeleteView):
     template_name = 'crm/pages/accounts/detail_accounts.html'
     context_object_name = 'accounts'
 
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+        )
+
 
 class AccountsCreateView(CreateView):
     model = PersonalAccount
     template_name = 'crm/pages/accounts/create_accounts.html'
 
     def get_success_url(self):
+        messages.success(self.request, f'Лицевой счет №{self.object.number} создан!')
         return reverse_lazy('detail_accounts', kwargs={'pk': self.object.id})
 
-    @staticmethod
-    def generate_number():
-        return f"{random.randint(10000, 99999)}-{random.randint(10000, 99999)}"
+    def generate_number(self):
+        while True:
+            random_number = f"{random.randint(10000, 99999)}-{random.randint(10000, 99999)}"
+            if not self.model.objects.filter(number=random_number).exists():
+                return random_number
 
     def get_form(self, form_class=None):
         if form_class is None:
@@ -421,14 +426,34 @@ class AccountsUpdateView(UpdateView):
     model = PersonalAccount
     template_name = 'crm/pages/accounts/update_accounts.html'
 
-
     def get_success_url(self):
+        messages.success(self.request, f'Лицевой счет №{self.object.number} обновлён!')
         return reverse_lazy('detail_accounts', kwargs={'pk': self.object.id})
 
     def get_form(self, form_class=None):
         if form_class is None:
-            return AccountsForm(self.request.POST or None,
-                                instance=self.object)
+            if self.object.apartment:
+                return AccountsForm(self.request.POST or None,
+                                    instance=self.object,
+                                    initial={'house': self.object.apartment.house_id,
+                                             'section': self.object.apartment.section_id})
+            return AccountsForm(self.request.POST or None, instance=self.object)
+
+
+class AccountsDelete(DeleteView):
+    model = PersonalAccount
+
+    def get_success_url(self):
+        messages.success(self.request, f'Лицевой счет №{self.object} удалён!')
+        return reverse_lazy('accounts')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.apartment:
+            messages.error(request, 'К данному Лицевому счету закреплена квартира')
+            return HttpResponseRedirect(reverse_lazy('accounts'))
+        self.object.delete()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 # endregion Accounts

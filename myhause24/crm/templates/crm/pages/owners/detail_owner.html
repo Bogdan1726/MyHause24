@@ -157,7 +157,7 @@
                             <td><a href="{% url 'detail_apartment' apartment.id %}">{{ apartment }}</a></td>
                             {% for personal_account in personal_account %}
                             {% if personal_account.apartment == apartment %}
-                            <td><a href="#">{{ personal_account }}</a></td>
+                            <td><a href="{% url 'detail_accounts' personal_account.id %}">{{ personal_account }}</a></td>
                             {% endif %}
                             {% endfor %}
                         </tr>

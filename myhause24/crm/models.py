@@ -139,13 +139,14 @@ class PersonalAccount(models.Model):
         ACTIVE = 'active', _("Активен")
         INACTIVE = 'inactive', _("Неактивен")
 
-    number = models.CharField(max_length=11)
+    number = models.CharField(max_length=11, unique=True)
     status = models.CharField(max_length=8, choices=AccountStatus.choices, default=AccountStatus.ACTIVE)
     apartment = models.OneToOneField('Apartment', null=True, blank=True, on_delete=models.SET_NULL)
 
-
     def __str__(self):
         return f'{self.number}'
+
+
 
 
 class CashBox(models.Model):

@@ -97,6 +97,7 @@
     $(document).ready(function () {
         var fullname = $("#owner-fullname")
         var phone = $("#owner-phone")
+        var is_account = false
         var select_house = $("select[name='house']")
         var select_section = $("select[name='section']")
         var select_apartment = $("select[name='apartment']")
@@ -192,6 +193,7 @@
                 },
                 success: function (response) {
                     show_owner(response.owner)
+                    is_account = response.is_accounts
                 },
                 error: function (response) {
                     console.log(response.error)
@@ -246,36 +248,58 @@
                 }
             }
         }
-    });
-</script>
 
-<script>
+        //  jQuery Validations Form
 
-    //  jQuery Validations Form
-
-    $('#create_accounts').validate({
-        rules: {
-            number: {
-                required: true,
-                minlength: 11,
+        $.validator.addMethod("apartment", function (value) {
+            if (value) {
+                if (is_account) {
+                    return false
+                }
             }
-        },
-        messages: {
-            number: {
-                required: "",
-                minlength: 'Пожалуйста, введите не менее 11 символов.'
+            return true;
+        });
+
+        $.validator.addMethod("is_apartment", function (value) {
+            if (!value && select_house.val()) {
+                return false
             }
-        },
-        errorElement: 'span',
-        errorPlacement: function (error, element) {
-            element.closest('.form-group').append(error);
-        },
-        highlight: function (element) {
-            $(element).closest('.form-group').addClass('has-error');
-        },
-        unhighlight: function (element) {
-            $(element).closest('.form-group').removeClass('has-error');
-        },
+            return true
+        });
+
+
+        $('#create_accounts').validate({
+            rules: {
+                number: {
+                    required: true,
+                    minlength: 11,
+                },
+                apartment: {
+                    apartment: true,
+                    is_apartment: true
+                },
+            },
+            messages: {
+                number: {
+                    required: "",
+                    minlength: 'Пожалуйста, введите не менее 11 символов.'
+                },
+                apartment: {
+                    apartment: "К этой квартире уже привязан счет.",
+                    is_apartment: "При выборе дома выбор секции и квартиры обязателен."
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element) {
+                $(element).closest('.form-group').addClass('has-error');
+            },
+            unhighlight: function (element) {
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+        });
     });
 
 

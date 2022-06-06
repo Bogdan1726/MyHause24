@@ -226,6 +226,9 @@
             }
         }
 
+
+        //  jQuery Validations Form
+
         $.validator.addMethod("apartment", function (value) {
             if (value) {
                 if (is_account) {
@@ -235,7 +238,14 @@
             return true;
         });
 
-        //  jQuery Validations Form
+        $.validator.addMethod("is_apartment", function (value) {
+            if (!value && select_house.val()) {
+                return false
+            }
+            return true
+        });
+
+
         $('#create_accounts').validate({
             rules: {
                 number: {
@@ -244,7 +254,8 @@
                 },
                 apartment: {
                     apartment: true,
-                }
+                    is_apartment: true
+                },
             },
             messages: {
                 number: {
@@ -252,7 +263,8 @@
                     minlength: 'Пожалуйста, введите не менее 11 символов.'
                 },
                 apartment: {
-                    apartment: "К этой квартире уже привязан счет."
+                    apartment: "К этой квартире уже привязан счет.",
+                    is_apartment: "При выборе дома выбор cекции и квартиры обязателен."
                 }
             },
             errorElement: 'span',
@@ -266,7 +278,6 @@
                 $(element).closest('.form-group').removeClass('has-error');
             },
         });
-
     });
 
 </script>

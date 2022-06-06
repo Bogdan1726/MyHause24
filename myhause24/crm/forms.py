@@ -274,7 +274,6 @@ class PersonalAccountForm(forms.ModelForm):
 
 # region Accounts Form
 
-
 class AccountsForm(forms.ModelForm):
     house = forms.ModelChoiceField(queryset=House.objects.all(),
                                    empty_label='Выберите...',
@@ -299,7 +298,6 @@ class AccountsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AccountsForm, self).__init__(*args, **kwargs)
         self.fields['apartment'].empty_label = 'Выберите...'
-
-
+        self.fields['number'].error_messages = {'unique': _('Лицевой счет с таким номером уже существует.')}
 
 # endregion Accounts Form

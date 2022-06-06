@@ -160,10 +160,12 @@
                             <td><small class="label label-danger">Неактивен</small></td>
                             {% endif %}
                             {% if account.apartment %}
-                            <td>{{ account.apartment }}</td>
-                            <td>{{ account.apartment.house }}</td>
-                            <td>{{ account.apartment.section }}</td>
-                            <td>{{ account.apartment.owner }}</td>
+                            {% with account.apartment as apartment %}
+                            <td>{{ apartment.number }}</td>
+                            <td>{{ apartment.house }}</td>
+                            <td>{{ apartment.section }}</td>
+                            <td>{{ apartment.owner }}</td>
+                            {% endwith %}
                             {% else %}
                             <td>(не задано)</td>
                             <td>(не задано)</td>
@@ -198,7 +200,7 @@
                                             <span aria-hidden="true">×</span></button>
                                         <h4 class="modal-title">Удаление лицевого счета</h4>
                                     </div>
-                                    <form method="post" action="#">
+                                    <form method="post" action="{% url 'delete_accounts' account.id %}">
                                         {% csrf_token %}
                                         <div class="modal-body">
                                             <p>Вы уверены, что хотите удалить лицевой счет №{{ account }} ?</p>

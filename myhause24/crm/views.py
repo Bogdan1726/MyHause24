@@ -6,15 +6,15 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect
-from django.views.generic.detail import SingleObjectTemplateResponseMixin
-from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
-from .models import House, Section, Floor, Apartment, PersonalAccount
-from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
-    ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from .task import send_email
 import random
+from django.views.generic.detail import SingleObjectTemplateResponseMixin
+from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
+from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure
+from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
+    ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm, ServicesForm
 
 User = get_user_model()
 
@@ -219,7 +219,6 @@ class OwnerUpdateView(UpdateView):
         return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
 
 
-
 class OwnerDelete(DeleteView):
     model = User
 
@@ -367,7 +366,6 @@ class ApartmentUpdateView(UpdateView):
         return super().form_valid(form)
 
 
-
 class ApartmentDelete(DeleteView):
     model = Apartment
 
@@ -458,7 +456,45 @@ class AccountsDelete(DeleteView):
 
 # endregion Accounts
 
+# region Services
 
+class ServicesListView(UpdateView):
+    model = Services
+    template_name = 'crm/pages/services/list_services.html'
+    formset_for_services = modelformset_factory(Services, form=ServicesForm, extra=0, can_delete=True)
+    formset_for_unit = modelformset_factory(UnitOfMeasure, form=UnitOfMeasureForm, extra=0, can_delete=True)
+
+    def get_success_url(self):
+        messages.success(self.request, 'Услуги обновлены')
+        return reverse_lazy('services', kwargs={'pk': 1})
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return self.formset_for_services(self.request.POST or None,
+                                             queryset=self.model.objects.all(),
+                                             prefix='services')
+
+    def get_context_data(self, **kwargs):
+        context = super(ServicesListView, self).get_context_data()
+        context['form_unit'] = self.formset_for_unit(self.request.POST or None,
+                                                     queryset=UnitOfMeasure.objects.all(),
+                                                     prefix='unit')
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        form_unit = context['form_unit']
+        if form_unit.is_valid():
+            for forms in form_unit:
+                if forms.cleaned_data:
+                    if forms.is_valid():
+                        forms.save()
+            form_unit.save()
+            return super().form_valid(form)
+        return self.form_invalid(form)
+
+
+# endregion Services
 @login_required(login_url='login')
 def index(request):
     return render(request, 'crm/pages/index.html')

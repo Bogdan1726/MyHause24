@@ -86,6 +86,9 @@ class Services(models.Model):
 class UnitOfMeasure(models.Model):
     title = models.CharField(max_length=12)
 
+    def __str__(self):
+        return f"{self.title}"
+
 
 class MeterData(models.Model):
     class MeterStatus(models.TextChoices):

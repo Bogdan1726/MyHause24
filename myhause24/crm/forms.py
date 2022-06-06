@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
-from .models import House, Section, Floor, Apartment, Tariff, PersonalAccount
+from .models import House, Section, Floor, Apartment, Tariff, PersonalAccount, UnitOfMeasure, Services
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
@@ -300,4 +300,36 @@ class AccountsForm(forms.ModelForm):
         self.fields['apartment'].empty_label = 'Выберите...'
         self.fields['number'].error_messages = {'unique': _('Лицевой счет с таким номером уже существует.')}
 
+
 # endregion Accounts Form
+
+
+# region Services Form
+
+class UnitOfMeasureForm(forms.ModelForm):
+    class Meta:
+        model = UnitOfMeasure
+        fields = ('title',)
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'})
+        }
+
+
+class ServicesForm(forms.ModelForm):
+    class Meta:
+        model = Services
+        fields = "__all__"
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'u_measurement': forms.Select(attrs={'class': 'form-control'}),
+            'is_show_meter_data': forms.CheckboxInput({'class': 'form-check-input',
+                                                       'id': 'checkbox1'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ServicesForm, self).__init__(*args, **kwargs)
+        self.fields['u_measurement'].empty_label = 'Выберите...'
+
+# endregion Services Form

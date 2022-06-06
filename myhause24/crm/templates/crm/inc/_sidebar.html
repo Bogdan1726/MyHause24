@@ -2,7 +2,7 @@
     <section class="sidebar" style="overflow: hidden; width: auto; height: 898px;">
         {% with request.resolver_match.url_name as url %}
         <ul class="sidebar-menu tree" data-widget="tree">
-            <li>
+            <li class="{% if url in '[admin]' %}active{% endif %}">
                 <a href="/admin/">
                     <i class="fa fa-line-chart"></i>
                     <span>Статистика</span>
@@ -57,10 +57,20 @@
                         <span>Контакты</span></a></li>
                 </ul>
             </li>
-            <li class="treeview"><a href="#!"><i class="fa fa-cogs"></i> <span>Настройки системы</span> <span
-                    class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+
+            <li class="treeview {% if url in '[services]' %}active{% endif %}">
+                <a href="#!"><i class="fa fa-cogs"></i>
+                    <span>Настройки системы</span>
+                    <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+                </a>
                 <ul class="treeview-menu">
-                    <li><a href="/admin/service/index"><i class="fa fa-briefcase"></i> <span>Услуги</span></a>
+                    <li class="{% if url in '[services]' %}active{% endif %}">
+                        <a href="{% url 'services' 1 %}">
+                            <i class="fa fa-briefcase"></i>
+                            <span>Услуги</span>
+                        </a>
                     </li>
                     <li><a href="/admin/tariff/index"><i class="fa fa-money"></i> <span>Тарифы</span></a></li>
                     <li><a href="/admin/user-admin/role"><i class="fa fa-user"></i> <span>Роли</span></a></li>

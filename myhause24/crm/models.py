@@ -78,13 +78,17 @@ class PriceTariffServices(models.Model):
 
 
 class Services(models.Model):
+    objects = None
     title = models.CharField(max_length=64)
     is_show_meter_data = models.BooleanField(default=False)
     u_measurement = models.ForeignKey('UnitOfMeasure', blank=True, null=True, on_delete=models.SET_NULL)
 
+    def __str__(self):
+        return f"{self.title}"
+
 
 class UnitOfMeasure(models.Model):
-    title = models.CharField(max_length=12)
+    title = models.CharField(max_length=12, unique=True)
 
     def __str__(self):
         return f"{self.title}"

@@ -42,6 +42,7 @@
                             </li>
                         </ul>
                         <div class="tab-content">
+                            <div class="can-delete-list"></div>
                             <div class="tab-pane clearfix active" id="tab_service">
                                 {{ form.management_form }}
                                 <div id="form-services-rows">
@@ -62,7 +63,7 @@
                                                     <span class="input-group-btn">
                                                      <button type="button"
                                                              class="btn btn-default form-row-remove-btn"
-                                                             no-delete-msg="Эта услуга используется в квитанциях. Удаление невозможно.">
+                                                             onclick="delForm('{{ form.prefix }}')">
                                                          <i class="fa fa-trash"></i>
                                                      </button>
                                                     </span>
@@ -72,7 +73,7 @@
                                         <div class="col-xs-12">
                                             <div class="form-group">
                                                 {{ form.is_show_meter_data }}
-                                                <label class="form-check-label" for="checkbox1">Показывать в
+                                                <label class="form-check-label">Показывать в
                                                     счетчиках</label>
                                             </div>
                                         </div>
@@ -96,7 +97,7 @@
                                                     <span class="input-group-btn">
                                                      <button type="button"
                                                              class="btn btn-default form-row-remove-btn"
-                                                             no-delete-msg="Эта услуга используется в квитанциях. Удаление невозможно.">
+                                                             onclick="delForm('{{ form.prefix }}')">
                                                          <i class="fa fa-trash"></i>
                                                      </button>
                                                     </span>
@@ -106,7 +107,7 @@
                                         <div class="col-xs-12">
                                             <div class="form-group">
                                                 {{ form.is_show_meter_data }}
-                                                <label class="form-check-label" for="checkbox1">Показывать в
+                                                <label class="form-check-label">Показывать в
                                                     счетчиках</label>
                                             </div>
                                         </div>
@@ -133,7 +134,7 @@
                                                     <span class="input-group-btn">
                                                    <button type="button"
                                                            class="btn btn-default form-row-remove-btn"
-                                                           no-delete-msg="Эта ед.изм. используется в услуге. Удаление невозможно.">
+                                                           onclick="delForm('{{ form.prefix }}')">
                                                        <i class="fa fa-trash"></i>
                                                    </button>
                                                     </span>
@@ -154,7 +155,7 @@
                                                     <span class="input-group-btn">
                                                    <button type="button"
                                                            class="btn btn-default form-row-remove-btn"
-                                                           no-delete-msg="Эта ед.изм. используется в услуге. Удаление невозможно.">
+                                                           onclick="delForm('{{ form.prefix }}')">
                                                        <i class="fa fa-trash"></i>
                                                    </button>
                                                     </span>
@@ -189,12 +190,70 @@
 
 {% block scripts %}
 <script>
+    function error_message() {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>Эта ед.изм. используется в услуге. Удаление невозможно.</h5>'
+        })
+    }
+
+
     function addEmptyForm(prefix) {
-        console.log(prefix)
         const totalForms = $('#id_' + prefix + '-TOTAL_FORMS')
         const form_idx = totalForms.val();
         $("#form-" + prefix + "-rows").append($('#empty_form-' + prefix + '').html().replace(/__prefix__/g, form_idx))
         totalForms.val(parseInt(form_idx) + 1);
+    }
+
+    function del(prefix) {
+        var form = $("div[id='" + prefix + "']")
+        const result = confirm('Удалить?');
+        if (result) {
+            $('.can-delete-list').append(
+                '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
+            );
+            // $("input[name='" + prefix + "-title']").val('');
+            form.css('display', 'none');
+        } else {
+        }
+    }
+
+
+    function delForm(prefix) {
+        var form = $("div[id='" + prefix + "']")
+        var value = form.find('input').val()
+        if (prefix.split('-')[0] === 'unit') {
+            if (value) {
+                $.ajax({
+                    method: 'GET',
+                    url: '{% url "check_units" %}',
+                    data: {
+                        'value': value
+                    },
+                    success: function (response) {
+                        if (response.is_services) {
+                            error_message();
+                        } else {
+                            del(prefix);
+                        }
+                    },
+                    error: function (response) {
+                        console.log(response.error)
+                    }
+                })
+            } else {
+                del(prefix);
+            }
+        }else {
+            del(prefix)
+        }
+
     }
 </script>
 {% endblock %}

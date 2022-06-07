@@ -1,5 +1,7 @@
 from django.http import JsonResponse, HttpResponse
-from .models import Section, Floor, PersonalAccount, Apartment, House
+from django.shortcuts import get_object_or_404
+
+from .models import Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -71,4 +73,22 @@ def loading_apartment_owner(request):
         return JsonResponse(response, status=200)
 
 
+def check_units(request):
+    if request.is_ajax():
+        unit = request.GET.get('value')
+        obj = get_object_or_404(UnitOfMeasure, title=unit)
+        services = True if Services.objects.filter(u_measurement=obj).exists() else False
+        response = {
+            'is_services': services
+        }
+        return JsonResponse(response, status=200)
 
+
+def loading_unit_for_services(request):
+    if request.is_ajax():
+        service_id = request.GET.get('service_id')
+        service = Services.objects.filter(id=service_id).values('u_measurement__title')
+        response = {
+            'unit': list(service)
+        }
+        return JsonResponse(response, status=200)

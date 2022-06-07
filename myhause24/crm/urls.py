@@ -2,9 +2,10 @@ from django.urls import path
 from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView, \
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
     ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete, \
-    AccountsListView, AccountsDetailView, AccountsCreateView, AccountsUpdateView, AccountsDelete, ServicesListView
+    AccountsListView, AccountsDetailView, AccountsCreateView, AccountsUpdateView, AccountsDelete, ServicesListView, \
+    TariffListView, TariffDetailView, TariffCreateView
 from .api_views import load_role, loading_floor_section, loading_personal_account, loading_section_for_house, \
-    loading_apartment_for_section, loading_apartment_owner
+    loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -45,9 +46,14 @@ urlpatterns = [
     # accounts end
 
     # services
-    path('services/<int:pk>/', ServicesListView.as_view(), name='services'),
-
+    path('services/', ServicesListView.as_view(), name='services'),
     # services end
+
+    # tariffs
+    path('tariffs/', TariffListView.as_view(), name='tariffs'),
+    path('tariff/<int:pk>/', TariffDetailView.as_view(), name='detail_tariff'),
+    path('tariff/create/', TariffCreateView.as_view(), name='create_tariff'),
+    # tariffs end
 
 
 
@@ -59,4 +65,6 @@ urlpatterns = [
     path('loading_section_for_house/', loading_section_for_house, name='loading_section_for_house'),
     path('loading_apartment_for_section/', loading_apartment_for_section, name='loading_apartment_for_section'),
     path('loading_apartment_owner/', loading_apartment_owner, name='loading_apartment_owner'),
+    path('check_units/', check_units, name='check_units'),
+    path('loading_unit_for_services/', loading_unit_for_services, name="loading_unit_for_services")
 ]

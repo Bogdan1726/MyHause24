@@ -72,3 +72,52 @@
 {% endfor %}
 {% endif %}
 {% endfor %}
+
+{% for forms in form %}
+{% for field in forms %}
+{% if field.errors %}
+{% for error in field.errors %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>{{ error }}</h5>'
+        })
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+
+
+
+{% for forms in form_unit %}
+{% for field in forms %}
+{% if field.errors %}
+{% for error in field.errors %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>{{ error }}</h5>'
+        })
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}

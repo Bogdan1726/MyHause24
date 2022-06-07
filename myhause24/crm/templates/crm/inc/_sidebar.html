@@ -58,8 +58,11 @@
                 </ul>
             </li>
 
-            <li class="treeview {% if url in '[services]' %}active{% endif %}">
-                <a href="#!"><i class="fa fa-cogs"></i>
+            <li class="treeview
+                       {% if url in '[services, tariffs, detail_tariff, create_tariff]' %}
+                       active
+                       {% endif %}">
+                <a href="#"><i class="fa fa-cogs"></i>
                     <span>Настройки системы</span>
                     <span class="pull-right-container">
                         <i class="fa fa-angle-left pull-right"></i>
@@ -67,12 +70,17 @@
                 </a>
                 <ul class="treeview-menu">
                     <li class="{% if url in '[services]' %}active{% endif %}">
-                        <a href="{% url 'services' 1 %}">
+                        <a href="{% url 'services' %}">
                             <i class="fa fa-briefcase"></i>
                             <span>Услуги</span>
                         </a>
                     </li>
-                    <li><a href="/admin/tariff/index"><i class="fa fa-money"></i> <span>Тарифы</span></a></li>
+                    <li class="{% if url in '[tariffs, detail_tariff, create_tariff]' %}active{% endif %}">
+                        <a href="{% url 'tariffs' %}">
+                            <i class="fa fa-money"></i>
+                            <span>Тарифы</span>
+                        </a>
+                    </li>
                     <li><a href="/admin/user-admin/role"><i class="fa fa-user"></i> <span>Роли</span></a></li>
                     <li><a href="/admin/user-admin/index"><i class="fa fa-user-plus"></i>
                         <span>Пользователи</span></a></li>

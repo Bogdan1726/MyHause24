@@ -1,0 +1,79 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Тарифы
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Тарифы</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Тарифы</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="pull-right margin-bottom">
+            <a class="btn btn-success" href="{% url 'create_tariff' %}">Добавить тариф</a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div id="w0" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th>Название тарифа</th>
+                            <th>Описание тарифа</th>
+                            <th>Дата редактирования</th>
+                            <th style="width: 114px; min-width: 114px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for tariff in tariffs %}
+                        <tr data-href="{% url 'detail_tariff' tariff.id %}">
+                            <td>{{ tariff.title }}</td>
+                            <td>{{ tariff.description }}</td>
+                            <td>{{ tariff.date_edit|date:"d.m.Y - H:m" }}</td>
+                            <td>
+                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
+                                                                     href="#"
+                                                                     title="Копировать" data-toggle="tooltip"><i
+                                        class="fa fa-clone"></i></a> <a class="btn btn-default btn-sm"
+                                                                        href="#"
+                                                                        title="Редактировать" data-toggle="tooltip"><i
+                                        class="fa fa-pencil"></i></a> <a class="btn btn-default btn-sm"
+                                                                         href="#" title="Удалить"
+                                                                         data-toggle="tooltip" data-pjax="0"
+                                                                         data-method="post"
+                                                                         data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
+                                        class="fa fa-trash"></i></a></div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align:center;">Нет даных</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

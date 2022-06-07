@@ -12,9 +12,11 @@ from .task import send_email
 import random
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
-from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure
+from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure, \
+    Tariff, PriceTariffServices
 from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
-    ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm, ServicesForm
+    ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm, ServicesForm, \
+    TariffForm, PriceTariffServicesForm
 
 User = get_user_model()
 
@@ -458,7 +460,7 @@ class AccountsDelete(DeleteView):
 
 # region Services
 
-class ServicesListView(UpdateView):
+class ServicesListView(CreateView):
     model = Services
     template_name = 'crm/pages/services/list_services.html'
     formset_for_services = modelformset_factory(Services, form=ServicesForm, extra=0, can_delete=True)
@@ -466,12 +468,12 @@ class ServicesListView(UpdateView):
 
     def get_success_url(self):
         messages.success(self.request, 'Услуги обновлены')
-        return reverse_lazy('services', kwargs={'pk': 1})
+        return reverse_lazy('services')
 
     def get_form(self, form_class=None):
         if form_class is None:
             return self.formset_for_services(self.request.POST or None,
-                                             queryset=self.model.objects.all(),
+                                             queryset=Services.objects.all(),
                                              prefix='services')
 
     def get_context_data(self, **kwargs):
@@ -491,10 +493,57 @@ class ServicesListView(UpdateView):
                         forms.save()
             form_unit.save()
             return super().form_valid(form)
+        messages.error(self.request, form_unit.errors)
         return self.form_invalid(form)
 
 
 # endregion Services
+
+# region Tariffs
+
+
+class TariffListView(ListView):
+    model = Tariff
+    template_name = 'crm/pages/tariffs/list_tariffs.html'
+    context_object_name = 'tariffs'
+
+    def get_queryset(self):
+        return self.model.objects.all().order_by('-id')
+
+
+class TariffDetailView(DetailView):
+    model = Tariff
+    template_name = 'crm/pages/tariffs/detail_tariff.html'
+    context_object_name = 'tariff'
+
+    def get_context_data(self, **kwargs):
+        context = super(TariffDetailView, self).get_context_data()
+        context['services_price'] = PriceTariffServices.objects.filter(tariff=self.object)
+        return context
+
+
+class TariffCreateView(CreateView):
+    model = Tariff
+    form_class = TariffForm
+    template_name = 'crm/pages/tariffs/create_tariff.html'
+    formset_for_services_price = modelformset_factory(
+        PriceTariffServices, form=PriceTariffServicesForm, extra=0, can_delete=True
+    )
+
+    def get_context_data(self, **kwargs):
+        context = super(TariffCreateView, self).get_context_data()
+        context['formset'] = self.formset_for_services_price(
+            self.request.POST or None,
+            queryset = PriceTariffServices.objects.none(),
+            prefix = 'services_price'
+        )
+        return context
+
+
+
+
+
+# endregion Tariffs
 @login_required(login_url='login')
 def index(request):
     return render(request, 'crm/pages/index.html')

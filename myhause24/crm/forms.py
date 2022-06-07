@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
-from .models import House, Section, Floor, Apartment, Tariff, PersonalAccount, UnitOfMeasure, Services
+from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
+    Tariff, PriceTariffServices
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
@@ -315,6 +316,10 @@ class UnitOfMeasureForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control'})
         }
 
+    def __init__(self, *args, **kwargs):
+        super(UnitOfMeasureForm, self).__init__(*args, **kwargs)
+        self.fields['title'].error_messages = {'unique': 'Единица измерения с таким заголовком уже существует..'}
+
 
 class ServicesForm(forms.ModelForm):
     class Meta:
@@ -324,12 +329,55 @@ class ServicesForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'u_measurement': forms.Select(attrs={'class': 'form-control'}),
-            'is_show_meter_data': forms.CheckboxInput({'class': 'form-check-input',
-                                                       'id': 'checkbox1'})
+            'is_show_meter_data': forms.CheckboxInput({'class': 'form-check-input'})
         }
 
     def __init__(self, *args, **kwargs):
         super(ServicesForm, self).__init__(*args, **kwargs)
         self.fields['u_measurement'].empty_label = 'Выберите...'
+        self.fields['title'].error_messages = {'required': 'Поле Услуга не может быть пустым.'}
+
 
 # endregion Services Form
+
+
+# region Tariff Form
+
+class TariffForm(forms.ModelForm):
+    class Meta:
+        model = Tariff
+        exclude = ('date_edit',)
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control',
+                                                 'rows': '6'})
+        }
+
+
+class PriceTariffServicesForm(forms.ModelForm):
+    currency = forms.CharField(required=False,
+                               initial='грн',
+                               widget=forms.TextInput(attrs={'class': 'form-control',
+                                                             'readonly': 'true'}))
+
+    unit = forms.CharField(required=False,
+                           initial='Выберите...',
+                           widget=forms.TextInput(attrs={'class': 'form-control',
+                                                         'readonly': 'true'}))
+
+    class Meta:
+        model = PriceTariffServices
+        exclude = ('tariff',)
+
+        widgets = {
+            'price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'services': forms.Select(attrs={'class': 'form-control',
+                                            'onchange': "selectServices(this)"})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(PriceTariffServicesForm, self).__init__(*args, **kwargs)
+        self.fields['services'].empty_label = 'Выберите...'
+
+# endregion Tariff Form

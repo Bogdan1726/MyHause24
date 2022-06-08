@@ -59,7 +59,7 @@
             </li>
 
             <li class="treeview
-                       {% if url in '[services, tariffs, detail_tariff, create_tariff]' %}
+                       {% if url in '[services, tariffs, detail_tariff, create_tariff, update_tariff, create_copy_tariff]' %}
                        active
                        {% endif %}">
                 <a href="#"><i class="fa fa-cogs"></i>
@@ -75,7 +75,8 @@
                             <span>Услуги</span>
                         </a>
                     </li>
-                    <li class="{% if url in '[tariffs, detail_tariff, create_tariff]' %}active{% endif %}">
+                    <li class="
+                    {% if url in '[tariffs, detail_tariff, create_tariff, update_tariff, create_copy_tariff]' %}active{% endif %}">
                         <a href="{% url 'tariffs' %}">
                             <i class="fa fa-money"></i>
                             <span>Тарифы</span>

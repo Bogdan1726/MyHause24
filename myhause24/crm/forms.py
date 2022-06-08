@@ -378,6 +378,9 @@ class PriceTariffServicesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PriceTariffServicesForm, self).__init__(*args, **kwargs)
+        if kwargs.get('instance'):
+            self.fields['unit'].initial = kwargs.get('instance').services.u_measurement
         self.fields['services'].empty_label = 'Выберите...'
+        self.fields['price'].error_messages = {'required': 'Поле цена в форме услуги является обязательным полем'}
 
 # endregion Tariff Form

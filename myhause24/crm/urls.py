@@ -3,7 +3,7 @@ from .views import HouseListView, index, HouseCreateView, HouseUpdateView, House
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
     ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete, \
     AccountsListView, AccountsDetailView, AccountsCreateView, AccountsUpdateView, AccountsDelete, ServicesListView, \
-    TariffListView, TariffDetailView, TariffCreateView
+    TariffListView, TariffDetailView, TariffCreateView, TariffUpdateView, TariffDelete
 from .api_views import load_role, loading_floor_section, loading_personal_account, loading_section_for_house, \
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services
 from django.contrib.auth import get_user_model
@@ -53,8 +53,14 @@ urlpatterns = [
     path('tariffs/', TariffListView.as_view(), name='tariffs'),
     path('tariff/<int:pk>/', TariffDetailView.as_view(), name='detail_tariff'),
     path('tariff/create/', TariffCreateView.as_view(), name='create_tariff'),
+    path('tariff/create/<int:pk>/', TariffCreateView.as_view(), name='create_copy_tariff'),
+    path('tariff/update/<int:pk>/', TariffUpdateView.as_view(), name='update_tariff'),
+    path('tariff/delete/<int:pk>/', TariffDelete.as_view(), name='delete_tariff'),
     # tariffs end
 
+    # roles
+    path('roles/', )
+    # roles end
 
 
 

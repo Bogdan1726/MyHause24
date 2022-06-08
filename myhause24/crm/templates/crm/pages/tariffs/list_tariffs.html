@@ -46,20 +46,51 @@
                             <td>{{ tariff.description }}</td>
                             <td>{{ tariff.date_edit|date:"d.m.Y - H:m" }}</td>
                             <td>
-                                <div class="btn-group pull-right"><a class="btn btn-default btn-sm"
-                                                                     href="#"
-                                                                     title="Копировать" data-toggle="tooltip"><i
-                                        class="fa fa-clone"></i></a> <a class="btn btn-default btn-sm"
-                                                                        href="#"
-                                                                        title="Редактировать" data-toggle="tooltip"><i
-                                        class="fa fa-pencil"></i></a> <a class="btn btn-default btn-sm"
-                                                                         href="#" title="Удалить"
-                                                                         data-toggle="tooltip" data-pjax="0"
-                                                                         data-method="post"
-                                                                         data-confirm="Вы уверены, что хотите удалить этот элемент?"><i
-                                        class="fa fa-trash"></i></a></div>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'create_copy_tariff' tariff.id %}"
+                                       title="Копировать" data-toggle="tooltip">
+                                        <i class="fa fa-clone"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_tariff' tariff.id %}"
+                                       title="Редактировать" data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление Тарифа</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_tariff' tariff.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить {{ tariff.title }} ?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         {% empty %}
                         <tr>
                             <td colspan="4" style="text-align:center;">Нет даных</td>

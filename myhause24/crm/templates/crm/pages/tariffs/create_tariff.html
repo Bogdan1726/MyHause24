@@ -35,8 +35,49 @@
                     </div>
                 </div>
                 <div class="col-xs-12 col-lg-7">
+                    <div class="can-delete-list"></div>
                     {{ formset.management_form }}
                     <div id="form-services_price-rows">
+                        {% with formset as form %}
+                        {% for form in form %}
+                        <div id="{{ form.prefix }}" class="row form-services_price">
+                            {{ form.id }}
+                            <div class="col-xs-6 col-md-4">
+                                <div class="form-group">
+                                    <label>Услуга</label>
+                                    {{ form.services }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-3">
+                                <div class="form-group">
+                                    <label>Цена</label>
+                                    {{ form.price }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-2">
+                                <div class="form-group">
+                                    <label>Валюта</label>
+                                    {{ form.currency }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-3">
+                                <div class="form-group">
+                                    <label>Ед. изм.</label>
+                                    <div class="input-group">
+                                        {{ form.unit }}
+                                        <span class="input-group-btn">
+                                        <button type="button"
+                                                onclick="delForm('{{ form.prefix }}')"
+                                                class="btn btn-default form-row-remove-btn">
+                                        <i class="fa fa-trash"></i>
+                                        </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endwith %}
                     </div>
                     {% with formset.empty_form as form %}
                     <div id="empty_form-services_price" style="display: none;">
@@ -65,7 +106,9 @@
                                     <div class="input-group">
                                         {{ form.unit }}
                                         <span class="input-group-btn">
-                                        <button type="button" class="btn btn-default form-row-remove-btn">
+                                        <button type="button"
+                                                onclick="delForm('{{ form.prefix }}')"
+                                                class="btn btn-default form-row-remove-btn">
                                         <i class="fa fa-trash"></i>
                                         </button>
                                         </span>
@@ -126,5 +169,50 @@
         $("#form-" + prefix + "-rows").append($('#empty_form-' + prefix + '').html().replace(/__prefix__/g, form_idx))
         totalForms.val(parseInt(form_idx) + 1);
     }
+
+    function delForm(prefix) {
+        var form = $("div[id='" + prefix + "']")
+        console.log(prefix)
+        const result = confirm('Удалить?');
+        if (result) {
+            $('.can-delete-list').append(
+                '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
+            );
+            form.css('display', 'none');
+        } else {
+        }
+    }
+
+    //  jQuery Validations Form
+
+    $('#create_tariff').validate({
+        rules: {
+            title: {
+                required: true,
+            },
+            description: {
+                required: true,
+            },
+        },
+        messages: {
+            title: {
+                required: "Обязательное поле",
+            },
+            description: {
+                required: "Обязательное поле",
+            }
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
 </script>
 {% endblock %}

@@ -473,7 +473,9 @@ class ServicesListView(CreateView):
     def get_form(self, form_class=None):
         if form_class is None:
             return self.formset_for_services(self.request.POST or None,
-                                             queryset=Services.objects.all(),
+                                             queryset=self.model.objects.all().select_related(
+                                                 'u_measurement'
+                                             ),
                                              prefix='services')
 
     def get_context_data(self, **kwargs):
@@ -530,17 +532,111 @@ class TariffCreateView(CreateView):
         PriceTariffServices, form=PriceTariffServicesForm, extra=0, can_delete=True
     )
 
+    def get_form(self, form_class=None):
+        if form_class is None:
+            if self.kwargs.get('pk'):
+                obj = get_object_or_404(Tariff, id=self.kwargs.get('pk'))
+                return TariffForm(self.request.POST or None,
+                                  initial={
+                                      'title': obj.title,
+                                      'description': obj.description
+                                  })
+            return TariffForm(self.request.POST or None)
+
+    def get_success_url(self):
+        messages.success(self.request, f'{self.object.title} создан!')
+        return reverse_lazy('detail_tariff', kwargs={'pk': self.object.id})
+
     def get_context_data(self, **kwargs):
+        obj = False
+        price_tariff_services = PriceTariffServices.objects.all().select_related(
+            'services', 'tariff'
+        )
+        if self.kwargs.get('pk'):
+            obj = get_object_or_404(Tariff, id=self.kwargs.get('pk'))
+            count_form = price_tariff_services.filter(tariff=obj).count()
+            self.formset_for_services_price = modelformset_factory(
+                PriceTariffServices, form=PriceTariffServicesForm, extra=count_form, can_delete=True
+            )
         context = super(TariffCreateView, self).get_context_data()
         context['formset'] = self.formset_for_services_price(
             self.request.POST or None,
-            queryset = PriceTariffServices.objects.none(),
-            prefix = 'services_price'
+            queryset=PriceTariffServices.objects.none(),
+            initial = [
+                {'services': obj.services,
+                 'price': obj.price,
+                 'unit': obj.services.u_measurement
+                 }
+                for obj in price_tariff_services.filter(tariff=obj)
+            ] if obj else None,
+            prefix='services_price'
         )
         return context
 
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        self.object = form.save()
+        if formset.is_valid():
+            for forms in formset:
+                if forms.cleaned_data and forms.cleaned_data['DELETE'] is False:
+                    if forms.is_valid():
+                        services_price = forms.save(commit=False)
+                        services_price.tariff = self.object
+                        services_price.save()
+            formset.save()
+            return super().form_valid(form)
+        messages.error(self.request, formset.errors)
+        return self.form_invalid(form)
 
 
+class TariffUpdateView(UpdateView):
+    model = Tariff
+    form_class = TariffForm
+    template_name = 'crm/pages/tariffs/update_tariff.html'
+    formset_for_services_price = modelformset_factory(
+        PriceTariffServices, form=PriceTariffServicesForm, extra=0, can_delete=True
+    )
+
+    def get_success_url(self):
+        messages.success(self.request, f'{self.object.title} обновлён!')
+        return reverse_lazy('detail_tariff', kwargs={'pk': self.object.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(TariffUpdateView, self).get_context_data()
+        context['formset'] = self.formset_for_services_price(
+            self.request.POST or None,
+            queryset=PriceTariffServices.objects.filter(tariff=self.object).select_related(
+                'tariff', 'services', 'services__u_measurement'
+            ),
+            prefix='services_price',
+        )
+
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        self.object = form.save()
+        if formset.is_valid():
+            for forms in formset:
+                if forms.cleaned_data and forms.cleaned_data['DELETE'] is False:
+                    if forms.is_valid():
+                        services_price = forms.save(commit=False)
+                        services_price.tariff = self.object
+                        services_price.save()
+            formset.save()
+            return super().form_valid(form)
+        messages.error(self.request, formset.errors)
+        return self.form_invalid(form)
+
+
+class TariffDelete(DeleteView):
+    model = Tariff
+
+    def get_success_url(self):
+        messages.success(self.request, f'{self.object.title} удалён!')
+        return reverse_lazy('tariffs')
 
 
 # endregion Tariffs

@@ -1,11 +1,15 @@
+import random
+import uuid
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
-    Tariff, PriceTariffServices
+    Tariff, PriceTariffServices, Requisites
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from user.models import Role
 
 from .task import send_new_password_owner
 
@@ -383,4 +387,94 @@ class PriceTariffServicesForm(forms.ModelForm):
         self.fields['services'].empty_label = 'Выберите...'
         self.fields['price'].error_messages = {'required': 'Поле цена в форме услуги является обязательным полем'}
 
+
 # endregion Tariff Form
+
+
+# region Roles
+class RolesForm(forms.ModelForm):
+    class Meta:
+        model = Role
+        exclude = ('name',)
+
+
+# endregion Roles
+
+# region Requisites
+
+
+class RequisitesForm(forms.ModelForm):
+    class Meta:
+        model = Requisites
+        fields = '__all__'
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control',
+                                                 'rows': '6'})
+        }
+
+
+# endregion Requisites
+
+
+class UserAdminForm(forms.ModelForm):
+    new_password1 = forms.CharField(
+        label=_("New password"),
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control pass-value',
+                                          'autocomplete': 'new-password'}),
+    )
+    new_password2 = forms.CharField(
+        label=_("New password confirmation"),
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control pass-value',
+                                          'autocomplete': 'new-password'}),
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'phone', 'role',
+                  'status', 'new_password1', 'new_password2')
+
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'role': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'username': forms.EmailInput(attrs={'class': 'form-control'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(UserAdminForm, self).__init__(*args, **kwargs)
+        self.fields['role'].empty_label = 'Выберите...'
+
+    def clean_new_password2(self):
+        new_password1 = self.cleaned_data.get("new_password1")
+        new_password2 = self.cleaned_data.get("new_password2")
+        if new_password1 and new_password2 and new_password1 != new_password2:
+            raise ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+        return new_password2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['username']
+        while True:
+            unique_id = uuid.uuid4().hex[:6]
+            if not User.objects.filter(user_id=unique_id).exists():
+                user.user_id = unique_id
+                break
+        user.is_staff = True
+        if self.cleaned_data.get('new_password1') != '':
+            user.set_password(self.cleaned_data["new_password1"])
+            send_new_password_owner.delay(
+                self.cleaned_data['username'],
+                self.cleaned_data['new_password1']
+            )
+        if commit:
+            user.save()
+        return user

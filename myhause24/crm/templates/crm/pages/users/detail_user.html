@@ -1,0 +1,80 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Пользователь
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Пользователь</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'users' %}">Пользователи</a></li>
+    <li class="active">Пользователь</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title"></h3>
+        <div class="box-tools">
+            <a href="{% url 'update_user' user.id %}" class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать пользователя</span>
+                <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <div class="box-body">
+        <div class="row">
+            <div class="col-xs-12 col-lg-4">
+                <table class="table table-bordered table-striped table-view">
+                    <tbody>
+                    <tr>
+                        <td>Пользователь</td>
+                        <td>{{ user }}</td>
+                    </tr>
+                    <tr>
+                        <td>Роль</td>
+                        {% if user.role %}
+                        <td>{{ user.role }}</td>
+                        {% else %}
+                        <td>не указано</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Телефон</td>
+                        {% if user.phone %}
+                        <td>{{ user.phone }}</td>
+                        {% else %}
+                        <td>не указано</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Email(логин)</td>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <td>Статус</td>
+                        {% if user.status == 'disabled' %}
+                        <td><small class="label label-danger">Отключен</small></td>
+                        {% elif user.status == 'active' %}
+                        <td><small class="label label-success">Активен</small></td>
+                        {% else %}
+                        <td><small class="label label-warning">Новый</small></td>
+                        {% endif %}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

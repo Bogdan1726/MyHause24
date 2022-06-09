@@ -1,7 +1,7 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
 {% block title %}
-Редактирование услуг
+Роли
 {% endblock %}
 
 {% block style %}
@@ -9,15 +9,110 @@
 
 
 {% block content-header %}
-<h1>Редактирование услуг</h1>
+<h1>Роли</h1>
 <ul class="breadcrumb">
-    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
-    <li class="active">Услуги</li>
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Роли</li>
 </ul>
 {% endblock %}
 
 
 {% block content %}
+<div class="box">
+    <form id="roles" method="post">
+        {% csrf_token %}
+        <div class="box-body table-responsive no-padding">
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>Роль</th>
+                    <th class="text-center">Статистика</th>
+                    <th class="text-center">Касса</th>
+                    <th class="text-center">Квитанции на оплату</th>
+                    <th class="text-center">Лицевые счета</th>
+                    <th class="text-center">Квартиры</th>
+                    <th class="text-center">Владельцы квартир</th>
+                    <th class="text-center">Дома</th>
+                    <th class="text-center">Сообщения</th>
+                    <th class="text-center">Заявки вызова мастера</th>
+                    <th class="text-center">Счетчики</th>
+                    <th class="text-center">Управление сайтом</th>
+                    <th class="text-center">Услуги</th>
+                    <th class="text-center">Тарифы</th>
+                    <th class="text-center">Роли</th>
+                    <th class="text-center">Пользователи</th>
+                    <th class="text-center">Платежные реквизиты</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ form.management_form }}
+                {% for form in form %}
+                {{ form.id }}
+                <tr>
+                    <td>{{ form.instance.name }}</td>
+                    <td class="text-center">
+                        {{ form.statistics }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.cash_box }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.receipts }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.personal_accounts }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.apartments }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.owners }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.houses }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.messages }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.call_requests }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.counters }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.site_management }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.services }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.tariffs }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.roles }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.users }}
+                    </td>
+                    <td class="text-center">
+                        {{ form.requisites }}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 text-right">
+                <div class="form-group margin-top-15 margin-right-15">
+                    <a href="{% url 'roles' %}" class="btn btn-default">Отменить</a>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 {% endblock %}
 
 {% block scripts %}

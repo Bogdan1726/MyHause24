@@ -150,13 +150,6 @@
             </div>
 
         </form>
-        <script>
-            function generatePassword() {
-                const password = Math.random().toString(36).slice(-8);
-                $('input[name="password1"]').val(password);
-                $('input[name="password2"]').val(password);
-            }
-        </script>
     </div>
 </div>
 {% endblock %}
@@ -239,6 +232,13 @@
             $(element).closest('.form-group').removeClass('has-error');
         },
     });
+</script>
+<script>
+    function generatePassword() {
+        const password = Math.random().toString(36).slice(-8);
+        $('input[name="password1"]').val(password);
+        $('input[name="password2"]').val(password);
+    }
 </script>
 {% include 'crm/inc/_messages.html' %}
 

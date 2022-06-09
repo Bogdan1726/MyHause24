@@ -3,7 +3,8 @@ from .views import HouseListView, index, HouseCreateView, HouseUpdateView, House
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
     ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete, \
     AccountsListView, AccountsDetailView, AccountsCreateView, AccountsUpdateView, AccountsDelete, ServicesListView, \
-    TariffListView, TariffDetailView, TariffCreateView, TariffUpdateView, TariffDelete
+    TariffListView, TariffDetailView, TariffCreateView, TariffUpdateView, TariffDelete, RolesUpdateView, RequisitesView, \
+    UsersListView, UserDetailView, UserCreateView, UserUpdateView, UserDelete
 from .api_views import load_role, loading_floor_section, loading_personal_account, loading_section_for_house, \
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services
 from django.contrib.auth import get_user_model
@@ -59,10 +60,21 @@ urlpatterns = [
     # tariffs end
 
     # roles
-    path('roles/', )
+    path('roles/', RolesUpdateView.as_view(), name='roles'),
     # roles end
 
+    # requisites
+    path('requisites/', RequisitesView.as_view(), name='requisites'),
+    # requisites end
 
+    # user
+    path('users/', UsersListView.as_view(), name='users'),
+    path('user/<int:pk>/', UserDetailView.as_view(), name='detail_user'),
+    path('user/create/', UserCreateView.as_view(), name='create_user'),
+    path('user/update/<int:pk>/', UserUpdateView.as_view(), name='update_user'),
+    path('user/delete/<int:pk>/', UserDelete.as_view(), name='delete_user'),
+
+    # users
 
     # api_urls
     path('load_role/', load_role, name='load_role'),

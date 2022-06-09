@@ -59,7 +59,7 @@
             </li>
 
             <li class="treeview
-                       {% if url in '[services, tariffs, detail_tariff, create_tariff, update_tariff, create_copy_tariff]' %}
+                       {% if url in '[services, tariffs, detail_tariff, create_tariff, update_tariff, create_copy_tariff, roles, requisites, users, detail_user, update_user, create_user]' %}
                        active
                        {% endif %}">
                 <a href="#"><i class="fa fa-cogs"></i>
@@ -82,11 +82,23 @@
                             <span>Тарифы</span>
                         </a>
                     </li>
-                    <li><a href="/admin/user-admin/role"><i class="fa fa-user"></i> <span>Роли</span></a></li>
-                    <li><a href="/admin/user-admin/index"><i class="fa fa-user-plus"></i>
-                        <span>Пользователи</span></a></li>
-                    <li><a href="/admin/pay-company/index"><i class="fa fa-credit-card"></i>
-                        <span>Платежные реквизиты</span></a>
+                    <li class="{% if url in '[roles]' %}active{% endif %}">
+                        <a href="{% url 'roles' %}">
+                            <i class="fa fa-user"></i>
+                            <span>Роли</span>
+                        </a>
+                    </li>
+                    <li class="{% if url in '[users, detail_user, update_user, create_user]' %}active{% endif %}">
+                        <a href="{% url 'users' %}">
+                            <i class="fa fa-user-plus"></i>
+                            <span>Пользователи</span>
+                        </a>
+                    </li>
+                    <li class="{% if url in '[requisites]' %}active{% endif %}">
+                        <a href="{% url 'requisites' %}">
+                            <i class="fa fa-credit-card"></i>
+                            <span>Платежные реквизиты</span>
+                        </a>
                     </li>
                     <li><a href="/admin/transaction-purpose/index"><i class="fa fa-list-ol"></i>
                         <span>Статьи платежей</span></a>

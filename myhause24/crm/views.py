@@ -10,13 +10,18 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from .task import send_email
 import random
+from user.models import Role
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
-from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure, \
-    Tariff, PriceTariffServices
-from .forms import HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm, \
-    ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm, ServicesForm, \
-    TariffForm, PriceTariffServicesForm
+from .models import (
+    House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
+    Tariff, PriceTariffServices, Requisites)
+from .forms import (
+    HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
+    ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
+    ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
+    UserAdminForm
+)
 
 User = get_user_model()
 
@@ -562,7 +567,7 @@ class TariffCreateView(CreateView):
         context['formset'] = self.formset_for_services_price(
             self.request.POST or None,
             queryset=PriceTariffServices.objects.none(),
-            initial = [
+            initial=[
                 {'services': obj.services,
                  'price': obj.price,
                  'unit': obj.services.u_measurement
@@ -640,6 +645,106 @@ class TariffDelete(DeleteView):
 
 
 # endregion Tariffs
+
+# region Roles
+
+class RolesUpdateView(CreateView):
+    model = Role
+    template_name = 'crm/pages/roles.html'
+    formset_for_role = modelformset_factory(Role, form=RolesForm, extra=0)
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return self.formset_for_role(self.request.POST or None,
+                                         queryset=self.model.objects.all(),
+                                         prefix='roles')
+
+    def get_success_url(self):
+        messages.success(self.request, 'Роли обновлены')
+        return reverse_lazy('roles')
+
+
+# endregion Roles
+
+
+# region Requisites
+
+class RequisitesView(UpdateView):
+    model = Requisites
+    form_class = RequisitesForm
+    template_name = 'crm/pages/requisites.html'
+
+    def get_success_url(self):
+        messages.success(self.request, 'Платежные реквизиты обновлены')
+        return reverse_lazy('requisites')
+
+    def get_object(self, queryset=None):
+        requisites = Requisites.objects.get_or_create(
+            id=1
+        )
+        obj = Requisites.objects.get(id=1)
+        return obj
+
+
+# endregion Requisites
+
+# region Users
+
+class UsersListView(ListView):
+    model = User
+    template_name = 'crm/pages/users/list_users.html'
+    context_object_name = 'users'
+
+    def get_queryset(self):
+        return self.model.objects.filter(is_staff=True).order_by('role').select_related('role')
+
+
+class UserDetailView(DetailView):
+    model = User
+    template_name = 'crm/pages/users/detail_user.html'
+    context_object_name = 'user'
+
+    def get_queryset(self):
+        return self.model.objects.select_related('role')
+
+
+class UserCreateView(CreateView):
+    model = User
+    form_class = UserAdminForm
+    template_name = 'crm/pages/users/create_user.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f"{self.object} успешно создан!")
+        return reverse_lazy('detail_user', kwargs={'pk': self.object.id})
+
+
+class UserUpdateView(UpdateView):
+    model = User
+    form_class = UserAdminForm
+    template_name = 'crm/pages/users/update_user.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f"{self.object} успешно обновлён!")
+        return reverse_lazy('detail_user', kwargs={'pk': self.object.id})
+
+
+class UserDelete(DeleteView):
+    model = User
+
+    def get_success_url(self):
+        messages.success(self.request, f'{self.object} удалён!')
+        return reverse_lazy('users')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.is_superuser:
+            messages.error(request, f'{self.object} является супер пользователем и не может быть удалён')
+            return HttpResponseRedirect(reverse_lazy('users'))
+        self.object.delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+# endregion Users
+
 @login_required(login_url='login')
 def index(request):
     return render(request, 'crm/pages/index.html')

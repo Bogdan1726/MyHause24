@@ -15,12 +15,12 @@ from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
-    Tariff, PriceTariffServices, Requisites)
+    Tariff, PriceTariffServices, Requisites, PaymentItems)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
-    UserAdminForm
+    UserAdminForm, UserAdminChangeForm, PaymentItemsForm
 )
 
 User = get_user_model()
@@ -666,7 +666,6 @@ class RolesUpdateView(CreateView):
 
 # endregion Roles
 
-
 # region Requisites
 
 class RequisitesView(UpdateView):
@@ -696,7 +695,7 @@ class UsersListView(ListView):
     context_object_name = 'users'
 
     def get_queryset(self):
-        return self.model.objects.filter(is_staff=True).order_by('role').select_related('role')
+        return self.model.objects.filter(is_staff=True).order_by('role', 'id').select_related('role')
 
 
 class UserDetailView(DetailView):
@@ -720,8 +719,11 @@ class UserCreateView(CreateView):
 
 class UserUpdateView(UpdateView):
     model = User
-    form_class = UserAdminForm
+    form_class = UserAdminChangeForm
     template_name = 'crm/pages/users/update_user.html'
+
+    def get_queryset(self):
+        return self.model.objects.select_related('role')
 
     def get_success_url(self):
         messages.success(self.request, f"{self.object} успешно обновлён!")
@@ -743,7 +745,53 @@ class UserDelete(DeleteView):
         self.object.delete()
         return HttpResponseRedirect(self.get_success_url())
 
+
 # endregion Users
+
+# region Payment Items
+
+class PaymentItemsListView(ListView):
+    model = PaymentItems
+    template_name = 'crm/pages/payments/list_payment_items.html'
+    context_object_name = 'payments'
+
+    def get_queryset(self):
+        return self.model.objects.all().order_by('-id')
+
+
+class PaymentItemsDetailView(DetailView):
+    model = PaymentItems
+    template_name = 'crm/pages/payments/detail_payment_items.html'
+    context_object_name = 'payment'
+
+
+class PaymentItemsCreateView(CreateView):
+    model = PaymentItems
+    form_class = PaymentItemsForm
+    template_name = 'crm/pages/payments/create_payment_items.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'{self.object.title} создан!')
+        return reverse_lazy('detail_payment_items', kwargs={'pk': self.object.id})
+
+
+class PaymentItemsUpdateView(UpdateView):
+    model = PaymentItems
+    form_class = PaymentItemsForm
+    template_name = 'crm/pages/payments/update_payment_items.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'{self.object.title} обновлён!')
+        return reverse_lazy('detail_payment_items', kwargs={'pk': self.object.id})
+
+class PaymentItemsDelete(DeleteView):
+    model = PaymentItems
+
+    def get_success_url(self):
+        messages.success(self.request, f'{self.object.title} удалена!')
+        return reverse_lazy('payment_items')
+
+# endregion Payment Items
 
 @login_required(login_url='login')
 def index(request):

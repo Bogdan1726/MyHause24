@@ -88,12 +88,11 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 
 <script>
 
     // jQuery validations
-
-    import fa from "../../../../static/crm/bower_components/moment/src/locale/fa";
 
     $('#create_user').validate({
         rules: {
@@ -112,7 +111,11 @@
             new_password2: {
                 required: false,
                 minlength: 8
-            }
+            },
+            phone: {
+                required: false,
+                minlength: 18
+            },
 
         },
         messages: {
@@ -128,7 +131,11 @@
             },
             new_password2: {
                 minlength: "Пожалуйста, введите не менее 8 символов."
-            }
+            },
+            phone: {
+                required: "",
+                minlength: "Пожалуйста, введите корректный 11-ти значный номер."
+            },
 
         },
         errorElement: 'span',

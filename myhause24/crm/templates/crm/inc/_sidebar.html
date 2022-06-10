@@ -57,9 +57,8 @@
                         <span>Контакты</span></a></li>
                 </ul>
             </li>
-
             <li class="treeview
-                       {% if url in '[services, tariffs, detail_tariff, create_tariff, update_tariff, create_copy_tariff, roles, requisites, users, detail_user, update_user, create_user]' %}
+                       {% if url in '[services, tariffs, detail_tariff, create_tariff, update_tariff, create_copy_tariff, roles, requisites, users, detail_user, update_user, create_user, payment_items, create_payment_items, detail_payment_items, update_payment_items]' %}
                        active
                        {% endif %}">
                 <a href="#"><i class="fa fa-cogs"></i>
@@ -100,8 +99,11 @@
                             <span>Платежные реквизиты</span>
                         </a>
                     </li>
-                    <li><a href="/admin/transaction-purpose/index"><i class="fa fa-list-ol"></i>
-                        <span>Статьи платежей</span></a>
+                    <li class="{% if url in '[payment_items, create_payment_items, detail_payment_items, update_payment_items]' %}active{% endif %}">
+                        <a href="{% url 'payment_items' %}">
+                            <i class="fa fa-list-ol"></i>
+                            <span>Статьи платежей</span>
+                        </a>
                     </li>
                 </ul>
             </li>

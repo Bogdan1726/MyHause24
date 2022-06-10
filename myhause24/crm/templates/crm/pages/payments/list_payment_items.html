@@ -1,0 +1,104 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Статьи приходов/расходов
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Статьи приходов/расходов</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Статьи приходов/расходов</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="pull-right margin-bottom">
+            <a class="btn btn-success" href="{% url 'create_payment_items' %}">Добавить статью</a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div id="w0" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Приход/расход</th>
+                            <th style="width: 80px; min-width: 80px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for payment in payments %}
+                        <tr data-href="{% url 'detail_payment_items' payment.id %}" data-key="28">
+                            <td>{{ payment.title }}</td>
+                            {% if payment.type == 'income' %}
+                            <td><span class="text text-green">Приход</span></td>
+                            {% else %}
+                            <td><span class="text text-red">Расход</span></td>
+                            {% endif %}
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_payment_items' payment.id %}"
+                                       title="Редактировать" data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление статьи платежей</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_payment_items' payment.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить {{ payment.title }} ?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

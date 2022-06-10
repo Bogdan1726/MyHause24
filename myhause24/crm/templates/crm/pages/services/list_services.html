@@ -178,7 +178,7 @@
             <div class="row">
                 <div class="col-xs-12 text-center">
                     <div class="form-group">
-                        <a href="/admin/service/index" class="btn btn-default">Отменить</a>
+                        <a href="{% url 'services' %}" class="btn btn-default">Отменить</a>
                         <button type="submit" class="btn btn-success">Сохранить</button>
                     </div>
                 </div>
@@ -218,7 +218,6 @@
             $('.can-delete-list').append(
                 '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
             );
-            // $("input[name='" + prefix + "-title']").val('');
             form.css('display', 'none');
         } else {
         }

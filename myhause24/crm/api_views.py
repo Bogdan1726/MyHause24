@@ -1,8 +1,10 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-
-from .models import Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services
 from django.contrib.auth import get_user_model
+from .task import send_invite_user
+from .models import (
+    Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services
+)
 
 User = get_user_model()
 
@@ -92,3 +94,12 @@ def loading_unit_for_services(request):
             'unit': list(service)
         }
         return JsonResponse(response, status=200)
+
+
+def send_invite(request):
+    if request.is_ajax():
+        email = request.GET.get('email')
+        role = request.GET.get('role')
+        send_invite_user.delay(email, role)
+        return JsonResponse({}, status=200)
+

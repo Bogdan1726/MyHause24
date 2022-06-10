@@ -172,8 +172,8 @@ class CashBox(models.Model):
 
 class PaymentItems(models.Model):
     class Type(models.TextChoices):
-        INCOME = "income", _("Income")
-        EXPENSE = "expense", _("Expense")
+        INCOME = "income", _("Приход")
+        EXPENSE = "expense", _("Расход")
 
     title = models.CharField(max_length=64)
     type = models.CharField(max_length=7, choices=Type.choices, default=Type.INCOME)

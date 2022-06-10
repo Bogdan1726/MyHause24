@@ -5,8 +5,10 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
+from django.shortcuts import get_object_or_404
+
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
-    Tariff, PriceTariffServices, Requisites
+    Tariff, PriceTariffServices, Requisites, PaymentItems
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
@@ -417,8 +419,75 @@ class RequisitesForm(forms.ModelForm):
 
 # endregion Requisites
 
-
+# region User Forms
 class UserAdminForm(forms.ModelForm):
+    error_messages = {
+        'password_mismatch': _('The two password fields didn’t match.'),
+    }
+
+    password1 = forms.CharField(
+        label=_("New password"),
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control pass-value',
+                                          'autocomplete': 'new-password'}),
+    )
+    password2 = forms.CharField(
+        label=_("New password confirmation"),
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control pass-value',
+                                          'autocomplete': 'new-password'}),
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'phone', 'role',
+                  'status', 'password1', 'password2')
+
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control',
+                                            'data-mask': "+38(000) 000-00-00"}),
+            'role': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'username': forms.EmailInput(attrs={'class': 'form-control'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(UserAdminForm, self).__init__(*args, **kwargs)
+        self.fields['role'].empty_label = 'Выберите...'
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+        return password2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['username']
+        while True:
+            unique_id = uuid.uuid4().hex[:6]
+            if not User.objects.filter(user_id=unique_id).exists():
+                user.user_id = unique_id
+                break
+        user.is_staff = True
+        if self.cleaned_data.get('password1') != '':
+            user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+
+
+class UserAdminChangeForm(UserChangeForm):
+    error_messages = {
+        'password_mismatch': _('The two password fields didn’t match.'),
+    }
+
     new_password1 = forms.CharField(
         label=_("New password"),
         required=False,
@@ -440,15 +509,18 @@ class UserAdminForm(forms.ModelForm):
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control',
+                                            'data-mask': "+38(000) 000-00-00"}),
             'role': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'username': forms.EmailInput(attrs={'class': 'form-control'})
+
         }
 
     def __init__(self, *args, **kwargs):
-        super(UserAdminForm, self).__init__(*args, **kwargs)
+        super(UserAdminChangeForm, self).__init__(*args, **kwargs)
         self.fields['role'].empty_label = 'Выберите...'
+        self.fields['status'].required = False
 
     def clean_new_password2(self):
         new_password1 = self.cleaned_data.get("new_password1")
@@ -462,13 +534,9 @@ class UserAdminForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        if user.is_superuser:
+            user.role = get_object_or_404(Role, id=1)
         user.email = self.cleaned_data['username']
-        while True:
-            unique_id = uuid.uuid4().hex[:6]
-            if not User.objects.filter(user_id=unique_id).exists():
-                user.user_id = unique_id
-                break
-        user.is_staff = True
         if self.cleaned_data.get('new_password1') != '':
             user.set_password(self.cleaned_data["new_password1"])
             send_new_password_owner.delay(
@@ -478,3 +546,19 @@ class UserAdminForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+# endregion User Forms
+
+
+# region Payment Items Forms
+
+class PaymentItemsForm(forms.ModelForm):
+    class Meta:
+        model = PaymentItems
+        fields = '__all__'
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'type': forms.Select(attrs={'class': 'form-control'})
+        }
+
+# endregion Payment Items Forms

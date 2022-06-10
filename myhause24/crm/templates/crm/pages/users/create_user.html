@@ -55,7 +55,7 @@
                     <div class="form-group">
                         <label class="control-label">Пароль</label>
                         <div class="input-group">
-                            {{ form.new_password1 }}
+                            {{ form.password1 }}
                             <span class="input-group-btn">
                             <button class="btn btn-default" type="button" onclick="generatePassword()">
                                 Сгенерировать
@@ -68,7 +68,7 @@
                     </div>
                     <div class="form-group">
                         <label class="control-label">Повторить пароль</label>
-                        {{ form.new_password2 }}
+                        {{ form.password2 }}
                     </div>
                 </div>
             </div>
@@ -85,6 +85,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 
 <script>
 
@@ -99,15 +100,19 @@
                 required: true,
                 email: true
             },
-            new_password1: {
+            password1: {
                 required: true,
                 minlength: 8
 
             },
-            new_password2: {
+            password2: {
                 required: true,
                 minlength: 8
-            }
+            },
+            phone: {
+                required: false,
+                minlength: 18
+            },
 
         },
         messages: {
@@ -118,14 +123,18 @@
                 required: "Обязательное поле",
                 email: "Введите корректный email адрес"
             },
-            new_password1: {
+            password1: {
                 required: "Обязательное поле",
                 minlength: "Пожалуйста, введите не менее 8 символов."
             },
-            new_password2: {
+            password2: {
                 required: "Обязательное поле",
                 minlength: "Пожалуйста, введите не менее 8 символов."
-            }
+            },
+            phone: {
+                required: "",
+                minlength: "Пожалуйста, введите корректный 11-ти значный номер."
+            },
 
         },
         errorElement: 'span',
@@ -143,8 +152,8 @@
 
     function generatePassword() {
         const password = Math.random().toString(36).slice(-8);
-        $('input[name="new_password1"]').val(password);
-        $('input[name="new_password2"]').val(password);
+        $('input[name="password1"]').val(password);
+        $('input[name="password2"]').val(password);
     }
 </script>
 {% endblock %}

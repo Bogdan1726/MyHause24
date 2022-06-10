@@ -120,9 +120,8 @@
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
-                                       href="#"
                                        title="Отправить сообщение"
-                                       data-toggle="tooltip">
+                                       onclick="send_invite('{{ user.email }}', '{{ user.role }}')">
                                         <i class="fa fa-repeat"></i>
                                     </a>
                                     <a class="btn btn-default btn-sm"
@@ -193,6 +192,25 @@
 <script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
 <script>
+
+    function send_invite(email, role) {
+        console.log(email, role)
+        $.ajax({
+            type: 'GET',
+            url: '{% url "send_invite" %}',
+            data: {
+                'email': email,
+                'role': role
+            },
+            success: function (response) {
+                console.log(response)
+            },
+            error: function (response) {
+                console.log(response.error)
+            }
+        })
+    }
+
     $(document).ready(function () {
         // Setup - add a text input to each footer cell
         $('#table_users tfoot th').each(function () {
@@ -262,6 +280,8 @@
             $('select').val('');
             table.columns().search("").draw();
         })
+
+
     });
 
 </script>

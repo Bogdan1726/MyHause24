@@ -1,13 +1,22 @@
 from django.urls import path
-from .views import HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView, \
-    OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView, ApartmentCreateView, \
-    ApartmentUpdateView, ApartmentDetailView, ApartmentDelete, invite_owner, OwnerDelete, HouseDelete, \
-    AccountsListView, AccountsDetailView, AccountsCreateView, AccountsUpdateView, AccountsDelete, ServicesListView, \
-    TariffListView, TariffDetailView, TariffCreateView, TariffUpdateView, TariffDelete, RolesUpdateView, RequisitesView, \
-    UsersListView, UserDetailView, UserCreateView, UserUpdateView, UserDelete
-from .api_views import load_role, loading_floor_section, loading_personal_account, loading_section_for_house, \
-    loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services
 from django.contrib.auth import get_user_model
+from .views import (
+    HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView,
+    OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView,
+    ApartmentCreateView, ApartmentUpdateView, ApartmentDetailView, ApartmentDelete,
+    invite_owner, OwnerDelete, HouseDelete, AccountsListView, AccountsDetailView,
+    AccountsCreateView, AccountsUpdateView, AccountsDelete, ServicesListView,
+    TariffListView, TariffDetailView, TariffCreateView, TariffUpdateView, TariffDelete,
+    RolesUpdateView, RequisitesView, UsersListView, UserDetailView, UserCreateView,
+    UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
+    PaymentItemsUpdateView, PaymentItemsDelete
+)
+from .api_views import (
+    load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
+    loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
+    send_invite
+)
+
 User = get_user_model()
 
 urlpatterns = [
@@ -73,8 +82,16 @@ urlpatterns = [
     path('user/create/', UserCreateView.as_view(), name='create_user'),
     path('user/update/<int:pk>/', UserUpdateView.as_view(), name='update_user'),
     path('user/delete/<int:pk>/', UserDelete.as_view(), name='delete_user'),
-
     # users
+
+    # payment_items
+    path('payment-items/', PaymentItemsListView.as_view(), name='payment_items'),
+    path('payment-items/create/', PaymentItemsCreateView.as_view(), name='create_payment_items'),
+    path('payment-items/<int:pk>/', PaymentItemsDetailView.as_view(), name='detail_payment_items'),
+    path('payment-items/update/<int:pk>/', PaymentItemsUpdateView.as_view(), name='update_payment_items'),
+    path('payment-items/delete/<int:pk>/', PaymentItemsDelete.as_view(), name='delete_payment_items'),
+
+    # payment_items end
 
     # api_urls
     path('load_role/', load_role, name='load_role'),
@@ -84,5 +101,6 @@ urlpatterns = [
     path('loading_apartment_for_section/', loading_apartment_for_section, name='loading_apartment_for_section'),
     path('loading_apartment_owner/', loading_apartment_owner, name='loading_apartment_owner'),
     path('check_units/', check_units, name='check_units'),
+    path('send_invite/', send_invite, name='send_invite'),
     path('loading_unit_for_services/', loading_unit_for_services, name="loading_unit_for_services")
 ]

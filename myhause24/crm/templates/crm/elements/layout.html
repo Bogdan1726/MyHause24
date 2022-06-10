@@ -111,7 +111,7 @@
                             <!-- Menu Footer-->
                             <li class="user-footer">
                                 <div class="pull-left">
-                                    <a class="btn btn-default btn-flat" href="#">Профиль</a>
+                                    <a class="btn btn-default btn-flat" href="{% url 'update_user' request.user.id %}">Профиль</a>
                                 </div>
                                 <div class="pull-right">
                                     <a class="btn btn-default btn-flat" href="{% url 'logout' %}">Выход</a>

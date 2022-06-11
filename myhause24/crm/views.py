@@ -15,12 +15,12 @@ from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
-    Tariff, PriceTariffServices, Requisites, PaymentItems)
+    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
-    UserAdminForm, UserAdminChangeForm, PaymentItemsForm
+    UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm
 )
 
 User = get_user_model()
@@ -784,6 +784,7 @@ class PaymentItemsUpdateView(UpdateView):
         messages.success(self.request, f'{self.object.title} обновлён!')
         return reverse_lazy('detail_payment_items', kwargs={'pk': self.object.id})
 
+
 class PaymentItemsDelete(DeleteView):
     model = PaymentItems
 
@@ -791,8 +792,69 @@ class PaymentItemsDelete(DeleteView):
         messages.success(self.request, f'{self.object.title} удалена!')
         return reverse_lazy('payment_items')
 
+
 # endregion Payment Items
 
+
+# region MeterData
+
+
+class MeterDataListView(ListView):
+    model = MeterData
+    template_name = 'crm/pages/meter_data/list_meter_data.html'
+    context_object_name = 'meters_data'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'apartment', 'counter', 'apartment__house', 'apartment__section', 'counter__u_measurement'
+        ).distinct('counter', 'apartment')
+
+
+class MeterDataApartmentListView(ListView):
+    model = MeterData
+    template_name = 'crm/pages/meter_data/list_meter_data_for_apartment.html'
+    context_object_name = 'meters_data'
+
+    def get_queryset(self, **kwargs):
+        return self.model.objects.filter(apartment=self.kwargs.get('pk')).select_related(
+            'apartment', 'counter', 'apartment__house', 'apartment__section', 'counter__u_measurement'
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['apartment'] = Apartment.objects.filter(id=self.kwargs.get('pk')).first()
+        return context
+
+
+class MeterDataCreateView(CreateView):
+    model = MeterData
+    template_name = 'crm/pages/meter_data/create_meter_data.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Показания счетчика №{self.object.number} добавлены!')
+        return reverse_lazy('meter_data')
+
+    def generate_number(self):
+        while True:
+            random_number = f"{random.randint(10000, 99999)}-{random.randint(10000, 99999)}"
+            if not self.model.objects.filter(number=random_number).exists():
+                return random_number
+
+    def get_form(self, form_class=None, **kwargs):
+        if form_class is None:
+            apartment_id = self.kwargs.get('pk')
+
+            if apartment_id:
+                obj = Apartment.objects.get(pk=apartment_id)
+                return MeterDataForm(self.request.POST or None,
+                                     initial={'number': self.generate_number(),
+                                              'apartment': obj,
+                                              'section': obj.section,
+                                              'house': obj.house})
+            return MeterDataForm(self.request.POST or None, initial={'number': self.generate_number()})
+
+
+# endregion MeterData
 @login_required(login_url='login')
 def index(request):
     return render(request, 'crm/pages/index.html')

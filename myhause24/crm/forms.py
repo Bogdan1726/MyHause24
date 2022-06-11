@@ -8,7 +8,7 @@ from django.core.files.images import get_image_dimensions
 from django.shortcuts import get_object_or_404
 
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
-    Tariff, PriceTariffServices, Requisites, PaymentItems
+    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
@@ -546,6 +546,8 @@ class UserAdminChangeForm(UserChangeForm):
         if commit:
             user.save()
         return user
+
+
 # endregion User Forms
 
 
@@ -561,4 +563,38 @@ class PaymentItemsForm(forms.ModelForm):
             'type': forms.Select(attrs={'class': 'form-control'})
         }
 
+
 # endregion Payment Items Forms
+
+
+class MeterDataForm(forms.ModelForm):
+    house = forms.ModelChoiceField(queryset=House.objects.all(),
+                                   empty_label='Выберите...',
+                                   required=False,
+                                   widget=forms.Select(attrs={'class': 'form-control'}))
+    section = forms.ModelChoiceField(queryset=Section.objects.all(),
+                                     empty_label='Выберите...',
+                                     required=False,
+                                     widget=forms.Select(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = MeterData
+        fields = ('number', 'date', 'apartment', 'counter', 'status', 'indications')
+
+        widgets = {
+            'number': forms.TextInput(attrs={'class': 'form-control',
+                                             'data-mask': '00000-00000'}),
+            'date': forms.DateInput(attrs={'class': 'form-control'}),
+            'apartment': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'counter': forms.Select(attrs={'class': 'form-control'}),
+            'indications': forms.NumberInput(attrs={'class': 'form-control'})
+
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MeterDataForm, self).__init__(*args, **kwargs)
+        self.fields['apartment'].empty_label = 'Выберите...'
+        self.fields['counter'].empty_label = 'Выберите...'
+
+

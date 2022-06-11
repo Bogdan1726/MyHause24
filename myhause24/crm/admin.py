@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure, Tariff, \
-    PriceTariffServices, Requisites, PaymentItems
+    PriceTariffServices, Requisites, PaymentItems, MeterData
 
 
 # Register your models here.
@@ -35,7 +35,6 @@ class PersonalAccountAdmin(admin.ModelAdmin):
 class ServicesAdmin(admin.ModelAdmin):
     pass
 
-
 @admin.register(UnitOfMeasure)
 class UnitOfMeasureAdmin(admin.ModelAdmin):
     pass
@@ -59,4 +58,10 @@ class RequisitesAdmin(admin.ModelAdmin):
 @admin.register(PaymentItems)
 class PaymentItemsAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(MeterData)
+class MeterDataAdmin(admin.ModelAdmin):
+    pass
+
 

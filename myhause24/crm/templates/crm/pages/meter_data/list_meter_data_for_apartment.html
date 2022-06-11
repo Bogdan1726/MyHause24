@@ -1,0 +1,285 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Показания счетчиков, кв.{{ apartment.number }}
+
+{% endblock %}
+
+{% block style %}
+
+<style>
+
+    input[name="custom_search"] {
+        width: 100%;
+        font-weight: normal;
+        padding: 5px;
+        border: 1px solid #d2d6de;
+    }
+
+    input[name="custom_search"]:focus {
+        color: #212529;
+        border-color: #bdbdbd;
+        outline: 0;
+    }
+
+    select[name="custom_select"] {
+        width: 100%;
+        font-weight: normal;
+        padding: 5px;
+        border: 1px solid #d2d6de;
+    }
+
+    select[name="custom_select"] {
+        color: #212529;
+        border-color: #bdbdbd;
+        outline: 0;
+    }
+
+
+</style>
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Показания счетчиков, кв.{{ apartment.number }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Счетчики</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="pull-right margin-bottom">
+            <a class="btn btn-success"
+               onclick="localStorage.setItem('test', $('#7').val())"
+               href="{% url 'create_meter_data_for_apartment' apartment.id  %}">
+                Добавить показание
+            </a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a id="clean" class="btn btn-default btn-sm">
+                        <span class="hidden-xs">Очистить</span>
+                        <i class="fa fa-eraser visible-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="list_counter" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="table_counter" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th class="sorting_asc_disabled"
+                                style="width: 80px; min-width: 80px; cursor: auto;">№
+                            </th>
+                            <th style="width: 100px; min-width: 100px;">Статус</th>
+                            <th style="width: 70px; min-width:70px; color: #3c8dbc">Дата</th>
+                            <th style="width: 70px; min-width:70px; color: #3c8dbc">Месяц</th>
+                            <th style="min-width: 200px">Дом</th>
+                            <th style="min-width: 200px">Секция</th>
+                            <th style="width: 80px; min-width: 80px;">№ квартиры</th>
+                            <th style="width: 180px; min-width: 180px">Счетчик</th>
+                            <th style="width: 80px; min-width: 80px">Текущие показания</th>
+                            <th style="width: 80px; min-width: 80px">Ед. изм.</th>
+                            <th style="width: 80px; min-width: 80px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th id="counter"></th>
+                            <th></th>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for meter in meters_data %}
+                        <tr data-href="#">
+                            <td>{{ meter.number }}</td>
+                            {% if meter.status == 'new' %}
+                            <td><small class="label label-warning">Новое</small></td>
+                            {% elif meter.status == 'accounted' %}
+                            <td><small class="label label-success">Учтено</small></td>
+                            {% elif meter.status == 'accounted_for_paid' %}
+                            <td><small class="label label-success">Учтено и оплачено</small></td>
+                            {% else %}
+                            <td><small class="label label-primary">Нулевое</small></td>
+                            {% endif %}
+                            <td>{{ meter.date|date:"d.m.Y" }}</td>
+                            <td>{{ meter.date|date:"F Y" }}</td>
+                            <td>{{ meter.apartment.house }}</td>
+                            <td>{{ meter.apartment.section }}</td>
+                            <td>{{ meter.apartment.number }}</td>
+                            <td>{{ meter.counter }}</td>
+                            <td>{{ meter.indications }}</td>
+                            <td>{{ meter.counter.u_measurement }}</td>
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="#"
+                                       title="Редактировать" data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление показаний счетчика</h4>
+                                    </div>
+                                    <form method="post" action="#">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить показания №{{ meter.number }}?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script>
+
+
+    $(document).ready(function () {
+
+        // Setup - add a text input to each footer cell
+        $('#table_counter tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search"/>');
+        });
+
+
+        // DataTable
+        var table = $('#table_counter').DataTable({
+            "responsive": false,
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': true,
+            'searchCols': [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                {search: localStorage.getItem('counter')},
+                null
+            ],
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [0, 1, 4, 5, 6, 7, 8, 9, 10]
+                }
+            ],
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "info": "Количество показаний: <strong>_TOTAL_</stong>",
+                "infoEmpty": "Нет записей.",
+                "paginate": {
+                    "previous": "Предыдущая",
+                    "last": "Последняя",
+                    "next": "Следующая"
+                }
+            },
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns([0, 2, 6])
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+                //
+                this.api()
+                    .columns([1, 4, 5, 7])
+                    .every(function () {
+                        var column = this;
+                        var select = $('<select name="custom_select" id="' + column.selector.cols + '"><option value="">Выберите</option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+
+                        column
+                            .data()
+                            .unique()
+                            .sort()
+                            .each(function (d, j) {
+                                var val = $('<div/>').html(d).text();
+                                select.append('<option value="' + val + '">' + val + '</option>');
+                            });
+                        select.val(localStorage.getItem('counter')).attr('selected', 'selected');
+                    });
+            },
+        });
+        $("#table_counter_filter").css('display', 'none')
+        $("#clean").on("click", function () {
+            $('input').val('');
+            $('select').val('');
+            table.columns().search("").draw();
+        })
+
+    });
+
+</script>
+
+{% endblock %}

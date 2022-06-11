@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
+import datetime
 
 User = get_user_model()
 
@@ -96,15 +97,15 @@ class UnitOfMeasure(models.Model):
 
 class MeterData(models.Model):
     class MeterStatus(models.TextChoices):
-        NEW = 'new', _("New")
-        ACCOUNTED = 'accounted', _("Accounted")
-        ACCOUNTED_FOR_PAID = 'accounted_for_paid', _("Accounted for and paid")
-        ZERO = 'zero', _('Zero')
+        NEW = 'new', _("Новое")
+        ACCOUNTED = 'accounted', _("Учтено")
+        ACCOUNTED_FOR_PAID = 'accounted_for_paid', _("Учтено и оплачено")
+        ZERO = 'zero', _('Нулевое')
 
     number = models.CharField(max_length=64)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(default=datetime.date.today)
     indications = models.PositiveIntegerField()
-    status = models.CharField(max_length=20, choices=MeterStatus.choices)
+    status = models.CharField(max_length=20, choices=MeterStatus.choices, default=MeterStatus.NEW)
     counter = models.ForeignKey('Services', blank=True, null=True, on_delete=models.SET_NULL)
     apartment = models.ForeignKey('Apartment', null=True, on_delete=models.SET_NULL)
 

@@ -30,18 +30,23 @@
                     <span>Владельцы квартир</span>
                 </a>
             </li>
-
+            {% if request.user.role.houses %}
             <li class="{% if url in '[houses, create_house, update_house, detail_house]' %}active{% endif %}">
                 <a href="{% url 'houses' %}">
                     <i class="fa fa-building"></i>
                     <span>Дома</span>
                 </a>
             </li>
+            {% endif %}
             <li><a href="/admin/message/index"><i class="fa fa-envelope-o"></i> <span>Сообщения</span></a></li>
             <li><a href="/admin/master-request/index"><i class="fa fa-wrench"></i>
                 <span>Заявки вызова мастера</span></a></li>
-            <li><a href="/admin/counter-data/counters"><i class="fa fa-dashboard"></i>
-                <span>Показания счетчиков</span></a></li>
+            <li class="{% if url in '[meter_data, create_meter_data, meter_data_for_apartment]' %}active{% endif %}">
+                <a href="{% url 'meter_data' %}">
+                    <i class="fa fa-dashboard"></i>
+                    <span>Показания счетчиков</span>
+                </a>
+            </li>
             <li class="treeview"><a href="#!"><i class="fa fa-desktop"></i> <span>Управление сайтом</span> <span
                     class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
                 <ul class="treeview-menu">

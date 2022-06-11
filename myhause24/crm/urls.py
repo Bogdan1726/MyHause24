@@ -9,7 +9,7 @@ from .views import (
     TariffListView, TariffDetailView, TariffCreateView, TariffUpdateView, TariffDelete,
     RolesUpdateView, RequisitesView, UsersListView, UserDetailView, UserCreateView,
     UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
-    PaymentItemsUpdateView, PaymentItemsDelete
+    PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView
 )
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
@@ -55,6 +55,14 @@ urlpatterns = [
     path('accounts/delete/<int:pk>/', AccountsDelete.as_view(), name='delete_accounts'),
     # accounts end
 
+    # meter_data
+    path('meter-data/', MeterDataListView.as_view(), name='meter_data'),
+    path('meter-data/apartment/<int:pk>/', MeterDataApartmentListView.as_view(), name='meter_data_for_apartment'),
+    path('meter-data/apartment/<int:pk>/create/', MeterDataCreateView.as_view(),
+         name='create_meter_data_for_apartment'),
+    path('meter-data/create/', MeterDataCreateView.as_view(), name='create_meter_data'),
+
+    # meter_data end
     # services
     path('services/', ServicesListView.as_view(), name='services'),
     # services end
@@ -90,7 +98,6 @@ urlpatterns = [
     path('payment-items/<int:pk>/', PaymentItemsDetailView.as_view(), name='detail_payment_items'),
     path('payment-items/update/<int:pk>/', PaymentItemsUpdateView.as_view(), name='update_payment_items'),
     path('payment-items/delete/<int:pk>/', PaymentItemsDelete.as_view(), name='delete_payment_items'),
-
     # payment_items end
 
     # api_urls

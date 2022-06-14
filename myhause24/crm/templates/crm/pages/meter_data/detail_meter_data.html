@@ -1,0 +1,128 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% load floattags %}
+{% block title %}
+Показание счетчикa
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Показание счетчикa</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'meter_data'%}">Счетчики</a></li>
+    <li>
+        <a href="{% url 'meter_data_for_apartment' meter_data.apartment.id %}">
+            Показания счетчиков, кв.{{ meter_data.apartment.number }}</a>
+    </li>
+    <li class="active">Показания счетчика, №{{ meter_data.number }}</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12 col-md-7 col-lg-6">
+        <div class="page-header-spec">
+            <div class="form-group">
+                <div class="input-group date">
+                    <div class="input-group-addon">
+                        №
+                    </div>
+                    <div class="form-control pull-right">{{ meter_data.number }}</div>
+                </div>
+            </div>
+            <span class="label-mid">от</span>
+            <div class="form-group">
+                <div class="input-group date">
+                    <div class="input-group-addon">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                    </div>
+                    <div class="form-control pull-right">{{ meter_data.date|date:"d.m.Y" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title"></h3>
+        <div class="box-tools">
+            <a href="{% url 'update_meter_data' meter_data.id %}"
+               class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать показание</span>
+                <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <div class="box-body">
+        <div class="row">
+            <div class="col-xs-12 col-lg-4">
+                <table class="table table-bordered table-striped table-view">
+                    <tbody>
+                    <tr>
+                        <td>Счетчик</td>
+                        <td>{{ meter_data.counter }}</td>
+                    </tr>
+                    <tr>
+                        <td>Дом</td>
+                        <td>
+                            <a href="{% url 'detail_house' meter_data.apartment.house_id %}">
+                                {{ meter_data.apartment.house.title }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Секция</td>
+                        <td>{{ meter_data.apartment.section.title }}</td>
+                    </tr>
+                    <tr>
+                        <td>Квартира</td>
+                        <td>
+                            <a href="{% url 'detail_apartment' meter_data.apartment_id %}">
+                                {{ meter_data.apartment.number }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Владелец</td>
+                        <td>
+                            <a href="{% url 'detail_owner' meter_data.apartment.owner_id %}">
+                                {{ meter_data.apartment.owner }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Текущие показания</td>
+                        <td>{{ meter_data.indications|floatformat:"1g"|formatted_float }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ед. изм.</td>
+                        <td>{{ meter_data.counter.u_measurement }}</td>
+                    </tr>
+                    <tr>
+                        <td>Статус</td>
+                        {% if meter_data.status == 'new' %}
+                        <td><small class="label label-warning">Новое</small></td>
+                        {% elif meter_data.status == 'accounted' %}
+                        <td><small class="label label-success">Учтено</small></td>
+                        {% elif meter_data.status == 'accounted_for_paid' %}
+                        <td><small class="label label-success">Учтено и оплачено</small></td>
+                        {% else %}
+                        <td><small class="label label-primary">Нулевое</small></td>
+                        {% endif %}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

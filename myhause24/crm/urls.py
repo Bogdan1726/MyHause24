@@ -9,12 +9,13 @@ from .views import (
     TariffListView, TariffDetailView, TariffCreateView, TariffUpdateView, TariffDelete,
     RolesUpdateView, RequisitesView, UsersListView, UserDetailView, UserCreateView,
     UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
-    PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView
+    PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
+    MeterDataUpdateView, MeterDataDelete, MeterDataDetailView
 )
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
-    send_invite
+    send_invite, initial_house
 )
 
 User = get_user_model()
@@ -57,15 +58,21 @@ urlpatterns = [
 
     # meter_data
     path('meter-data/', MeterDataListView.as_view(), name='meter_data'),
-    path('meter-data/apartment/<int:pk>/', MeterDataApartmentListView.as_view(), name='meter_data_for_apartment'),
+    path('meter-data/apartment/<int:pk>/', MeterDataApartmentListView.as_view(),
+         name='meter_data_for_apartment'),
     path('meter-data/apartment/<int:pk>/create/', MeterDataCreateView.as_view(),
          name='create_meter_data_for_apartment'),
     path('meter-data/create/', MeterDataCreateView.as_view(), name='create_meter_data'),
-
+    path('meter-data/<int:pk>/', MeterDataDetailView.as_view(), name='detail_meter_data'),
+    path('meter-data/update/<int:pk>/', MeterDataUpdateView.as_view(), name='update_meter_data'),
+    path('meter-data/delete/<int:pk>/', MeterDataDelete.as_view(), name='delete_meter_data'),
     # meter_data end
+
+
     # services
     path('services/', ServicesListView.as_view(), name='services'),
     # services end
+
 
     # tariffs
     path('tariffs/', TariffListView.as_view(), name='tariffs'),
@@ -101,6 +108,7 @@ urlpatterns = [
     # payment_items end
 
     # api_urls
+    path('initial_house', initial_house, name='initial_house'),
     path('load_role/', load_role, name='load_role'),
     path('loading_floor_section/', loading_floor_section, name='loading_floor_section'),
     path('loading_personal_account/', loading_personal_account, name='loading_personal_account'),

@@ -1,7 +1,7 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
 {% block title %}
-Новое показание
+Показание счетчикa
 {% endblock %}
 
 {% block style %}
@@ -9,16 +9,16 @@
 
 
 {% block content-header %}
-<h1>Новое показание</h1>
+<h1>Показание счетчикa</h1>
 <ul class="breadcrumb">
     <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
     <li><a href="{% url 'meter_data' %}">Счетчики</a></li>
-    {% if request.resolver_match.url_name == 'create_meter_data_for_apartment' %}
-    <li><a href="{% url 'meter_data_for_apartment' form.initial.apartment.id %}">
-        Показания счетчиков, кв.{{ form.initial.apartment }}</a>
+    <li>
+        <a href="{% url 'meter_data_for_apartment' object.apartment.id %}">
+        Показания счетчиков, кв.{{ object.apartment }}</a>
     </li>
-    {% endif %}
-    <li class="active">Новое показание</li>
+    <li><a href="{% url 'detail_meter_data' object.id %}">Показания счетчика № {{ object.number }}</a></li>
+    <li class="active">Редактирование</li>
 </ul>
 {% endblock %}
 
@@ -84,15 +84,9 @@
             <div class="row">
                 <div class="col-xs-12 text-right">
                     <div class="form-group">
-                        {% if request.resolver_match.url_name == 'create_meter_data_for_apartment' %}
-                        <a href="{% url 'meter_data_for_apartment' form.initial.apartment.id %}"
+                        <a href="{% url 'meter_data_for_apartment' object.apartment.id %}"
                            class="btn btn-default margin-bottom-15">Отменить
                         </a>
-                        {% else %}
-                        <a href="{% url 'meter_data'%}"
-                           class="btn btn-default margin-bottom-15">Отменить
-                        </a>
-                        {% endif %}
                         <button type="submit"
                                 class="btn btn-success margin-bottom-15"
                                 name="action_save">
@@ -115,11 +109,6 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 <script>
-
-
-    if (localStorage.getItem('counter')) {
-        $("#id_counter").find("option:contains('" + localStorage.getItem('counter') + "')").prop('selected', true);
-    }
 
 
     $(document).ready(function () {
@@ -147,7 +136,6 @@
                 select_apartment.find('option').slice(1).remove();
             }
         })
-
 
         select_section.on('change', function () {
             if (this.value) {
@@ -253,7 +241,6 @@
                 counter: {
                     required: "Обязательное поле",
                 },
-
             },
             errorElement: 'span',
             errorPlacement: function (error, element) {

@@ -1,5 +1,6 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
+{% load floattags %}
 {% block title %}
 Показания счетчиков, кв.{{ apartment.number }}
 
@@ -45,7 +46,8 @@
 <h1>Показания счетчиков, кв.{{ apartment.number }}</h1>
 <ul class="breadcrumb">
     <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
-    <li class="active">Счетчики</li>
+    <li><a href="{% url 'meter_data'%}">Счетчики</a></li>
+    <li class="active">Показания счетчиков, кв.{{ apartment.number }}</li>
 </ul>
 {% endblock %}
 
@@ -55,7 +57,7 @@
     <div class="col-xs-12">
         <div class="pull-right margin-bottom">
             <a class="btn btn-success"
-               onclick="localStorage.setItem('test', $('#7').val())"
+               onclick="localStorage.setItem('counter', $('#7').val())"
                href="{% url 'create_meter_data_for_apartment' apartment.id  %}">
                 Добавить показание
             </a>
@@ -111,7 +113,7 @@
                         </tfoot>
                         <tbody>
                         {% for meter in meters_data %}
-                        <tr data-href="#">
+                        <tr data-href="{% url 'detail_meter_data' meter.id %}">
                             <td>{{ meter.number }}</td>
                             {% if meter.status == 'new' %}
                             <td><small class="label label-warning">Новое</small></td>
@@ -128,12 +130,13 @@
                             <td>{{ meter.apartment.section }}</td>
                             <td>{{ meter.apartment.number }}</td>
                             <td>{{ meter.counter }}</td>
-                            <td>{{ meter.indications }}</td>
+                            <td>{{ meter.indications|floatformat:"1g"|formatted_float }}</td>
                             <td>{{ meter.counter.u_measurement }}</td>
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
-                                       href="#"
+                                       onclick="localStorage.setItem('counter', '{{ meter.counter }}')"
+                                       href="{% url 'update_meter_data' meter.id %}"
                                        title="Редактировать" data-toggle="tooltip">
                                         <i class="fa fa-pencil"></i>
                                     </a>
@@ -156,7 +159,7 @@
                                             <span aria-hidden="true">×</span></button>
                                         <h4 class="modal-title">Удаление показаний счетчика</h4>
                                     </div>
-                                    <form method="post" action="#">
+                                    <form method="post" action="{% url 'delete_meter_data' meter.id %}">
                                         {% csrf_token %}
                                         <div class="modal-body">
                                             <p>Вы уверены, что хотите удалить показания №{{ meter.number }}?</p>
@@ -223,6 +226,7 @@
                     'targets': [0, 1, 4, 5, 6, 7, 8, 9, 10]
                 }
             ],
+            'order': [[2, 'desc']],
             "language": {
                 "infoFiltered": "(Отфильтровано _MAX_ записей)",
                 "zeroRecords": "Записей не найдено",
@@ -237,7 +241,7 @@
             initComplete: function () {
                 // Apply the search
                 this.api()
-                    .columns([0, 2, 6])
+                    .columns([0, 2, 6, 8])
                     .every(function () {
                         var that = this;
                         $('input', this.footer()).on('keyup change clear', function () {

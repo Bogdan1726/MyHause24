@@ -102,12 +102,12 @@ class MeterData(models.Model):
         ACCOUNTED_FOR_PAID = 'accounted_for_paid', _("Учтено и оплачено")
         ZERO = 'zero', _('Нулевое')
 
-    number = models.CharField(max_length=64)
+    number = models.CharField(max_length=8, unique=True)
     date = models.DateField(default=datetime.date.today)
-    indications = models.PositiveIntegerField()
+    indications = models.DecimalField(max_digits=9, decimal_places=1, null=True)
     status = models.CharField(max_length=20, choices=MeterStatus.choices, default=MeterStatus.NEW)
-    counter = models.ForeignKey('Services', blank=True, null=True, on_delete=models.SET_NULL)
-    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.SET_NULL)
+    counter = models.ForeignKey('Services', null=True, on_delete=models.CASCADE)
+    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.CASCADE)
 
 
 # endregion Tariffs

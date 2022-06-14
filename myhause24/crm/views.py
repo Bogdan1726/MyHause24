@@ -805,9 +805,22 @@ class MeterDataListView(ListView):
     context_object_name = 'meters_data'
 
     def get_queryset(self):
-        return self.model.objects.select_related(
+        queryset = self.model.objects.select_related(
             'apartment', 'counter', 'apartment__house', 'apartment__section', 'counter__u_measurement'
-        ).distinct('counter', 'apartment')
+        ).order_by('counter', 'apartment', '-id').distinct('counter', 'apartment')
+        return queryset
+
+
+class MeterDataDetailView(DetailView):
+    model = MeterData
+    template_name = 'crm/pages/meter_data/detail_meter_data.html'
+    context_object_name = 'meter_data'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'apartment', 'counter', 'apartment__house', 'apartment__section', 'counter__u_measurement',
+            'apartment__owner'
+        )
 
 
 class MeterDataApartmentListView(ListView):
@@ -818,7 +831,7 @@ class MeterDataApartmentListView(ListView):
     def get_queryset(self, **kwargs):
         return self.model.objects.filter(apartment=self.kwargs.get('pk')).select_related(
             'apartment', 'counter', 'apartment__house', 'apartment__section', 'counter__u_measurement'
-        )
+        ).order_by('-id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -832,27 +845,70 @@ class MeterDataCreateView(CreateView):
 
     def get_success_url(self):
         messages.success(self.request, f'Показания счетчика №{self.object.number} добавлены!')
-        return reverse_lazy('meter_data')
+        if 'action_save' in self.request.POST:
+            return reverse_lazy('meter_data')
+        return reverse_lazy('create_meter_data')
+
 
     def generate_number(self):
+        """
+        Returns the number for the initial form data
+        """
+        counter = 1
         while True:
-            random_number = f"{random.randint(10000, 99999)}-{random.randint(10000, 99999)}"
-            if not self.model.objects.filter(number=random_number).exists():
-                return random_number
+            obj_id = self.model.objects.order_by('-id').first().id
+            number = f'{obj_id+counter:08}'
+            if not self.model.objects.filter(number=number).exists():
+                return number
+            counter += 1
 
     def get_form(self, form_class=None, **kwargs):
         if form_class is None:
             apartment_id = self.kwargs.get('pk')
-
             if apartment_id:
-                obj = Apartment.objects.get(pk=apartment_id)
+                obj = Apartment.objects.filter(pk=apartment_id).select_related(
+                    'section', 'floor', 'owner', 'house'
+                )[0]
                 return MeterDataForm(self.request.POST or None,
                                      initial={'number': self.generate_number(),
                                               'apartment': obj,
-                                              'section': obj.section,
-                                              'house': obj.house})
-            return MeterDataForm(self.request.POST or None, initial={'number': self.generate_number()})
+                                              'section': obj.section_id,
+                                              'house': obj.house_id})
+            return MeterDataForm(self.request.POST or None,
+                                 initial={'number': self.generate_number()})
 
+
+class MeterDataUpdateView(UpdateView):
+    model = MeterData
+    template_name = 'crm/pages/meter_data/update_meter_data.html'
+
+    def get_object(self, queryset=None):
+        queryset = self.model.objects.filter(id=self.kwargs.get('pk')).select_related(
+            'apartment', 'counter', 'counter__u_measurement'
+        )
+        obj = queryset[0]
+        return obj
+
+    def get_form(self, form_class=None, **kwargs):
+        if form_class is None:
+            return MeterDataForm(self.request.POST or None,
+                                 instance=self.object,
+                                 initial={'house': {self.object.apartment.house_id},
+                                          'section': self.object.apartment.section_id})
+
+    def get_success_url(self):
+        messages.success(self.request, f'Показания счетчика №{self.object.number} обновлены!')
+        if 'action_save' in self.request.POST:
+            return reverse_lazy('meter_data_for_apartment', kwargs={'pk': self.object.apartment.id})
+        return reverse_lazy('create_meter_data')
+
+
+class MeterDataDelete(DeleteView):
+    model = MeterData
+
+    def get_success_url(self):
+        messages.success(self.request, f'Показания счетчика №{self.object.number} удалены!')
+        return reverse_lazy('meter_data_for_apartment', kwargs={'pk': self.object.apartment.id})
 
 # endregion MeterData
 @login_required(login_url='login')

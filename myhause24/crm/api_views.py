@@ -103,3 +103,11 @@ def send_invite(request):
         send_invite_user.delay(email, role)
         return JsonResponse({}, status=200)
 
+
+def initial_house(request):
+    if request.is_ajax():
+        house = House.objects.all().values('id', 'title')
+        response = {
+            'house': list(house)
+        }
+        return JsonResponse(response, status=200)

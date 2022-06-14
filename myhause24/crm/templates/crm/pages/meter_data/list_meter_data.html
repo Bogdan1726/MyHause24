@@ -1,5 +1,7 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
+{% load floattags %}
+
 {% block title %}
 Счетчики
 {% endblock %}
@@ -54,7 +56,7 @@
     <div class="col-xs-12">
         <div class="pull-right margin-bottom">
             <a class="btn btn-success"
-               onclick="localStorage.removeItem('test')"
+               onclick="localStorage.removeItem('counter')"
                href="{% url 'create_meter_data' %}">Добавить показание</a>
         </div>
     </div>
@@ -76,8 +78,9 @@
                     <table id="table_counter" class="table table-bordered table-hover table-striped linkedRow">
                         <thead>
                         <tr>
-                            <th class="sorting_asc_disabled"
-                                style="min-width: 200px; cursor: auto;">Дом</th>
+                            <th
+                                style="min-width: 200px;">Дом
+                            </th>
                             <th style="min-width: 200px">Секция</th>
                             <th style="width: 100px; min-width: 120px; color: #3c8dbc">№ квартиры</th>
                             <th style="width: 180px; min-width: 180px">Счетчик</th>
@@ -104,14 +107,14 @@
                             <td>{{ meter.apartment.section }}</td>
                             <td>{{ meter.apartment.number }}</td>
                             <td>{{ meter.counter }}</td>
-                            <td>{{ meter.indications }}</td>
+                            <td>{{ meter.indications|floatformat:"1g"|formatted_float }}</td>
                             <td>{{ meter.counter.u_measurement }}</td>
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
-                                       href="#"
-                                       title="Снять новое показание счетчика"
-                                       target="_blank" data-toggle="tooltip">
+                                       onclick="localStorage.setItem('counter', '{{ meter.counter }}')"
+                                       href="{% url 'create_meter_data_for_apartment' meter.apartment.id %}"
+                                       title="Снять новое показание счетчика">
                                         <i class="fa fa-dashboard"></i>
                                     </a>
                                     <a class="btn btn-default btn-sm"
@@ -161,6 +164,7 @@
                     'targets': [0, 1, 3, 4, 5, 6]
                 }
             ],
+            order: [],
             "language": {
                 "infoFiltered": "(Отфильтровано _MAX_ записей)",
                 "zeroRecords": "Записей не найдено",

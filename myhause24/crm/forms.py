@@ -568,14 +568,23 @@ class PaymentItemsForm(forms.ModelForm):
 
 
 class MeterDataForm(forms.ModelForm):
-    house = forms.ModelChoiceField(queryset=House.objects.all(),
-                                   empty_label='Выберите...',
-                                   required=False,
-                                   widget=forms.Select(attrs={'class': 'form-control'}))
-    section = forms.ModelChoiceField(queryset=Section.objects.all(),
-                                     empty_label='Выберите...',
-                                     required=False,
-                                     widget=forms.Select(attrs={'class': 'form-control'}))
+
+    house = forms.ChoiceField(
+        choices=[
+            (obj.id, obj.title) for obj in House.objects.all()
+        ],
+        required=False,
+        widget=forms.Select(
+            attrs={'class': 'form-control'})
+    )
+    section = forms.ChoiceField(
+        choices=[
+            (obj.id, obj.title) for obj in Section.objects.all()
+        ],
+        required=False,
+        widget=forms.Select(
+            attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = MeterData
@@ -583,7 +592,7 @@ class MeterDataForm(forms.ModelForm):
 
         widgets = {
             'number': forms.TextInput(attrs={'class': 'form-control',
-                                             'data-mask': '00000-00000'}),
+                                             'data-mask': '00000000'}),
             'date': forms.DateInput(attrs={'class': 'form-control'}),
             'apartment': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
@@ -594,7 +603,9 @@ class MeterDataForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(MeterDataForm, self).__init__(*args, **kwargs)
+        self.fields['house'].choices = [('', 'Выберите...')] + self.fields['house'].choices
+        self.fields['section'].choices = [('', 'Выберите...')] + self.fields['section'].choices
         self.fields['apartment'].empty_label = 'Выберите...'
         self.fields['counter'].empty_label = 'Выберите...'
-
-
+        self.fields['counter'].queryset = Services.objects.filter(is_show_meter_data=True)
+        self.fields['number'].error_messages = {'unique': 'Данные счетчика с таким номером уже существует.'}

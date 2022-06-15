@@ -15,7 +15,7 @@ from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
-    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData)
+    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
@@ -199,10 +199,8 @@ class OwnerDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(OwnerDetailView, self).get_context_data()
-        context['apartments'] = Apartment.objects.all().select_related(
+        context['apartments'] = Apartment.objects.filter(owner=self.object).select_related(
             'section', 'house', 'floor', 'tariff', 'house', 'owner')
-        context['personal_account'] = PersonalAccount.objects.all().select_related(
-            'apartment')
         return context
 
 
@@ -310,21 +308,22 @@ class ApartmentCreateView(CreateView):
         personal_account = context['personal_account']
         account = PersonalAccount.objects.all()
         if personal_account.is_valid():
-            try:
-                obj = account.get(number=personal_account.cleaned_data['number'])
-                if obj.apartment:
-                    messages.error(self.request, 'К этому лицевому счету уже закреплена квартира')
-                    return super().form_invalid(form)
-                self.object = form.save()
-                account.filter(number=personal_account.cleaned_data['number']).update(
-                    apartment=self.object
-                )
-            except PersonalAccount.DoesNotExist:
-                self.object = form.save()
-                account.create(
-                    number=personal_account.cleaned_data['number'],
-                    apartment=self.object
-                )
+            if personal_account.cleaned_data['number_account'] != '':
+                try:
+                    obj = account.get(number=personal_account.cleaned_data['number_account'])
+                    if obj.apartment:
+                        messages.error(self.request, 'К этому лицевому счету уже закреплена квартира')
+                        return super().form_invalid(form)
+                    self.object = form.save()
+                    account.filter(number=personal_account.cleaned_data['number_account']).update(
+                        apartment=self.object
+                    )
+                except PersonalAccount.DoesNotExist:
+                    self.object = form.save()
+                    account.create(
+                        number=personal_account.cleaned_data['number_account'],
+                        apartment=self.object
+                    )
         return super().form_valid(form)
 
 
@@ -336,9 +335,10 @@ class ApartmentUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(ApartmentUpdateView, self).get_context_data()
+        obj = PersonalAccount.objects.filter(apartment=self.object).first()
         context['personal_account'] = PersonalAccountForm(
             self.request.POST or None,
-            instance=PersonalAccount.objects.filter(apartment=self.object).first(),
+            initial={'number_account': obj.number if obj else None},
             prefix='account_form'
         )
         return context
@@ -354,22 +354,26 @@ class ApartmentUpdateView(UpdateView):
         personal_account = context['personal_account']
         account = PersonalAccount.objects.all()
         if personal_account.is_valid():
-            try:
-                obj = account.get(number=personal_account.cleaned_data['number'])
-                if obj.apartment and obj.apartment != self.object:
-                    messages.error(self.request, 'К этому лицевому счету уже закреплена квартира')
-                    return super().form_invalid(form)
-                account.filter(apartment=self.object).update(apartment=None)
-                account.filter(
-                    number=personal_account.cleaned_data['number']
-                ).update(apartment=self.object)
+            if personal_account.cleaned_data['number_account'] != '':
+                try:
+                    obj = account.get(number=personal_account.cleaned_data['number_account'])
+                    if obj.apartment and obj.apartment != self.object:
+                        messages.error(self.request, 'К этому лицевому счету уже закреплена квартира')
+                        return super().form_invalid(form)
+                    account.filter(apartment=self.object).update(apartment=None)
+                    account.filter(
+                        number=personal_account.cleaned_data['number_account']
+                    ).update(apartment=self.object)
 
-            except PersonalAccount.DoesNotExist:
-                account.filter(apartment=self.object).update(apartment=None)
-                account.create(
-                    number=personal_account.cleaned_data['number'],
-                    apartment=self.object
-                )
+                except PersonalAccount.DoesNotExist:
+                    account.filter(apartment=self.object).update(apartment=None)
+                    account.create(
+                        number=personal_account.cleaned_data['number_account'],
+                        apartment=self.object
+                    )
+        else:
+            print(personal_account.errors)
+            return super().form_invalid(messages.error(self.request, personal_account.errors))
         return super().form_valid(form)
 
 
@@ -796,6 +800,31 @@ class PaymentItemsDelete(DeleteView):
 # endregion Payment Items
 
 
+# region Master's call
+
+class MasterCallListView(ListView):
+    model = CallRequest
+    template_name = 'crm/pages/master_calls/list_master_calls.html'
+    context_object_name = 'calls'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'apartment', 'master', 'type_master', 'apartment__house', 'apartment__owner'
+        ).order_by('-id')
+
+
+class MasterCallDetailView(DetailView):
+    model = CallRequest
+    template_name = 'crm/pages/master_calls/detail_master_call.html'
+    context_object_name = 'call'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'apartment', 'master', 'type_master', 'apartment__house', 'apartment__owner'
+        ).order_by('-id')
+
+# endregion Master's call
+
 # region MeterData
 
 
@@ -911,6 +940,8 @@ class MeterDataDelete(DeleteView):
         return reverse_lazy('meter_data_for_apartment', kwargs={'pk': self.object.apartment.id})
 
 # endregion MeterData
+
+
 @login_required(login_url='login')
 def index(request):
     return render(request, 'crm/pages/index.html')

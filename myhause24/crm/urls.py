@@ -10,12 +10,12 @@ from .views import (
     RolesUpdateView, RequisitesView, UsersListView, UserDetailView, UserCreateView,
     UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
     PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
-    MeterDataUpdateView, MeterDataDelete, MeterDataDetailView
+    MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView
 )
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
-    send_invite, initial_house
+    send_invite, new_users
 )
 
 User = get_user_model()
@@ -55,6 +55,12 @@ urlpatterns = [
     path('accounts/update/<int:pk>/', AccountsUpdateView.as_view(), name='update_accounts'),
     path('accounts/delete/<int:pk>/', AccountsDelete.as_view(), name='delete_accounts'),
     # accounts end
+
+    # master's call
+    path('master-calls/', MasterCallListView.as_view(), name='master_calls'),
+    path('master-calls/<int:pk>/', MasterCallDetailView.as_view(), name='detail_master_call'),
+
+    # master's call end
 
     # meter_data
     path('meter-data/', MeterDataListView.as_view(), name='meter_data'),
@@ -108,7 +114,7 @@ urlpatterns = [
     # payment_items end
 
     # api_urls
-    path('initial_house', initial_house, name='initial_house'),
+    path('new_users/', new_users, name='new_users'),
     path('load_role/', load_role, name='load_role'),
     path('loading_floor_section/', loading_floor_section, name='loading_floor_section'),
     path('loading_personal_account/', loading_personal_account, name='loading_personal_account'),

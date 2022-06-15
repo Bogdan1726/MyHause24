@@ -32,7 +32,7 @@
                 <div class="col-xs-12 col-sm-6 col-sm-push-6">
                     <div class="form-group">
                         <label class="control-label">Лицевой счет</label>
-                        {{ personal_account.number }}
+                        {{ personal_account.number_account }}
                         {{ personal_account.list_personal_accounts }}
                     </div>
                 </div>
@@ -159,7 +159,7 @@
         var select_floor = $("select[name='floor']")
         var select_house = $("select[name='house']")
         var select_section = $("select[name='section']")
-        var account_input = $('input[name="account_form-number"]')
+        var account_input = $('input[name="account_form-number_account"]')
         var select_personal_account = $('select[name="account_form-list_personal_accounts"]')
 
 

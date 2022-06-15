@@ -9,6 +9,15 @@ from .models import (
 User = get_user_model()
 
 
+def new_users(request):
+    if request.is_ajax():
+        users = User.objects.filter(status='new', is_staff=False).values('id', 'email')
+        response = {
+            'users': list(users)
+        }
+        return JsonResponse(response, status=200)
+
+
 def load_role(request):
     if request.is_ajax():
         user_id = request.GET.get('user')
@@ -104,10 +113,3 @@ def send_invite(request):
         return JsonResponse({}, status=200)
 
 
-def initial_house(request):
-    if request.is_ajax():
-        house = House.objects.all().values('id', 'title')
-        response = {
-            'house': list(house)
-        }
-        return JsonResponse(response, status=200)

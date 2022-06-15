@@ -28,7 +28,6 @@
     <title>
         {% block title %} Панель Администратора {% endblock %}
     </title>
-
     <style>
         .box {
             position: relative;
@@ -41,7 +40,7 @@
             box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.1)
         }
 
-        .error{
+        .error {
             color: red;
         }
     </style>
@@ -75,16 +74,18 @@
                     <li class="dropdown notifications-menu">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <i class="fa fa-child fa-lg"></i>
-                            <span class="label label-warning">0</span>
+                            <span class="label label-warning">
+                                <span class="users_counter">0</span>
+                            </span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li class="header">Новых пользователей: 0</li>
+                            <li class="header">Новых пользователей: <span class="users_counter">0</span></li>
                             <li>
                                 <!-- inner menu: contains the actual data -->
                                 <ul class="menu">
                                 </ul>
                             </li>
-                            <li class="footer"><a href="#">Перейти в раздел пользователей</a></li>
+                            <li class="footer"><a href="{% url 'owners' %}">Перейти в раздел пользователей</a></li>
                         </ul>
                     </li>
                     <!-- User Account -->
@@ -169,8 +170,32 @@
 <script src="{% static 'crm/bower_components/jquery-slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/chart.js/Chart.js' %}"></script>
 <script src="{% static 'crm/dist/js/main.js' %}"></script>
-
-
+<script>
+    if (localStorage.getItem('users_count')) {
+        $(".users_counter").html(localStorage.getItem('users_count'))
+    }
+    $.ajax({
+        type: 'GET',
+        url: '{% url "new_users" %}',
+        date: {},
+        success: function (response) {
+            $(".users_counter").html(response.users.length)
+            localStorage.setItem('users_count', response.users.length)
+            for (user in response.users) {
+                $('ul .menu').append(
+                    '<li>' +
+                    '<a href="/admin/owner/' + response.users[user].id + '">' +
+                    '' + response.users[user].email + '' +
+                    '</a>' +
+                    '</li>'
+                )
+            }
+        },
+        error: function (response) {
+            console.log(response.error)
+        },
+    })
+</script>
 {% include 'crm/inc/_messages.html' %}
 {% block scripts %}
 {% endblock %}

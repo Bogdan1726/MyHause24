@@ -224,10 +224,6 @@ class InviteOwnerForm(forms.Form):
 # region Apartment Form
 
 class ApartmentForm(forms.ModelForm):
-    owner = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False),
-                                   empty_label='Выберите...',
-                                   widget=forms.Select(attrs={'class': 'form-control',
-                                                              'style': 'width: 100%;'}))
 
     class Meta:
         model = Apartment
@@ -238,7 +234,8 @@ class ApartmentForm(forms.ModelForm):
             'house': forms.Select(attrs={'class': 'form-control'}),
             'section': forms.Select(attrs={'class': 'form-control'}),
             'floor': forms.Select(attrs={'class': 'form-control'}),
-            'tariff': forms.Select(attrs={'class': 'form-control'})
+            'tariff': forms.Select(attrs={'class': 'form-control'}),
+            'owner': forms.Select(attrs={'class': 'form-control'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -247,9 +244,8 @@ class ApartmentForm(forms.ModelForm):
         self.fields['floor'].empty_label = 'Выберите...'
         self.fields['house'].empty_label = 'Выберите...'
         self.fields['tariff'].empty_label = 'Выберите...'
-
-    def clean(self):
-        return self.cleaned_data
+        self.fields['owner'].empty_label = 'Выберите...'
+        self.fields['owner'].queryset = User.objects.filter(is_staff=False)
 
 
 class PersonalAccountForm(forms.ModelForm):
@@ -257,24 +253,23 @@ class PersonalAccountForm(forms.ModelForm):
         status='active',
         apartment=None
     ),
+        empty_label='Выберите...',
         required=False,
         widget=forms.Select(attrs={
             'class': 'form-control select2 select2-hidden-accessible',
             'style': 'width: 100%;'}))
 
+    number_account = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control',
+                                                                                   'data-mask': "00000-00000"}))
+
     class Meta:
         model = PersonalAccount
-        exclude = ('status', 'apartment')
+        exclude = ('status', 'apartment', 'number')
 
         widgets = {
             'number': forms.TextInput(attrs={'class': 'form-control',
                                              'data-mask': "00000-00000"})
         }
-
-    def clean(self):
-        print(self.cleaned_data)
-        return self.cleaned_data
-
 
 # endregion Apartment Form
 
@@ -568,7 +563,6 @@ class PaymentItemsForm(forms.ModelForm):
 
 
 class MeterDataForm(forms.ModelForm):
-
     house = forms.ChoiceField(
         choices=[
             (obj.id, obj.title) for obj in House.objects.all()

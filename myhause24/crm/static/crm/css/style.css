@@ -151,15 +151,15 @@ a.desc:after {
     content: "\e156";
 }
 
-select.form-control {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  -webkit-border-radius: 0;
-  background-image: url("/media/logo.svg");
-  background-position: calc(100% - 10px) 50%;
-  background-repeat: no-repeat;
-  background-size: 7px;
-}
+/*select.form-control {*/
+/*  -webkit-appearance: none;*/
+/*  -moz-appearance: none;*/
+/*  -webkit-border-radius: 0;*/
+/*  background-image: none;*/
+/*  background-position: calc(100% - 10px) 50%;*/
+/*  background-repeat: no-repeat;*/
+/*  background-size: 7px;*/
+/*}*/
 
 .btn-hover-change:hover {
     background-color: #3c8dbc;

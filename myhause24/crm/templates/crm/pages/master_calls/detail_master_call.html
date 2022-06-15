@@ -1,0 +1,131 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Заявка №{{ call.id }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Заявка №{{ call.id }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'master_calls' %}">Заявки вызова мастера</a></li>
+    <li class="active">Заявка №{{ call.id }}</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12 col-md-7 col-lg-6">
+        <div class="page-header-spec">
+            <div class="form-group">
+                <div class="input-group date">
+                    <div class="input-group-addon">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                    </div>
+                    <div class="form-control pull-right">{{ call.date|date:"d.m.Y" }}</div>
+                </div>
+            </div>
+            <span class="label-mid">от</span>
+            <div class="form-group">
+                <div class="input-group date">
+                    <div class="input-group-addon">
+                        <i class="glyphicon glyphicon-time"></i>
+                    </div>
+                    <div class="form-control pull-right">{{ call.time }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a href="#" class="btn btn-primary btn-sm">
+                        <span class="hidden-xs">Редактировать заявку</span>
+                        <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="box-body">
+                <table class="table table-bordered table-striped table-view">
+                    <tbody>
+                    <tr>
+                        <td>Статус</td>
+                        {% if call.status == 'new' %}
+                        <td><small class="label label-primary">Новое</small></td>
+                        {% elif call.status == 'in_work'%}
+                        <td><small class="label label-warning">В роботе</small></td>
+                        {% else %}
+                        <td><small class="label label-success">Выполнено</small></td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Владелец</td>
+                        {% if call.apartment.owner %}
+                        <td>{{ call.apartment.owner }}</td>
+                        {% else %}
+                        <td>не указано</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Телефон</td>
+                        {% if call.apartment.owner.phone %}
+                        <td>{{ call.apartment.owner.phone }}</td>
+                        {% else %}
+                        <td>не указано</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Квартира</td>
+                        {% if call.apartment %}
+                        <td>
+                            <a href="{% url 'detail_apartment' call.apartment_id %}">
+                                {{ call.apartment.number }}, {{ call.apartment.house }}
+                            </a>
+                        </td>
+                        {% else %}
+                        <td>не указано</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Тип мастера</td>
+                        <td>{{ call.type_master }}</td>
+                    </tr>
+                    <tr>
+                        <td>Мастер</td>
+                        {% if call.master %}
+                        <td>
+                            <a href="{% url 'detail_user' call.master_id %}">
+                                {{ call.master }} ({{ call.master.role }})
+                            </a>
+                        </td>
+                        {% else %}
+                        <td>не указано</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td>Описание</td>
+                        <td>{{ call.description }}</td>
+                    </tr>
+                    <tr>
+                        <td>Добавлено</td>
+                        <td>{{ call.date|date:"d.m.Y" }} - {{ call.time|date:"H:i" }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

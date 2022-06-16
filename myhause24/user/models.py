@@ -44,6 +44,10 @@ class User(AbstractUser):
         full_name = f'{self.last_name} {self.first_name} {self.patronymic}'
         return full_name
 
+    @property
+    def role_str(self):
+        return f'{self.role}-{self.__str__()}'
+
 
 class Role(models.Model):
     name = models.CharField(max_length=24, unique=True)

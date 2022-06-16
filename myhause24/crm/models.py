@@ -40,6 +40,10 @@ class Apartment(models.Model):
     def __str__(self):
         return f'{self.number}'
 
+    @property
+    def select2(self):
+        return f'{self.number}, {self.house.title}'
+
 
 class Section(models.Model):
     objects = None
@@ -195,17 +199,17 @@ class Requisites(models.Model):
 
 class CallRequest(models.Model):
     class Status(models.TextChoices):
-        NEW = "new", _("New")
-        IN_WORK = "in_work", _("In work")
-        DONE = 'done', _("Done")
+        NEW = "new", _("Новое")
+        IN_WORK = "in_work", _("В работе")
+        DONE = 'done', _("Выполнено")
 
-    date = models.DateField(auto_now_add=True)
-    time = models.TimeField(auto_now_add=True)
-    description = models.TextField()
-    comment = models.TextField()
-    status = models.CharField(max_length=7, choices=Status.choices)
-    type_master = models.ForeignKey(Role, blank=True, null=True, on_delete=models.SET_NULL)
-    master = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+    date = models.DateField(default=datetime.date.today)
+    time = models.TimeField()
+    description = models.TextField(blank=True)
+    comment = models.TextField(blank=True)
+    status = models.CharField(max_length=7, choices=Status.choices,  default=Status.NEW)
+    type_master = models.ForeignKey(Role, null=True, on_delete=models.SET_NULL)
+    master = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     apartment = models.ForeignKey('Apartment', on_delete=models.CASCADE)
 
 

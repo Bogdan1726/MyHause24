@@ -53,28 +53,10 @@
                 <div class="col-xs-12 col-md-6">
                     <div class="form-group">
                         <label>Владелец квартиры</label>
-                        <a href="{% url 'detail_owner' form.instance.apartment.owner_id %}" target="_blank">
-                            <i class="fa fa-external-link"></i>
-                        </a>
                         {{ form.owner }}
                     </div>
-                    <p>
-                        {% if form.instance.apartment.owner.phone %}
-                        <b>Телефон:</b>
-                        <a href="tel:{{ form.instance.apartment.owner.phone }}">
-                            {{ form.instance.apartment.owner.phone }}
-                        </a>
-                        {% endif %}
-                    </p>
                 </div>
                 <div class="col-xs-12 col-md-6">
-                    <p><b>Дом:</b>
-                        <a href="{% url 'detail_house' form.instance.apartment.house_id %}">
-                            {{ form.instance.apartment.house.title }}
-                        </a>
-                    </p>
-                    <p><b>Секция:</b> {{ form.instance.apartment.section.title }}</p>
-                    <p><b>Этаж:</b> {{ form.instance.apartment.floor.title }}</p>
                 </div>
                 <div class="clearfix"></div>
                 <div class="col-xs-12 col-sm-6">
@@ -135,10 +117,9 @@
         var apartment_select = $('select[name=apartment]')
         var type_master_select = $('select[name=type_master]')
         var master_select = $('select[name=master]')
-        master_select.find('option:not([selected])').slice(1).remove();
+        master_select.find('option').slice(1).remove();
         var initial_options = []
         var options = []
-
 
         $('select[name=apartment] option').each(function () {
             initial_options.push({
@@ -146,6 +127,7 @@
                 text: $(this).text()
             })
         })
+
 
         owner_select.select2({
             allowClear: true,
@@ -157,6 +139,7 @@
             }
         })
 
+
         apartment_select.select2({
             placeholder: "Выберите...",
             language: {
@@ -166,18 +149,28 @@
             }
         })
 
-        if (type_master_select.val()) {
-            master_ajax(type_master_select.val(), true)
-        }
-
         type_master_select.on('change', function () {
             if (this.value) {
-                master_ajax(this.value, false)
+                $.ajax({
+                    type: 'GET',
+                    url: '{% url "loading_master_of_type_master" %}',
+                    dataType: 'json',
+                    data: {
+                        'role_id': this.value
+                    },
+                    success: function (response) {
+                        select_master(response.masters, false)
+                    },
+                    error: function (response) {
+                        console.log(response.error)
+                    }
+
+                })
             } else {
                 master_select.find('option').slice(1).remove();
+
             }
         })
-
 
         owner_select.on('change', function () {
             if (this.value) {
@@ -203,25 +196,6 @@
                 });
             }
         })
-
-        function master_ajax(data, flag) {
-            $.ajax({
-                type: 'GET',
-                url: '{% url "loading_master_of_type_master" %}',
-                dataType: 'json',
-                data: {
-                    'role_id': data
-                },
-                success: function (response) {
-                    select_master(response.masters, flag)
-                },
-                error: function (response) {
-                    console.log(response.error)
-                }
-
-            })
-        }
-
 
         function load_apartment(data) {
             options.push({text: '', id: ''})

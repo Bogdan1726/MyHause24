@@ -8,7 +8,7 @@ from django.core.files.images import get_image_dimensions
 from django.shortcuts import get_object_or_404
 
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
-    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData
+    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
@@ -224,7 +224,6 @@ class InviteOwnerForm(forms.Form):
 # region Apartment Form
 
 class ApartmentForm(forms.ModelForm):
-
     class Meta:
         model = Apartment
         fields = "__all__"
@@ -270,6 +269,7 @@ class PersonalAccountForm(forms.ModelForm):
             'number': forms.TextInput(attrs={'class': 'form-control',
                                              'data-mask': "00000-00000"})
         }
+
 
 # endregion Apartment Form
 
@@ -561,7 +561,53 @@ class PaymentItemsForm(forms.ModelForm):
 
 # endregion Payment Items Forms
 
+# region MasterCall Forms
 
+class MasterCallForm(forms.ModelForm):
+    owner = forms.ChoiceField(
+        choices=[(obj.id, obj.__str__) for obj in User.objects.filter(is_staff=False)],
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control select2 select2-hidden-accessible',
+            'style': 'width: 100%;'}))
+
+    apartment = forms.ChoiceField(
+        choices=[(obj.id, obj.select2) for obj in Apartment.objects.all().select_related(
+            'house', 'owner', 'section', 'floor'
+        )],
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control select2 select2-hidden-accessible',
+            'style': 'width: 100%;'}))
+
+    class Meta:
+        model = CallRequest
+        exclude = ('apartment',)
+
+        widgets = {
+            'date': forms.DateInput(attrs={'class': 'form-control'}),
+            'time': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'type_master': forms.Select(attrs={'class': 'form-control'}),
+            'master': forms.Select(attrs={'class': 'form-control'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MasterCallForm, self).__init__(*args, **kwargs)
+        self.fields['type_master'].empty_label = 'Выберите...'
+        self.fields['type_master'].queryset = Role.objects.exclude(id=1)
+        self.fields['master'].empty_label = 'Выберите...'
+        self.fields['master'].queryset = User.objects.filter(is_staff=True)
+        self.fields['apartment'].choices = [('', '')] + self.fields['apartment'].choices
+        self.fields['owner'].choices = [('', '')] + self.fields['owner'].choices
+
+
+# endregion MasterCall Forms
+
+
+# region MeterData Forms
 class MeterDataForm(forms.ModelForm):
     house = forms.ChoiceField(
         choices=[
@@ -603,3 +649,4 @@ class MeterDataForm(forms.ModelForm):
         self.fields['counter'].empty_label = 'Выберите...'
         self.fields['counter'].queryset = Services.objects.filter(is_show_meter_data=True)
         self.fields['number'].error_messages = {'unique': 'Данные счетчика с таким номером уже существует.'}
+# endregion MeterData Forms

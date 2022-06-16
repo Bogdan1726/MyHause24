@@ -10,12 +10,13 @@ from .views import (
     RolesUpdateView, RequisitesView, UsersListView, UserDetailView, UserCreateView,
     UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
     PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
-    MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView
+    MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView,
+    MasterCallCreateView, MasterCallUpdateView
 )
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
-    send_invite, new_users
+    send_invite, new_users, loading_apartment_of_owner, loading_master_of_type_master
 )
 
 User = get_user_model()
@@ -58,7 +59,9 @@ urlpatterns = [
 
     # master's call
     path('master-calls/', MasterCallListView.as_view(), name='master_calls'),
-    path('master-calls/<int:pk>/', MasterCallDetailView.as_view(), name='detail_master_call'),
+    path('master-call/<int:pk>/', MasterCallDetailView.as_view(), name='detail_master_call'),
+    path('master-call/create/', MasterCallCreateView.as_view(), name='create_master_call'),
+    path('master-call/update/<int:pk>/', MasterCallUpdateView.as_view(), name='update_master_call'),
 
     # master's call end
 
@@ -66,8 +69,6 @@ urlpatterns = [
     path('meter-data/', MeterDataListView.as_view(), name='meter_data'),
     path('meter-data/apartment/<int:pk>/', MeterDataApartmentListView.as_view(),
          name='meter_data_for_apartment'),
-    path('meter-data/apartment/<int:pk>/create/', MeterDataCreateView.as_view(),
-         name='create_meter_data_for_apartment'),
     path('meter-data/create/', MeterDataCreateView.as_view(), name='create_meter_data'),
     path('meter-data/<int:pk>/', MeterDataDetailView.as_view(), name='detail_meter_data'),
     path('meter-data/update/<int:pk>/', MeterDataUpdateView.as_view(), name='update_meter_data'),
@@ -116,6 +117,8 @@ urlpatterns = [
     # api_urls
     path('new_users/', new_users, name='new_users'),
     path('load_role/', load_role, name='load_role'),
+    path('loading_apartment_of_owner/', loading_apartment_of_owner, name='loading_apartment_of_owner'),
+    path('loading_master_of_type_master/', loading_master_of_type_master, name='loading_master_of_type_master'),
     path('loading_floor_section/', loading_floor_section, name='loading_floor_section'),
     path('loading_personal_account/', loading_personal_account, name='loading_personal_account'),
     path('loading_section_for_house/', loading_section_for_house, name='loading_section_for_house'),

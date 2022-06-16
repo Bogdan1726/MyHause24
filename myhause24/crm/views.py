@@ -20,7 +20,7 @@ from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
-    UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm
+    UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm
 )
 
 User = get_user_model()
@@ -823,6 +823,65 @@ class MasterCallDetailView(DetailView):
             'apartment', 'master', 'type_master', 'apartment__house', 'apartment__owner'
         ).order_by('-id')
 
+
+class MasterCallCreateView(CreateView):
+    model = CallRequest
+    form_class = MasterCallForm
+    success_url = reverse_lazy('master_calls')
+    template_name = 'crm/pages/master_calls/create_master_call.html'
+
+    def form_valid(self, form):
+        apartment_id = form.cleaned_data['apartment']
+        if apartment_id:
+            obj = get_object_or_404(Apartment, id=apartment_id)
+            self.object = form.save(commit=False)
+            self.object.apartment = obj
+            self.object.save()
+            print(form.cleaned_data['apartment'])
+        else:
+            messages.error(self.request, 'Необходимо заполнить «Квартира».')
+            return super().form_invalid(form)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
+class MasterCallUpdateView(UpdateView):
+    model = CallRequest
+    success_url = reverse_lazy('master_calls')
+    template_name = 'crm/pages/master_calls/update_master_call.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Заявка №{self.object.id} обновлена!')
+        return reverse_lazy('detail_master_call', kwargs={'pk': self.object.id})
+
+    def get_form(self, form_class=None, **kwargs):
+        if form_class is None:
+            return MasterCallForm(self.request.POST or None,
+                                  instance=self.object,
+                                  initial={'owner': self.object.apartment.owner_id,
+                                           'apartment': self.object.apartment_id
+                                           }
+                                  )
+
+    def form_valid(self, form):
+        apartment_id = form.cleaned_data['apartment']
+        if apartment_id:
+            obj = get_object_or_404(Apartment, id=apartment_id)
+            self.object = form.save(commit=False)
+            self.object.apartment = obj
+            self.object.save()
+            print(form.cleaned_data['apartment'])
+        else:
+            messages.error(self.request, 'Необходимо заполнить «Квартира».')
+            return super().form_invalid(form)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
 # endregion Master's call
 
 # region MeterData
@@ -878,7 +937,6 @@ class MeterDataCreateView(CreateView):
             return reverse_lazy('meter_data')
         return reverse_lazy('create_meter_data')
 
-
     def generate_number(self):
         """
         Returns the number for the initial form data
@@ -886,14 +944,16 @@ class MeterDataCreateView(CreateView):
         counter = 1
         while True:
             obj_id = self.model.objects.order_by('-id').first().id
-            number = f'{obj_id+counter:08}'
+            number = f'{obj_id + counter:08}'
             if not self.model.objects.filter(number=number).exists():
                 return number
             counter += 1
 
     def get_form(self, form_class=None, **kwargs):
         if form_class is None:
-            apartment_id = self.kwargs.get('pk')
+            apartment_id = self.request.GET.get('apartment_id', None)
+            service_id = self.request.GET.get('service_id', None)
+            counter = self.request.GET.get('counter', None)
             if apartment_id:
                 obj = Apartment.objects.filter(pk=apartment_id).select_related(
                     'section', 'floor', 'owner', 'house'
@@ -902,7 +962,8 @@ class MeterDataCreateView(CreateView):
                                      initial={'number': self.generate_number(),
                                               'apartment': obj,
                                               'section': obj.section_id,
-                                              'house': obj.house_id})
+                                              'house': obj.house_id,
+                                              'counter': service_id or Services.objects.filter(title=counter)[0]})
             return MeterDataForm(self.request.POST or None,
                                  initial={'number': self.generate_number()})
 
@@ -922,7 +983,7 @@ class MeterDataUpdateView(UpdateView):
         if form_class is None:
             return MeterDataForm(self.request.POST or None,
                                  instance=self.object,
-                                 initial={'house': {self.object.apartment.house_id},
+                                 initial={'house': self.object.apartment.house_id,
                                           'section': self.object.apartment.section_id})
 
     def get_success_url(self):
@@ -938,6 +999,7 @@ class MeterDataDelete(DeleteView):
     def get_success_url(self):
         messages.success(self.request, f'Показания счетчика №{self.object.number} удалены!')
         return reverse_lazy('meter_data_for_apartment', kwargs={'pk': self.object.apartment.id})
+
 
 # endregion MeterData
 

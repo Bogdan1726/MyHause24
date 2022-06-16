@@ -84,15 +84,9 @@
             <div class="row">
                 <div class="col-xs-12 text-right">
                     <div class="form-group">
-                        {% if request.resolver_match.url_name == 'create_meter_data_for_apartment' %}
-                        <a href="{% url 'meter_data_for_apartment' form.initial.apartment.id %}"
+                        <a href="{% url 'meter_data' %}"
                            class="btn btn-default margin-bottom-15">Отменить
                         </a>
-                        {% else %}
-                        <a href="{% url 'meter_data'%}"
-                           class="btn btn-default margin-bottom-15">Отменить
-                        </a>
-                        {% endif %}
                         <button type="submit"
                                 class="btn btn-success margin-bottom-15"
                                 name="action_save">
@@ -115,12 +109,6 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 <script>
-
-
-    if (localStorage.getItem('counter')) {
-        $("#id_counter").find("option:contains('" + localStorage.getItem('counter') + "')").prop('selected', true);
-    }
-
 
     $(document).ready(function () {
         var select_house = $("select[name='house']")

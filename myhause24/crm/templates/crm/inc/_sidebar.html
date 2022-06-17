@@ -8,7 +8,11 @@
                     <span>Статистика</span>
                 </a>
             </li>
-            <li><a href="/admin/account-transaction/index"><i class="fa fa-dollar"></i> <span>Касса</span></a>
+            <li class="{% if url in '[cash_box, ]' %}active{% endif %}">
+                <a href="{% url 'cash_box' %}">
+                    <i class="fa fa-dollar"></i>
+                    <span>Касса</span>
+                </a>
             </li>
             <li><a href="/admin/invoice/index"><i class="fa fa-files-o"></i>
                 <span>Квитанции на оплату</span></a></li>

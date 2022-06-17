@@ -15,7 +15,8 @@ from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
-    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest)
+    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest,
+    CashBox)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
@@ -34,6 +35,14 @@ def index(request):
     return render(request, 'crm/pages/index.html')
 
 # endregion Statistics
+
+# region CashBox
+class CashBoxListView(ListView):
+    model = CashBox
+    template_name = 'crm/pages/cash_box/list_cash_box.html'
+    context_object_name = 'cash_box'
+
+# endregion CashBox
 
 # region Houses
 

@@ -1,0 +1,394 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Касса
+{% endblock %}
+
+{% block style %}
+
+<style>
+
+    input[name="custom_search"] {
+        width: 100%;
+        font-weight: normal;
+        padding: 5px;
+        border: 1px solid #d2d6de;
+    }
+
+    input[name="custom_search"]:focus {
+        color: #212529;
+        border-color: #bdbdbd;
+        outline: 0;
+    }
+
+    select[name="custom_select"] {
+        width: 100%;
+        font-weight: normal;
+        padding: 5px;
+        border: 1px solid #d2d6de;
+    }
+
+    select[name="custom_select"] {
+        color: #212529;
+        border-color: #bdbdbd;
+        outline: 0;
+    }
+
+
+</style>
+<link rel="stylesheet" href="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Касса</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Касса</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12 col-lg-9">
+        <div class="row">
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-green overflow-hidden">
+                    <div class="inner">
+                        <h3>0.00 грн</h3>
+                        <p>Состояние кассы</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-blue overflow-hidden">
+                    <div class="inner">
+                        <h3>0.00 грн</h3>
+                        <p>Баланс по счетам</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-red overflow-hidden">
+                    <div class="inner">
+                        <h3>0.00 грн</h3>
+                        <p>Задолженность по счетам</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-lg-3">
+        <div class="btn-group pull-right margin-bottom">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+                Выберите действие <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="#">Создать приход</a></li>
+                <li><a href="#">Создать расход</a></li>
+                <li><a href="#">Выгрузить в Excel</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a id="clean" class="btn btn-default btn-sm">
+                        <span class="hidden-xs">Очистить</span>
+                        <i class="fa fa-eraser visible-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="list_cash_box" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="table_cash_box" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th style="width: 70px; min-width: 70px;">№ заявки</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">Дата</th>
+                            <th style="width: 120px; min-width: 120px;">Статус</th>
+                            <th style="min-width: 200px">Тип платежа</th>
+                            <th style="min-width: 100px">Владелец</th>
+                            <th style="width: 100px; min-width: 100px">Лицевой счет</th>
+                            <th style="width: 120px; min-width: 120px">Приход/расход</th>
+                            <th style="width: 120px; min-width: 120px">Сумма (грн)</th>
+                            <th style="width: 80px; min-width: 80px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <th></th>
+                            <td style="z-index: 9999">
+                                <input type="text" name="custom_search" id="id_date">
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for cash in cash_box %}
+                        <tr data-href="#">
+                            <td>{{ cash.number }}</td>
+                            <td>{{ cash.date|date:"d.m.Y" }}</td>
+                            {% if cash.status is True %}
+                            <td>Проведен</td>
+                            {% else %}
+                            <td>Не проведен</td>
+                            {% endif %}
+                            <td>{{ cash.payment_items }}</td>
+                            <td>{{ cash.owner }}</td>
+                            <td>{{ cash.personal_account }}</td>
+                            {% if cash.type is True %}
+                            <td>Приход</td>
+                            {% else %}
+                            <td>Расход</td>
+                            {% endif %}
+                            <td>{{ cash.sum}}</td>
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="#"
+                                       title="Редактировать" data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление заявки</h4>
+                                    </div>
+                                    <form method="post" action="#">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить заявку №{{ call.id }} от
+                                                {{ call.date|date:"j E Y" }} года?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer">
+                    <div>Проведен приход: <span class="text-bold">5 350.00 грн</span></div>
+                    <div>Проведен расход: <span class="text-bold">375.00 грн</span></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script>
+
+    // Initial date range filter
+    var minDate, maxDate
+
+    $.fn.dataTable.ext.search.push(function (settings, data) {
+        var min = new Date(minDate).getTime();
+        var max = new Date(maxDate).getTime();
+        console.log(min, max)
+        var table_date = data[1].split(".")[1] + '.' + data[1].split(".")[0] + '.' + data[1].split(".")[2]
+        var date = new Date(table_date).getTime();
+
+        if (
+            (isNaN(min) && isNaN(max)) ||
+            (isNaN(min) && date <= max) ||
+            (min <= date && isNaN(max)) ||
+            (min <= date && date <= max)
+        ) {
+            return true;
+        }
+        return false;
+    });
+    //
+
+
+    $(document).ready(function () {
+        var date_input = $('#id_date')
+
+        //Date range picker
+        date_input.daterangepicker({
+            timePicker: false,
+            timePickerIncrement: 30,
+            autoUpdateInput: false,
+
+            locale: {
+                format: 'DD.MM.YYYY',
+                "applyLabel": "Ок",
+                "cancelLabel": "Отмена",
+                "fromLabel": "От",
+                "toLabel": "До",
+                "customRangeLabel": "Произвольный",
+                "daysOfWeek": [
+                    "Вс",
+                    "Пн",
+                    "Вт",
+                    "Ср",
+                    "Чт",
+                    "Пт",
+                    "Сб"
+                ],
+                "monthNames": [
+                    "Январь",
+                    "Февраль",
+                    "Март",
+                    "Апрель",
+                    "Май",
+                    "Июнь",
+                    "Июль",
+                    "Август",
+                    "Сентябрь",
+                    "Октябрь",
+                    "Ноябрь",
+                    "Декабрь"
+                ],
+                firstDay: 1
+            }
+        });
+
+
+        // Setup - add a text input to each footer cell
+        $('#table_cash_box tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search"/>');
+        });
+
+
+        // DataTable
+        var table = $('#table_cash_box').DataTable({
+            "responsive": false,
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': true,
+            'info': false,
+            'autoWidth': true,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [0, 2, 3, 4, 5, 6, 7, 8]
+                }
+            ],
+            order: [],
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "info": "Количество операций: <strong>_TOTAL_</stong>",
+                "infoEmpty": "Нет записей.",
+                "paginate": {
+                    "previous": "Предыдущая",
+                    "last": "Последняя",
+                    "next": "Следующая"
+                }
+            },
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns([0, 5])
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+                this.api()
+                    .columns([2, 3, 4, 6])
+                    .every(function () {
+                        var column = this;
+                        var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+
+                        column
+                            .data()
+                            .unique()
+                            .sort()
+                            .each(function (d, j) {
+                                var val = $('<div/>').html(d).text();
+                                select.append('<option value="' + val + '">' + val + '</option>');
+                            });
+                    });
+            },
+        });
+
+
+        $("#table_cash_box_filter").css('display', 'none')
+        $("#clean").on("click", function () {
+            $('input').val('');
+            $('select').val('');
+            minDate = ''
+            maxDate = ''
+            table.columns().search("").draw();
+        })
+
+        date_input.on('apply.daterangepicker', function (ev, picker) {
+            minDate = new Date(picker.startDate).getTime();
+            maxDate = new Date(picker.endDate).getTime();
+            table.draw();
+        });
+    });
+
+</script>
+
+<script>
+
+
+</script>
+
+
+{% endblock %}

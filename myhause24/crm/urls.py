@@ -11,7 +11,7 @@ from .views import (
     UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
     PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
     MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView,
-    MasterCallCreateView, MasterCallUpdateView, MasterCallDelete
+    MasterCallCreateView, MasterCallUpdateView, MasterCallDelete, CashBoxListView
 )
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
@@ -23,6 +23,11 @@ User = get_user_model()
 
 urlpatterns = [
     path('', index, name='admin'),
+
+    # region cash_box
+    path('cashbox/', CashBoxListView.as_view(), name='cash_box'),
+
+    # endregion cash_box
 
     # house
     path('house/', HouseListView.as_view(), name='houses'),

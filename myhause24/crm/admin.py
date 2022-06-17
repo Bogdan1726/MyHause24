@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure, Tariff, \
-    PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest
+    PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox
 
 
 # Register your models here.
@@ -67,4 +67,9 @@ class MeterDataAdmin(admin.ModelAdmin):
 
 @admin.register(CallRequest)
 class CallRequestAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(CashBox)
+class CashBoxAdmin(admin.ModelAdmin):
     pass

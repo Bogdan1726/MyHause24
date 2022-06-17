@@ -186,6 +186,9 @@ class PaymentItems(models.Model):
     title = models.CharField(max_length=64)
     type = models.CharField(max_length=7, choices=Type.choices, default=Type.INCOME)
 
+    def __str__(self):
+        return f'{self.title}'
+
 
 class Requisites(models.Model):
     title = models.CharField(max_length=64)

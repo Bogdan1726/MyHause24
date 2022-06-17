@@ -28,6 +28,13 @@ User = get_user_model()
 
 # Create your views here.
 
+# region Statistics
+@login_required(login_url='login')
+def index(request):
+    return render(request, 'crm/pages/index.html')
+
+# endregion Statistics
+
 # region Houses
 
 class HouseListView(ListView):
@@ -827,24 +834,11 @@ class MasterCallDetailView(DetailView):
 class MasterCallCreateView(CreateView):
     model = CallRequest
     form_class = MasterCallForm
-    success_url = reverse_lazy('master_calls')
     template_name = 'crm/pages/master_calls/create_master_call.html'
 
-    def form_valid(self, form):
-        apartment_id = form.cleaned_data['apartment']
-        if apartment_id:
-            obj = get_object_or_404(Apartment, id=apartment_id)
-            self.object = form.save(commit=False)
-            self.object.apartment = obj
-            self.object.save()
-            print(form.cleaned_data['apartment'])
-        else:
-            messages.error(self.request, 'Необходимо заполнить «Квартира».')
-            return super().form_invalid(form)
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        return super().form_invalid(form)
+    def get_success_url(self):
+        messages.success(self.request, f'Заявка №{self.object.id} добавлена!')
+        return reverse_lazy('detail_master_call', kwargs={'pk': self.object.id})
 
 
 class MasterCallUpdateView(UpdateView):
@@ -852,9 +846,12 @@ class MasterCallUpdateView(UpdateView):
     success_url = reverse_lazy('master_calls')
     template_name = 'crm/pages/master_calls/update_master_call.html'
 
-    def get_success_url(self):
-        messages.success(self.request, f'Заявка №{self.object.id} обновлена!')
-        return reverse_lazy('detail_master_call', kwargs={'pk': self.object.id})
+    def get_object(self, queryset=None):
+        queryset = self.model.objects.filter(id=self.kwargs.get('pk')).select_related(
+            'apartment', 'apartment__house', 'apartment__owner', 'apartment__section'
+        )
+        obj = queryset[0]
+        return obj
 
     def get_form(self, form_class=None, **kwargs):
         if form_class is None:
@@ -862,27 +859,23 @@ class MasterCallUpdateView(UpdateView):
                                   instance=self.object,
                                   initial={'owner': self.object.apartment.owner_id,
                                            'apartment': self.object.apartment_id
-                                           }
-                                  )
+                                           })
 
-    def form_valid(self, form):
-        apartment_id = form.cleaned_data['apartment']
-        if apartment_id:
-            obj = get_object_or_404(Apartment, id=apartment_id)
-            self.object = form.save(commit=False)
-            self.object.apartment = obj
-            self.object.save()
-            print(form.cleaned_data['apartment'])
-        else:
-            messages.error(self.request, 'Необходимо заполнить «Квартира».')
-            return super().form_invalid(form)
-        return super().form_valid(form)
+    def get_success_url(self):
+        messages.success(self.request, f'Заявка №{self.object.id} обновлена!')
+        return reverse_lazy('detail_master_call', kwargs={'pk': self.object.id})
 
-    def form_invalid(self, form):
-        return super().form_invalid(form)
 
+
+class  MasterCallDelete(DeleteView):
+    model = CallRequest
+
+    def get_success_url(self):
+        messages.success(self.request, f'Заявка №{self.object.id} удалена!')
+        return reverse_lazy('master_calls')
 
 # endregion Master's call
+
 
 # region MeterData
 
@@ -1004,6 +997,3 @@ class MeterDataDelete(DeleteView):
 # endregion MeterData
 
 
-@login_required(login_url='login')
-def index(request):
-    return render(request, 'crm/pages/index.html')

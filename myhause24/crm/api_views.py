@@ -117,7 +117,6 @@ def loading_apartment_of_owner(request):
     if request.is_ajax():
         owner_id = request.GET.get('owner_id')
         apartments = Apartment.objects.filter(owner=owner_id).values('id', 'house__title', 'number')
-        print(owner_id)
         response = {
             'apartments': list(apartments)
         }
@@ -128,7 +127,6 @@ def loading_master_of_type_master(request):
     if request.is_ajax():
         role_id = request.GET.get('role_id')
         masters = User.objects.filter(role=role_id).values('id', 'email', 'first_name', 'last_name', 'role__name')
-        print(masters)
         response = {
             'masters': list(masters)
         }

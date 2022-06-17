@@ -125,11 +125,7 @@
                             <td>(не задано)</td>
                             {% endif %}
                             {% if call.master %}
-                            <td>
-                                <a href="{% url 'detail_user' call.master_id %}">
-                                    {{ call.master }}
-                                </a>
-                            </td>
+                            <td>{{ call.master }}</td>
                             {% else %}
                             <td>(не задано)</td>
                             {% endif %}
@@ -166,7 +162,7 @@
                                             <span aria-hidden="true">×</span></button>
                                         <h4 class="modal-title">Удаление заявки</h4>
                                     </div>
-                                    <form method="post" action="#">
+                                    <form method="post" action="{% url 'delete_master_call' call.id %}">
                                         {% csrf_token %}
                                         <div class="modal-body">
                                             <p>Вы уверены, что хотите удалить заявку №{{ call.id }} от

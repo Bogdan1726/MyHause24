@@ -564,6 +564,10 @@ class PaymentItemsForm(forms.ModelForm):
 # region MasterCall Forms
 
 class MasterCallForm(forms.ModelForm):
+    error_messages = {
+        'apartment_required': _('Необходимо выбрать квартиру.'),
+    }
+
     owner = forms.ChoiceField(
         choices=[(obj.id, obj.__str__) for obj in User.objects.filter(is_staff=False)],
         required=False,
@@ -602,6 +606,24 @@ class MasterCallForm(forms.ModelForm):
         self.fields['master'].queryset = User.objects.filter(is_staff=True)
         self.fields['apartment'].choices = [('', '')] + self.fields['apartment'].choices
         self.fields['owner'].choices = [('', '')] + self.fields['owner'].choices
+
+    def clean_apartment(self):
+        apartment = self.cleaned_data.get("apartment")
+        if not apartment:
+            raise ValidationError(
+                self.error_messages['apartment_required'],
+            )
+        return apartment
+
+    def save(self, commit=True):
+        master_call = super().save(commit=False)
+        apartment_id = self.cleaned_data['apartment']
+        if apartment_id:
+            obj = get_object_or_404(Apartment, id=apartment_id)
+            master_call.apartment = obj
+        if commit:
+            master_call.save()
+        return master_call
 
 
 # endregion MasterCall Forms

@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block style %}
+
 <link rel="stylesheet" href="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css' %}">
 <link rel="stylesheet" href="{% static 'crm/plugins/timepicker/bootstrap-timepicker.min.css' %}">
 {% endblock %}
@@ -21,7 +22,7 @@
 
 
 {% block content %}
-<form id="create_master_call" method="post">
+<form id="master_call_form" method="post">
     {% csrf_token %}
     <div class="row">
         <div class="col-xs-12 col-md-7 col-lg-6">
@@ -95,14 +96,13 @@
             <div class="row">
                 <div class="col-xs-12 text-right">
                     <div class="form-group">
-                        <a href="/admin/master-request/index" class="btn btn-default">Отменить</a>
+                        <a href="{% url 'master_calls' %}" class="btn btn-default">Отменить</a>
                         <button type="submit" class="btn btn-success">Сохранить</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </form>
 {% endblock %}
 
@@ -110,6 +110,7 @@
 <script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
 <script src="{% static 'crm/plugins/timepicker/bootstrap-timepicker.min.js' %}"></script>
+
 <script>
     $(document).ready(function () {
 
@@ -117,9 +118,10 @@
         var apartment_select = $('select[name=apartment]')
         var type_master_select = $('select[name=type_master]')
         var master_select = $('select[name=master]')
-        master_select.find('option').slice(1).remove();
         var initial_options = []
         var options = []
+
+        master_select.find('option').slice(1).remove();
 
         $('select[name=apartment] option').each(function () {
             initial_options.push({
@@ -127,7 +129,6 @@
                 text: $(this).text()
             })
         })
-
 
         owner_select.select2({
             allowClear: true,
@@ -139,7 +140,6 @@
             }
         })
 
-
         apartment_select.select2({
             placeholder: "Выберите...",
             language: {
@@ -149,63 +149,86 @@
             }
         })
 
+        if (type_master_select.val()) {
+            master_ajax(type_master_select.val(), true)
+        }
+
+        if (owner_select.val()) {
+            apartment_ajax(owner_select.val(), true);
+        }
+
         type_master_select.on('change', function () {
             if (this.value) {
-                $.ajax({
-                    type: 'GET',
-                    url: '{% url "loading_master_of_type_master" %}',
-                    dataType: 'json',
-                    data: {
-                        'role_id': this.value
-                    },
-                    success: function (response) {
-                        select_master(response.masters, false)
-                    },
-                    error: function (response) {
-                        console.log(response.error)
-                    }
-
-                })
+                master_ajax(this.value, false)
             } else {
                 master_select.find('option').slice(1).remove();
-
             }
         })
 
         owner_select.on('change', function () {
             if (this.value) {
-                $.ajax({
-                    type: 'GET',
-                    url: '{% url "loading_apartment_of_owner" %}',
-                    dataType: 'json',
-                    data: {
-                        'owner_id': this.value
-                    },
-                    success: function (response) {
-                        load_apartment(response.apartments)
-                    },
-                    error: function (response) {
-                        console.log(response.error)
-                    }
-                })
+                apartment_ajax(this.value, false);
             } else {
                 apartment_select.empty().select2({
                     data: initial_options,
                     placeholder: "Выберите...",
-
+                    language: {
+                        noResults: function () {
+                            return "Совпавдений не найдено";
+                        }
+                    }
                 });
             }
         })
 
-        function load_apartment(data) {
-            options.push({text: '', id: ''})
+        function apartment_ajax(data, flag) {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "loading_apartment_of_owner" %}',
+                dataType: 'json',
+                data: {
+                    'owner_id': data
+                },
+                success: function (response) {
+                    load_apartment(response.apartments, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function master_ajax(data, flag) {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "loading_master_of_type_master" %}',
+                dataType: 'json',
+                data: {
+                    'role_id': data
+                },
+                success: function (response) {
+                    select_master(response.masters, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+
+            })
+        }
+
+        function load_apartment(data, flag) {
+            if (flag) {
+                apartment_select.find('option:not([selected])').slice(1).remove();
+            } else {
+                apartment_select.find('option').slice(1).remove();
+            }
             for (apartment in data) {
                 options.push({
                     text: data[apartment].number + ',' + data[apartment].house__title,
                     id: data[apartment].id
                 })
             }
-            apartment_select.empty().select2({
+            apartment_select.select2({
                 data: options,
                 placeholder: "Выберите...",
                 language: {
@@ -214,10 +237,7 @@
                     }
                 }
             });
-            console.log(options)
-            console.log(initial_options)
             options = []
-
         }
 
         function select_master(data, flag) {
@@ -247,6 +267,66 @@
                 }
             }
         }
+
+        //  jQuery Validations Form
+        $.validator.addMethod("required_apartment", function (value) {
+            if (!value){
+                return false
+            }
+            return true;
+        });
+
+        var validator = $('#master_call_form').validate({
+            rules: {
+                date: {
+                    required: true,
+                },
+                time: {
+                    required: true,
+                },
+                description: {
+                    required: true,
+                },
+                type_master: {
+                    required: true,
+                },
+                apartment: {
+                    required_apartment: true,
+                }
+
+            },
+            messages: {
+                date: {
+                    required: "Обязательное поле",
+                },
+                time: {
+                    required: "Обязательное поле",
+                },
+                description: {
+                    required: "Обязательное поле",
+                },
+                type_master: {
+                    required: "Обязательное поле",
+                },
+                apartment: {
+                    required_apartment: "Обязательное поле",
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element) {
+                $(element).closest('.form-group').addClass('has-error');
+            },
+            unhighlight: function (element) {
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+        });
+
+        apartment_select.on('change', function () {
+            validator.element($(this))
+        })
 
     });
 
@@ -280,6 +360,7 @@
     }(jQuery);
 
     $('textarea[name=comment]').wysihtml5({
+        useLineBreaks: false,
         locale: 'ru-RU',
         toolbar: {
             "font-styles": true,
@@ -323,7 +404,6 @@
         showMeridian: false,
 
     });
-
 
 </script>
 {% endblock %}

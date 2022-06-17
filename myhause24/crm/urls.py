@@ -11,7 +11,7 @@ from .views import (
     UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
     PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
     MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView,
-    MasterCallCreateView, MasterCallUpdateView
+    MasterCallCreateView, MasterCallUpdateView, MasterCallDelete
 )
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
@@ -62,6 +62,7 @@ urlpatterns = [
     path('master-call/<int:pk>/', MasterCallDetailView.as_view(), name='detail_master_call'),
     path('master-call/create/', MasterCallCreateView.as_view(), name='create_master_call'),
     path('master-call/update/<int:pk>/', MasterCallUpdateView.as_view(), name='update_master_call'),
+    path('master-call/delete/<int:pk>/', MasterCallDelete.as_view(), name='delete_master_call'),
 
     # master's call end
 

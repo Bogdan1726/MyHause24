@@ -205,11 +205,11 @@ class CallRequest(models.Model):
 
     date = models.DateField(default=datetime.date.today)
     time = models.TimeField()
-    description = models.TextField(blank=True)
+    description = models.TextField()
     comment = models.TextField(blank=True)
     status = models.CharField(max_length=7, choices=Status.choices,  default=Status.NEW)
     type_master = models.ForeignKey(Role, null=True, on_delete=models.SET_NULL)
-    master = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    master = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     apartment = models.ForeignKey('Apartment', on_delete=models.CASCADE)
 
 

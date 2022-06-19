@@ -47,7 +47,7 @@ class User(AbstractUser):
 
     @property
     def role_str(self):
-        return f'{self.role}-{self.__str__()}'
+        return f'{self.role} - {self.__str__()}'
 
 
 class Role(models.Model):

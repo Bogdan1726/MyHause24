@@ -21,7 +21,8 @@ from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
-    UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm
+    UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
+    CashBoxForm
 )
 
 User = get_user_model()
@@ -34,9 +35,11 @@ User = get_user_model()
 def index(request):
     return render(request, 'crm/pages/index.html')
 
+
 # endregion Statistics
 
 # region CashBox
+
 class CashBoxListView(ListView):
     model = CashBox
     template_name = 'crm/pages/cash_box/list_cash_box.html'
@@ -44,13 +47,47 @@ class CashBoxListView(ListView):
 
     def get_queryset(self):
         return self.model.objects.select_related(
-            'owner', 'manager', 'payment_items', 'personal_account','receipt').order_by('-date')
+            'owner', 'manager', 'payment_items', 'personal_account', 'receipt').order_by('-date', '-id')
 
 
 class CashBoxDetailView(DetailView):
     model = CashBox
     template_name = 'crm/pages/cash_box/detail_cash_box.html'
     context_object_name = 'cash_box'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'owner', 'manager', 'payment_items', 'personal_account', 'receipt')
+
+
+class CashBoxCreateView(CreateView):
+    model = CashBox
+    success_url = reverse_lazy('cash_box')
+    template_name = 'crm/pages/cash_box/create_cash_box.html'
+
+    def generate_number(self):
+        """
+        Returns the number for the initial form data
+        """
+        counter = 1
+        while True:
+            obj_id = self.model.objects.order_by('-id').first().id
+            number = f'{obj_id + counter:010}'
+            if not self.model.objects.filter(number=number).exists():
+                return number
+            counter += 1
+
+    def get_form(self, form_class=None, **kwargs):
+        if form_class is None:
+            return CashBoxForm(self.request.POST or None,
+                               initial={'number': self.generate_number(),
+                                        'manager': self.request.user.id,
+                                        'type': self.request.GET.get('type')})
+
+
+    def form_valid(self, form):
+        print('form')
+        return super().form_valid(form)
 
 
 # endregion CashBox
@@ -886,13 +923,13 @@ class MasterCallUpdateView(UpdateView):
         return reverse_lazy('detail_master_call', kwargs={'pk': self.object.id})
 
 
-
-class  MasterCallDelete(DeleteView):
+class MasterCallDelete(DeleteView):
     model = CallRequest
 
     def get_success_url(self):
         messages.success(self.request, f'Заявка №{self.object.id} удалена!')
         return reverse_lazy('master_calls')
+
 
 # endregion Master's call
 
@@ -1013,7 +1050,4 @@ class MeterDataDelete(DeleteView):
         messages.success(self.request, f'Показания счетчика №{self.object.number} удалены!')
         return reverse_lazy('meter_data_for_apartment', kwargs={'pk': self.object.apartment.id})
 
-
 # endregion MeterData
-
-

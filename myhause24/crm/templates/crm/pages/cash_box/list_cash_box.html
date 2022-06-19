@@ -101,8 +101,8 @@
                 Выберите действие <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
-                <li><a href="#">Создать приход</a></li>
-                <li><a href="#">Создать расход</a></li>
+                <li><a href="{% url 'create_cash_box' %}?type=income">Создать приход</a></li>
+                <li><a href="{% url 'create_cash_box' %}?type=expense">Создать расход</a></li>
                 <li><a id="export">Выгрузить в Excel</a></li>
             </ul>
         </div>
@@ -161,9 +161,21 @@
                             {% else %}
                             <td>Не проведен</td>
                             {% endif %}
+                            {% if cash.payment_items %}
                             <td>{{ cash.payment_items }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if cash.owner %}
                             <td>{{ cash.owner }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if cash.personal_account %}
                             <td>{{ cash.personal_account }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
                             {% if cash.type %}
                             <td>Приход</td>
                             {% else %}

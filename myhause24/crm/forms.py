@@ -1,6 +1,4 @@
-import random
 import uuid
-
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
@@ -8,7 +6,7 @@ from django.core.files.images import get_image_dimensions
 from django.shortcuts import get_object_or_404
 
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
-    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest
+    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
@@ -671,4 +669,72 @@ class MeterDataForm(forms.ModelForm):
         self.fields['counter'].empty_label = 'Выберите...'
         self.fields['counter'].queryset = Services.objects.filter(is_show_meter_data=True)
         self.fields['number'].error_messages = {'unique': 'Данные счетчика с таким номером уже существует.'}
+
+
 # endregion MeterData Forms
+
+
+# region CashBox Forms
+
+class CashBoxForm(forms.ModelForm):
+    owner = forms.ChoiceField(
+        choices=[(obj.id, obj.__str__) for obj in User.objects.filter(is_staff=False)],
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control select2 select2-hidden-accessible',
+            'style': 'width: 100%;'}))
+
+    personal_account = forms.ChoiceField(
+        choices=[(obj.id, obj.number) for obj in PersonalAccount.objects.all().select_related(
+            'apartment'
+        )],
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control select2 select2-hidden-accessible',
+            'style': 'width: 100%;'}))
+
+    manager = forms.ChoiceField(
+        choices=[
+            (obj.id, obj.role_str) for obj in User.objects.filter(
+                is_staff=True, role__in=[1, 2, 3]).select_related('role')
+        ],
+        required=True,
+        widget=forms.Select(
+            attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = CashBox
+        exclude = ('receipt', 'manager', 'owner', 'personal_account')
+
+        widgets = {
+            'number': forms.TextInput(attrs={'class': 'form-control',
+                                             'data-mask': '0000000000'}),
+            'date': forms.DateInput(attrs={'class': 'form-control'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control',
+                                             'rows': 7}),
+            'payment_items': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.CheckboxInput({'class': 'form-check-input'}),
+            'sum': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CashBoxForm, self).__init__(*args, **kwargs)
+        self.fields['payment_items'].empty_label = 'Выберите...'
+        self.fields['payment_items'].queryset = PaymentItems.objects.filter(type=kwargs['initial'].get('type'))
+        self.fields['owner'].choices = [('', 'Выберите...')] + self.fields['owner'].choices
+        self.fields['personal_account'].choices = [('', 'Выберите...')] + self.fields['personal_account'].choices
+
+
+    def save(self, commit=True):
+        print('save')
+        cash = super().save(commit=False)
+        manager = self.cleaned_data['manager']
+        if manager:
+            obj = get_object_or_404(User, id=manager)
+            cash.manager = obj
+        if commit:
+            cash.save()
+        return cash
+
+# endregion CashBox Forms

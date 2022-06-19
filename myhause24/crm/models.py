@@ -166,19 +166,21 @@ class PersonalAccount(models.Model):
 
 class CashBox(models.Model):
     number = models.CharField(max_length=64)
-    date = models.DateField()
+    date = models.DateField(default=datetime.date.today)
     status = models.BooleanField(default=True)
     type = models.BooleanField()
     sum = models.DecimalField(max_digits=10, decimal_places=2)
     comment = models.TextField(blank=True)
     payment_items = models.ForeignKey('PaymentItems', blank=True, null=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='owner')
-    manager = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='manager')
+    manager = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='manager')
     personal_account = models.ForeignKey('PersonalAccount', blank=True, null=True, on_delete=models.SET_NULL)
     receipt = models.ForeignKey('Receipt', blank=True, null=True, on_delete=models.SET_NULL)
 
 
 class PaymentItems(models.Model):
+    objects = None
+
     class Type(models.TextChoices):
         INCOME = "income", _("Приход")
         EXPENSE = "expense", _("Расход")

@@ -11,7 +11,7 @@ from .views import (
     UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
     PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
     MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView,
-    MasterCallCreateView, MasterCallUpdateView, MasterCallDelete, CashBoxListView, CashBoxDetailView
+    MasterCallCreateView, MasterCallUpdateView, MasterCallDelete, CashBoxListView, CashBoxDetailView, CashBoxCreateView
 )
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
@@ -27,6 +27,7 @@ urlpatterns = [
     # region cash_box
     path('cashbox/', CashBoxListView.as_view(), name='cash_box'),
     path('cashbox/<int:pk>/', CashBoxDetailView.as_view(), name='detail_cash_box'),
+    path('cashbox/create/', CashBoxCreateView.as_view(), name='create_cash_box'),
 
     # endregion cash_box
 

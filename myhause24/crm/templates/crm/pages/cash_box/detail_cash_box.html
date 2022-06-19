@@ -157,7 +157,11 @@
             </tr>
             <tr>
                 <td>Статья</td>
+                {% if cash_box.payment_items %}
                 <td>{{ cash_box.payment_items }}</td>
+                {% else %}
+                <td>не указано</td>
+                {% endif %}
             </tr>
             <tr>
                 <td>Квитанция</td>

@@ -1,10 +1,186 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
 
-</body>
-</html>
+{% if request.GET.type == 'income' %}
+Новая приходная ведомость
+{% else %}
+Новая расходная ведомость
+{% endif %}
+
+{% endblock %}
+
+{% block style %}
+
+{% endblock %}
+
+
+{% block content-header %}
+{% if request.GET.type == 'income' %}
+<h1>Новая приходная ведомость</h1>
+{% else %}
+<h1>Новая расходная ведомость</h1>
+{% endif %}
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'cash_box' %}">Платежи</a></li>
+    <li class="active">
+        {% if request.GET.type == 'income' %}
+        Новая приходная ведомость
+        {% else %}
+        Новая расходная ведомость
+        {% endif %}
+    </li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<form id="cash_box_form" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-xs-12 col-md-7 col-lg-6">
+            <div class="page-header-spec">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">
+                            №
+                        </div>
+                        {{ form.number }}
+                    </div>
+                </div>
+                <span class="label-mid">от</span>
+                <div class="form-group">
+                    <div class="input-group date">
+                        <div class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        {{ form.date }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="box">
+        <div class="box-body">
+            <div class="row">
+                <div class="col-xs-12 col-sm-6 col-sm-offset-6">
+                    {{ form.status }}
+                    <label>Проведен</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    {% if request.GET.type == 'income' %}
+                    <div class="form-group">
+                        <label class="control-label">Владелец квартиры</label>
+                        {{ form.owner }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Лицевой счет</label>
+                        {{ form.personal_account }}
+                    </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <label class="control-label">Статья</label>
+                        {{ form.payment_items }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Сумма</label>
+                        {{ form.sum }}
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label">Менеджер</label>
+                        {{ form.manager }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <div class="form-group">
+                        <a href="{% url 'cash_box' %}"
+                           class="btn btn-default margin-bottom-15">
+                            Отменить
+                        </a>
+                        <input type="submit"
+                               class="btn btn-success margin-bottom-15"
+                               name="action_save"
+                               value="Сохранить">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label">Комментарий</label>
+                        {{ form.comment }}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+<script>
+    $(document).ready(function () {
+        var owner_select = $('select[name=owner]')
+        var personal_account_select = $('select[name=personal_account]')
+
+
+        owner_select.select2({
+            allowClear: true,
+            placeholder: "Выберите...",
+            language: {
+                noResults: function () {
+                    return "Совпавдений не найдено";
+                }
+            }
+        })
+
+        personal_account_select.select2({
+            allowClear: true,
+            placeholder: "Выберите...",
+            language: {
+                noResults: function () {
+                    return "Совпавдений не найдено";
+                }
+            }
+        })
+
+        // datepicker
+        !function (a) {
+            a.fn.datepicker.dates.ru = {
+                days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+                daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
+                daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+                months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+                monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+                today: "Сегодня",
+                clear: "Очистить",
+                format: "dd.mm.yyyy",
+                weekStart: 1,
+                monthsTitle: "Месяцы"
+            }
+        }(jQuery);
+
+
+        $('#id_date').datepicker({
+            format: 'dd.mm.yyyy',
+            startDate: '-100y',
+            default: 'date',
+            language: 'ru'
+        });
+    })
+
+</script>
+
+
+{% endblock %}

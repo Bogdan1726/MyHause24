@@ -8,7 +8,7 @@
                     <span>Статистика</span>
                 </a>
             </li>
-            <li class="{% if url in '[cash_box, ]' %}active{% endif %}">
+            <li class="{% if url in '[cash_box, detail_cash_box]' %}active{% endif %}">
                 <a href="{% url 'cash_box' %}">
                     <i class="fa fa-dollar"></i>
                     <span>Касса</span>

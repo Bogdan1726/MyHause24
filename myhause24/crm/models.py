@@ -166,7 +166,7 @@ class PersonalAccount(models.Model):
 
 class CashBox(models.Model):
     number = models.CharField(max_length=64)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField()
     status = models.BooleanField(default=True)
     type = models.BooleanField()
     sum = models.DecimalField(max_digits=10, decimal_places=2)

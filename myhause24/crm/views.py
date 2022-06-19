@@ -42,6 +42,17 @@ class CashBoxListView(ListView):
     template_name = 'crm/pages/cash_box/list_cash_box.html'
     context_object_name = 'cash_box'
 
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'owner', 'manager', 'payment_items', 'personal_account','receipt').order_by('-date')
+
+
+class CashBoxDetailView(DetailView):
+    model = CashBox
+    template_name = 'crm/pages/cash_box/detail_cash_box.html'
+    context_object_name = 'cash_box'
+
+
 # endregion CashBox
 
 # region Houses

@@ -36,6 +36,7 @@
 
 
 </style>
+<link rel="stylesheet" href="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.css' %}">
 <link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
 {% endblock %}
 
@@ -191,10 +192,77 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
 <script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
 <script>
+    // Initial date range filter
+    var minDate, maxDate
+
+    $.fn.dataTable.ext.search.push(function (settings, data) {
+        var min = new Date(minDate).getTime();
+        var max = new Date(maxDate).getTime();
+        var table_date = data[1].split(".")[2].split("-")[0] - '' + '-' + data[1].split(".")[1] + '-' + data[1].split(".")[0]
+        var date = new Date(table_date).getTime();
+        console.log(date)
+
+        if (
+            (isNaN(min) && isNaN(max)) ||
+            (isNaN(min) && date <= max) ||
+            (min <= date && isNaN(max)) ||
+            (min <= date && date <= max)
+        ) {
+            return true;
+        }
+        return false;
+    });
+    //
+
+
     $(document).ready(function () {
+        var date_input = $('#id_date')
+
+        //Date range picker
+        date_input.daterangepicker({
+            timePicker: false,
+            timePickerIncrement: 30,
+            autoUpdateInput: false,
+
+            locale: {
+                format: 'DD.MM.YYYY',
+                "applyLabel": "Ок",
+                "cancelLabel": "Отмена",
+                "fromLabel": "От",
+                "toLabel": "До",
+                "customRangeLabel": "Произвольный",
+                "daysOfWeek": [
+                    "Вс",
+                    "Пн",
+                    "Вт",
+                    "Ср",
+                    "Чт",
+                    "Пт",
+                    "Сб"
+                ],
+                "monthNames": [
+                    "Январь",
+                    "Февраль",
+                    "Март",
+                    "Апрель",
+                    "Май",
+                    "Июнь",
+                    "Июль",
+                    "Август",
+                    "Сентябрь",
+                    "Октябрь",
+                    "Ноябрь",
+                    "Декабрь"
+                ],
+                firstDay: 1
+            }
+        });
+
         // Setup - add a text input to each footer cell
         $('#table_counter tfoot th').each(function () {
             $(this).html('<input type="text" name="custom_search"/>');
@@ -267,36 +335,26 @@
         $("#clean").on("click", function () {
             $('input').val('');
             $('select').val('');
+            minDate = ''
+            maxDate = ''
             table.columns().search("").draw();
         })
+
+        date_input.on('apply.daterangepicker', function (ev, picker) {
+            minDate = new Date(picker.startDate).getTime();
+            maxDate = new Date(picker.endDate).getTime();
+            $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY'));
+            table.draw();
+        });
+
+        date_input.on('cancel.daterangepicker', function () {
+            $(this).val('');
+            minDate = ''
+            maxDate = ''
+            table.draw();
+        });
     });
 
 </script>
 
-<script>
-
-    !function (a) {
-        a.fn.datepicker.dates.ru = {
-            days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
-            daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
-            daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
-            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
-            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
-            today: "Сегодня",
-            clear: "Очистить",
-            format: "dd.mm.yyyy",
-            weekStart: 1,
-            monthsTitle: "Месяцы"
-        }
-    }(jQuery);
-
-
-    $('#id_date').datepicker({
-        format: 'dd.mm.yyyy',
-        startDate: '-100y',
-        language: 'ru',
-    });
-
-
-</script>
 {% endblock %}

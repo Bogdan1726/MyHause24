@@ -41,8 +41,9 @@ class User(AbstractUser):
         """
           Return the first_name plus the last_name, with a space in between.
         """
-        full_name = f'{self.last_name} {self.first_name} {self.patronymic}'
-        return full_name
+        if self.first_name or self.last_name:
+            return f'{self.last_name} {self.first_name} {self.patronymic}'
+        return f'{self.username}'
 
     @property
     def role_str(self):

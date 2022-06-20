@@ -567,16 +567,12 @@ class MasterCallForm(forms.ModelForm):
     }
 
     owner = forms.ChoiceField(
-        choices=[(obj.id, obj.__str__) for obj in User.objects.filter(is_staff=False)],
         required=False,
         widget=forms.Select(attrs={
             'class': 'form-control select2 select2-hidden-accessible',
             'style': 'width: 100%;'}))
 
     apartment = forms.ChoiceField(
-        choices=[(obj.id, obj.select2) for obj in Apartment.objects.all().select_related(
-            'house', 'owner', 'section', 'floor'
-        )],
         required=False,
         widget=forms.Select(attrs={
             'class': 'form-control select2 select2-hidden-accessible',
@@ -602,8 +598,12 @@ class MasterCallForm(forms.ModelForm):
         self.fields['type_master'].queryset = Role.objects.exclude(id=1)
         self.fields['master'].empty_label = 'Выберите...'
         self.fields['master'].queryset = User.objects.filter(is_staff=True)
-        self.fields['apartment'].choices = [('', '')] + self.fields['apartment'].choices
-        self.fields['owner'].choices = [('', '')] + self.fields['owner'].choices
+        self.fields['apartment'].choices = \
+            [('', '')] + [(obj.id, obj.select2) for obj in Apartment.objects.all().select_related(
+                'house', 'owner', 'section', 'floor'
+            )]
+        self.fields['owner'].choices = \
+            [('', '')] + [(obj.id, obj.__str__) for obj in User.objects.filter(is_staff=False)]
 
     def clean_apartment(self):
         apartment = self.cleaned_data.get("apartment")
@@ -630,17 +630,11 @@ class MasterCallForm(forms.ModelForm):
 # region MeterData Forms
 class MeterDataForm(forms.ModelForm):
     house = forms.ChoiceField(
-        choices=[
-            (obj.id, obj.title) for obj in House.objects.all()
-        ],
         required=False,
         widget=forms.Select(
             attrs={'class': 'form-control'})
     )
     section = forms.ChoiceField(
-        choices=[
-            (obj.id, obj.title) for obj in Section.objects.all()
-        ],
         required=False,
         widget=forms.Select(
             attrs={'class': 'form-control'})
@@ -663,8 +657,8 @@ class MeterDataForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(MeterDataForm, self).__init__(*args, **kwargs)
-        self.fields['house'].choices = [('', 'Выберите...')] + self.fields['house'].choices
-        self.fields['section'].choices = [('', 'Выберите...')] + self.fields['section'].choices
+        self.fields['house'].choices = [('', 'Выберите...')] + [(obj.id, obj.title) for obj in House.objects.all()]
+        self.fields['section'].choices = [('', 'Выберите...')] + [(obj.id, obj.title) for obj in Section.objects.all()]
         self.fields['apartment'].empty_label = 'Выберите...'
         self.fields['counter'].empty_label = 'Выберите...'
         self.fields['counter'].queryset = Services.objects.filter(is_show_meter_data=True)
@@ -677,27 +671,22 @@ class MeterDataForm(forms.ModelForm):
 # region CashBox Forms
 
 class CashBoxForm(forms.ModelForm):
+    error_messages = {
+        'len_number': _('Длина номера должна быть не менее 10 символов..'),
+    }
     owner = forms.ChoiceField(
-        choices=[(obj.id, obj.__str__) for obj in User.objects.filter(is_staff=False)],
         required=False,
         widget=forms.Select(attrs={
             'class': 'form-control select2 select2-hidden-accessible',
             'style': 'width: 100%;'}))
 
     personal_account = forms.ChoiceField(
-        choices=[(obj.id, obj.number) for obj in PersonalAccount.objects.all().select_related(
-            'apartment'
-        )],
         required=False,
         widget=forms.Select(attrs={
             'class': 'form-control select2 select2-hidden-accessible',
             'style': 'width: 100%;'}))
 
     manager = forms.ChoiceField(
-        choices=[
-            (obj.id, obj.role_str) for obj in User.objects.filter(
-                is_staff=True, role__in=[1, 2, 3]).select_related('role')
-        ],
         required=True,
         widget=forms.Select(
             attrs={'class': 'form-control'})
@@ -705,7 +694,7 @@ class CashBoxForm(forms.ModelForm):
 
     class Meta:
         model = CashBox
-        exclude = ('receipt', 'manager', 'owner', 'personal_account')
+        exclude = ('receipt', 'manager', 'owner', 'personal_account', 'type')
 
         widgets = {
             'number': forms.TextInput(attrs={'class': 'form-control',
@@ -721,18 +710,39 @@ class CashBoxForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(CashBoxForm, self).__init__(*args, **kwargs)
         self.fields['payment_items'].empty_label = 'Выберите...'
-        self.fields['payment_items'].queryset = PaymentItems.objects.filter(type=kwargs['initial'].get('type'))
-        self.fields['owner'].choices = [('', 'Выберите...')] + self.fields['owner'].choices
-        self.fields['personal_account'].choices = [('', 'Выберите...')] + self.fields['personal_account'].choices
+        self.fields['number'].error_messages = {'unique': 'Ведомость с таким номером уже существует.'}
+        self.fields['payment_items'].queryset = PaymentItems.objects.filter(type=kwargs['initial'].get('type_pay'))
+        self.fields['owner'].choices = \
+            [('', '')] + [(obj.id, obj.__str__) for obj in User.objects.filter(is_staff=False)]
+        self.fields['personal_account'].choices = \
+            [('', '')] + [(obj.id, obj.number) for obj in PersonalAccount.objects.all()]
+        self.fields['manager'].choices = [(obj.id, obj.role_str) for obj in User.objects.filter(
+            is_staff=True, role__in=[1, 2, 3]).select_related('role')]
 
+    def clean_number(self):
+        number = self.cleaned_data.get("number")
+        if len(number) < 10:
+            raise ValidationError(
+                self.error_messages['len_number'],
+            )
+        return number
 
     def save(self, commit=True):
-        print('save')
         cash = super().save(commit=False)
+        print(cash)
+        print(self.cleaned_data)
         manager = self.cleaned_data['manager']
+        owner = self.cleaned_data['owner']
+        personal_account = self.cleaned_data['personal_account']
         if manager:
             obj = get_object_or_404(User, id=manager)
             cash.manager = obj
+        if owner:
+            obj = get_object_or_404(User, id=owner)
+            cash.owner = obj
+        if personal_account:
+            obj = get_object_or_404(PersonalAccount, id=personal_account)
+            cash.personal_account = obj
         if commit:
             cash.save()
         return cash

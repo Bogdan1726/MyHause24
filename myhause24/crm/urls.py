@@ -11,12 +11,13 @@ from .views import (
     UserUpdateView, UserDelete, PaymentItemsListView, PaymentItemsCreateView, PaymentItemsDetailView,
     PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
     MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView,
-    MasterCallCreateView, MasterCallUpdateView, MasterCallDelete, CashBoxListView, CashBoxDetailView, CashBoxCreateView
+    MasterCallCreateView, MasterCallUpdateView, MasterCallDelete, CashBoxListView, CashBoxDetailView, CashBoxCreateView,
+    CashBoxDelete, CashBoxUpdateView
 )
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
-    send_invite, new_users, loading_apartment_of_owner, loading_master_of_type_master
+    send_invite, new_users, loading_apartment_of_owner, loading_master_of_type_master, loading_personal_account_of_owner
 )
 
 User = get_user_model()
@@ -28,6 +29,8 @@ urlpatterns = [
     path('cashbox/', CashBoxListView.as_view(), name='cash_box'),
     path('cashbox/<int:pk>/', CashBoxDetailView.as_view(), name='detail_cash_box'),
     path('cashbox/create/', CashBoxCreateView.as_view(), name='create_cash_box'),
+    path('cashbox/delete/<int:pk>/', CashBoxDelete.as_view(), name='delete_cash_box'),
+    path('cashbox/update/<int:pk>/', CashBoxUpdateView.as_view(), name='update_cash_box'),
 
     # endregion cash_box
 
@@ -125,6 +128,8 @@ urlpatterns = [
     # api_urls
     path('new_users/', new_users, name='new_users'),
     path('load_role/', load_role, name='load_role'),
+    path('loading_personal_account_of_owner/', loading_personal_account_of_owner,
+         name='loading_personal_account_of_owner'),
     path('loading_apartment_of_owner/', loading_apartment_of_owner, name='loading_apartment_of_owner'),
     path('loading_master_of_type_master/', loading_master_of_type_master, name='loading_master_of_type_master'),
     path('loading_floor_section/', loading_floor_section, name='loading_floor_section'),

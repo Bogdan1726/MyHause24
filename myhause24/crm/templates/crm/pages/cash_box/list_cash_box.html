@@ -101,8 +101,8 @@
                 Выберите действие <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
-                <li><a href="{% url 'create_cash_box' %}?type=income">Создать приход</a></li>
-                <li><a href="{% url 'create_cash_box' %}?type=expense">Создать расход</a></li>
+                <li><a href="{% url 'create_cash_box' %}?type_pay=income">Создать приход</a></li>
+                <li><a href="{% url 'create_cash_box' %}?type_pay=expense">Создать расход</a></li>
                 <li><a id="export">Выгрузить в Excel</a></li>
             </ul>
         </div>
@@ -182,18 +182,30 @@
                             <td>Расход</td>
                             {% endif %}
                             {% if cash.type %}
+                            {% if cash.status %}
                             <td data-filter="income" value="{{ cash.sum|formatted_float }}">
                                 <span class="text-green">{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
                             </td>
                             {% else %}
+                            <td>
+                                <span class="text-green">{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
+                            </td>
+                            {% endif %}
+                            {% else %}
+                            {% if cash.status %}
                             <td data-filter="expense" value="{{ cash.sum|formatted_float }}">
                                 <span class="text-red">-{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
                             </td>
+                            {% else %}
+                            <td>
+                                <span class="text-red">-{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
+                            </td>
+                            {% endif %}
                             {% endif %}
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
-                                       href="#"
+                                       href="{% url 'update_cash_box' cash.id %}"
                                        title="Редактировать" data-toggle="tooltip">
                                         <i class="fa fa-pencil"></i>
                                     </a>
@@ -216,7 +228,7 @@
                                             <span aria-hidden="true">×</span></button>
                                         <h4 class="modal-title">Удаление операции</h4>
                                     </div>
-                                    <form method="post" action="#">
+                                    <form method="post" action="{% url 'delete_cash_box' cash.id %}">
                                         {% csrf_token %}
                                         <div class="modal-body">
                                             <p>

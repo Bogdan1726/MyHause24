@@ -46,7 +46,7 @@ class CashBoxListView(ListView):
     context_object_name = 'cash_box'
 
     def get_queryset(self):
-        return self.model.objects.select_related(
+        return self.model.objects.filter(manager=self.request.user).select_related(
             'owner', 'manager', 'payment_items', 'personal_account', 'receipt').order_by('-date', '-id')
 
 
@@ -79,15 +79,55 @@ class CashBoxCreateView(CreateView):
 
     def get_form(self, form_class=None, **kwargs):
         if form_class is None:
+            cash_id = self.request.GET.get('cash', None)
+            if cash_id:
+                obj = get_object_or_404(CashBox, id=cash_id)
+                return CashBoxForm(self.request.POST or None,
+                                   initial={'number': self.generate_number(),
+                                            'manager': obj.manager_id,
+                                            'date': obj.date,
+                                            'sum': obj.sum,
+                                            'owner': obj.owner_id,
+                                            'comment': obj.comment,
+                                            'payment_items': obj.payment_items_id,
+                                            'personal_account': obj.personal_account_id,
+                                            'type_pay': self.request.GET.get('type_pay')})
             return CashBoxForm(self.request.POST or None,
                                initial={'number': self.generate_number(),
                                         'manager': self.request.user.id,
-                                        'type': self.request.GET.get('type')})
-
+                                        'type_pay': self.request.GET.get('type_pay')})
 
     def form_valid(self, form):
-        print('form')
+        if self.request.GET.get('type_pay') == 'expense':
+            cash = form.save(commit=False)
+            cash.type = False
+            cash.save()
         return super().form_valid(form)
+
+
+class CashBoxUpdateView(UpdateView):
+    model = CashBox
+    success_url = reverse_lazy('cash_box')
+    template_name = 'crm/pages/cash_box/update_cash_box.html'
+
+    def get_form(self, form_class=None, **kwargs):
+        if form_class is None:
+            print(self.object.type)
+            return CashBoxForm(self.request.POST or None,
+                               instance=self.object,
+                               initial={
+                                   'manager': self.object.manager_id,
+                                   'owner': self.object.owner_id,
+                                   'personal_account': self.object.personal_account_id,
+                                   'type_pay': 'income' if self.object.type else 'expense'})
+
+
+class CashBoxDelete(DeleteView):
+    model = CashBox
+
+    def get_success_url(self):
+        messages.success(self.request, f'Платеж №{self.object.number} удален!')
+        return reverse_lazy('cash_box')
 
 
 # endregion CashBox

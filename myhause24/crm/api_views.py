@@ -132,3 +132,17 @@ def loading_master_of_type_master(request):
         }
         return JsonResponse(response, status=200)
 
+
+def loading_personal_account_of_owner(request):
+    if request.is_ajax():
+        owner_id = request.GET.get('owner_id')
+        apartments = [obj.id for obj in Apartment.objects.filter(owner=owner_id)]
+        print(apartments)
+        personal_account = PersonalAccount.objects.filter(apartment_id__in=apartments).values(
+            'id', 'number'
+        )
+        response = {
+            'personal_account': list(personal_account)
+        }
+        return JsonResponse(response, status=200)
+

@@ -162,13 +162,12 @@ class PersonalAccount(models.Model):
         return f'{self.number}'
 
 
-
-
 class CashBox(models.Model):
-    number = models.CharField(max_length=64)
+    objects = None
+    number = models.CharField(max_length=64, unique=True)
     date = models.DateField(default=datetime.date.today)
     status = models.BooleanField(default=True)
-    type = models.BooleanField()
+    type = models.BooleanField(default=True)
     sum = models.DecimalField(max_digits=10, decimal_places=2)
     comment = models.TextField(blank=True)
     payment_items = models.ForeignKey('PaymentItems', blank=True, null=True, on_delete=models.SET_NULL)

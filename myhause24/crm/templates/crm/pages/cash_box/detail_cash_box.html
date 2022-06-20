@@ -67,7 +67,7 @@
         <h3 class="box-title">Расходная ведомость</h3>
         {% endif %}
         <div class="box-tools">
-            <a href="#"
+            <a href="{% url 'create_cash_box' %}?type={% if cash_box.type %}income{% else %}expense{% endif %}&cash={{ cash_box.id }}"
                class="btn btn-default btn-sm">
                 <span class="hidden-xs">Копировать</span>
                 <i class="fa fa-print visible-xs" aria-hidden="true"></i>
@@ -88,7 +88,7 @@
                                 <span aria-hidden="true">×</span></button>
                             <h4 class="modal-title">Удаление ведомости</h4>
                         </div>
-                        <form method="post" action="#">
+                        <form method="post" action="{% url 'delete_cash_box' cash_box.id %}">
                             {% csrf_token %}
                             <div class="modal-body">
                                 <p>
@@ -110,7 +110,7 @@
                     </div>
                 </div>
             </div>
-            <a href="#"
+            <a href="{% url 'update_cash_box' cash_box.id %}"
                class="btn btn-primary btn-sm">
                 <span class="hidden-xs">Редактировать ведомость</span>
                 <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>

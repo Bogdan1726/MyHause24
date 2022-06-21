@@ -43,9 +43,13 @@ def loading_floor_section(request):
 def loading_personal_account(request):
     if request.is_ajax():
         pk = request.GET.get('id')
-        obj = PersonalAccount.objects.filter(id=pk).values('id', 'number')
+        obj = PersonalAccount.objects.filter(id=pk).values(
+            'id', 'number', 'apartment', 'apartment__house', 'apartment__section', 'apartment__section__title',
+            'apartment__tariff', 'apartment__number', 'apartment__owner__first_name',
+            'apartment__owner__last_name', 'apartment__owner__username', 'apartment__owner__phone'
+        )
         response = {
-            'personal_account': list(obj)
+            'personal_account': list(obj),
         }
         return JsonResponse(response, status=200)
 
@@ -74,12 +78,18 @@ def loading_apartment_for_section(request):
 def loading_apartment_owner(request):
     if request.is_ajax():
         apartment_id = request.GET.get('apartment_id')
+        tariff = Apartment.objects.filter(id=apartment_id).values('tariff_id', 'tariff__title')
+        personal_account = PersonalAccount.objects.filter(apartment=apartment_id).values(
+            'id', 'number'
+        )
         is_accounts = True if PersonalAccount.objects.filter(apartment=apartment_id).exists() else False
         owner = Apartment.objects.filter(id=apartment_id).values(
             'owner_id', 'owner__first_name', 'owner__last_name', 'owner__username', 'owner__phone')
         response = {
             'owner': list(owner),
-            'is_accounts': is_accounts
+            'is_accounts': is_accounts,
+            'tariff': list(tariff),
+            'personal_account': list(personal_account)
         }
         return JsonResponse(response, status=200)
 
@@ -137,7 +147,6 @@ def loading_personal_account_of_owner(request):
     if request.is_ajax():
         owner_id = request.GET.get('owner_id')
         apartments = [obj.id for obj in Apartment.objects.filter(owner=owner_id)]
-        print(apartments)
         personal_account = PersonalAccount.objects.filter(apartment_id__in=apartments).values(
             'id', 'number'
         )

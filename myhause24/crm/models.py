@@ -124,17 +124,19 @@ class MeterData(models.Model):
 
 
 class Receipt(models.Model):
+    objects = None
+
     class PayStatus(models.TextChoices):
-        PAID = 'paid', _("Paid")
-        PARTIALLY_PAID = 'partially_paid', _("Partially paid")
-        NOT_PAID = 'not_paid', _("Not paid")
+        PAID = 'paid', _("Оплачена")
+        PARTIALLY_PAID = 'partially_paid', _("Частично оплачена")
+        NOT_PAID = 'not_paid', _("Не оплачена")
 
     number = models.CharField(max_length=64)
-    date = models.DateField(auto_now_add=True)
-    date_start = models.DateField()
-    date_end = models.DateField()
+    date = models.DateField(default=datetime.date.today)
+    date_start = models.DateField(default=datetime.date.today)
+    date_end = models.DateField(default=datetime.date.today)
     status = models.BooleanField(default=True)
-    status_pay = models.CharField(max_length=15, choices=PayStatus.choices)
+    status_pay = models.CharField(max_length=15, choices=PayStatus.choices, default=PayStatus.NOT_PAID)
     tariff = models.ForeignKey('Tariff', null=True, on_delete=models.SET_NULL)
     apartment = models.ForeignKey('Apartment', null=True, on_delete=models.SET_NULL)
 

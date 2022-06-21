@@ -16,13 +16,13 @@ from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateVie
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
     Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest,
-    CashBox)
+    CashBox, Receipt)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
     UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
-    CashBoxForm
+    CashBoxForm, ReceiptForm
 )
 
 User = get_user_model()
@@ -71,7 +71,10 @@ class CashBoxCreateView(CreateView):
         """
         counter = 1
         while True:
-            obj_id = self.model.objects.order_by('-id').first().id
+            try:
+                obj_id = self.model.objects.order_by('-id').first().id
+            except AttributeError:
+                obj_id = 0
             number = f'{obj_id + counter:010}'
             if not self.model.objects.filter(number=number).exists():
                 return number
@@ -112,7 +115,6 @@ class CashBoxUpdateView(UpdateView):
 
     def get_form(self, form_class=None, **kwargs):
         if form_class is None:
-            print(self.object.type)
             return CashBoxForm(self.request.POST or None,
                                instance=self.object,
                                initial={
@@ -129,8 +131,47 @@ class CashBoxDelete(DeleteView):
         messages.success(self.request, f'Платеж №{self.object.number} удален!')
         return reverse_lazy('cash_box')
 
-
 # endregion CashBox
+
+# region Receipts
+
+
+class ReceiptListView(ListView):
+    model = Receipt
+    template_name = 'crm/pages/receipts/list_receipts.html'
+    context_object_name = 'receipts'
+
+
+class ReceiptCreateView(CreateView):
+    model = Receipt
+    success_url = reverse_lazy('receipts')
+    template_name = 'crm/pages/receipts/create_receipt.html'
+
+    def generate_number(self):
+        """
+        Returns the number for the initial form data
+        """
+        counter = 1
+        while True:
+            try:
+                obj_id = self.model.objects.order_by('-id').first().id
+            except AttributeError:
+                obj_id = 0
+            number = f'{obj_id + counter:08}'
+            if not self.model.objects.filter(number=number).exists():
+                return number
+            counter += 1
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return ReceiptForm(self.request.POST or None,
+                               initial={'number': self.generate_number()})
+
+
+# endregion Receipts
+
+
+
 
 # region Houses
 

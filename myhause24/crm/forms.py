@@ -6,7 +6,7 @@ from django.core.files.images import get_image_dimensions
 from django.shortcuts import get_object_or_404
 
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
-    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox
+    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
@@ -16,8 +16,58 @@ from .task import send_new_password_owner
 User = get_user_model()
 
 
-# region House Forms
+# region Receipts Forms
 
+class ReceiptForm(forms.ModelForm):
+    house = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control'}))
+
+    section = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control'}))
+
+    personal_accounts = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control select2 select2-hidden-accessible',
+            'style': 'width: 100%;'}))
+
+    class Meta:
+        model = Receipt
+        fields = "__all__"
+
+        widgets = {
+            'number': forms.TextInput(attrs={'class': 'form-control',
+                                             'data-mask': '00000000'}),
+            'date': forms.DateInput(attrs={'class': 'form-control'}),
+            'apartment': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.CheckboxInput({'class': 'form-check-input'}),
+            'status_pay': forms.Select(attrs={'class': 'form-control'}),
+            'tariff': forms.Select(attrs={'class': 'form-control'}),
+            'date_start': forms.DateInput(attrs={'class': 'form-control'}),
+            'date_end': forms.DateInput(attrs={'class': 'form-control'}),
+
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ReceiptForm, self).__init__(*args, **kwargs)
+        self.fields['apartment'].empty_label = 'Выберите...'
+        self.fields['tariff'].empty_label = 'Выберите...'
+        self.fields['house'].choices = [('', 'Выберите...')] + [(obj.id, obj.title) for obj in House.objects.all()]
+        self.fields['section'].choices = [('', 'Выберите...')] + [(obj.id, obj.title) for obj in Section.objects.all()]
+        self.fields['personal_accounts'].choices = \
+            [('', '')] + [(obj.id, obj.number) for obj in PersonalAccount.objects.filter(
+                status='active'
+            )]
+
+
+# endregion Receipts Form
+
+
+# region House Forms
 
 class HouseForm(forms.ModelForm):
     error_messages = {

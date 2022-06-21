@@ -3,7 +3,8 @@
 {% load floattags %}
 
 {% block title %}
-Касса
+Квитанции на оплату
+
 {% endblock %}
 
 {% block style %}
@@ -47,10 +48,10 @@
 
 
 {% block content-header %}
-<h1>Касса</h1>
+<h1>Квитанции на оплату</h1>
 <ul class="breadcrumb">
     <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
-    <li class="active">Касса</li>
+    <li class="active">Квитанции на оплату</li>
 </ul>
 {% endblock %}
 
@@ -101,9 +102,8 @@
                 Выберите действие <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
-                <li><a href="{% url 'create_cash_box' %}?type_pay=income">Создать приход</a></li>
-                <li><a href="{% url 'create_cash_box' %}?type_pay=expense">Создать расход</a></li>
-                <li><a id="export">Выгрузить в Excel</a></li>
+                <li><a href="{% url 'create_receipt' %}">Создать общую квитанцию</a></li>
+                <li><a href="#!" class="delete-many">Удалить</a></li>
             </ul>
         </div>
     </div>
@@ -120,30 +120,36 @@
                     </a>
                 </div>
             </div>
-            <div id="list_cash_box" class="grid-view">
+            <div id="list_receipts" class="grid-view">
                 <div class="box-body table-responsive no-padding">
-                    <table id="table_cash_box" class="table table-bordered table-hover table-striped linkedRow">
+                    <table id="table_receipts" class="table table-bordered table-hover table-striped linkedRow">
                         <thead>
                         <tr>
-                            <th style="width: 70px; min-width: 70px;">№</th>
-                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">Дата</th>
+                            <th style="width: 10px; min-width: 10px;">
+                                <input type="checkbox" id="check-all" name="selection_all" value="1">
+                            </th>
+                            <th style="width: 90px; min-width: 90px;">№ квитанции</th>
                             <th style="width: 120px; min-width: 120px;">Статус</th>
-                            <th style="min-width: 200px">Тип платежа</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">Дата</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">Месяц</th>
+                            <th style="min-width: 200px">Квартира</th>
                             <th style="min-width: 100px">Владелец</th>
-                            <th style="width: 100px; min-width: 100px">Лицевой счет</th>
-                            <th style="width: 120px; min-width: 120px">Приход/расход</th>
+                            <th style="width: 120px; min-width: 120px">Проведена</th>
                             <th style="width: 120px; min-width: 120px">Сумма (грн)</th>
                             <th style="width: 80px; min-width: 80px">&nbsp;</th>
                         </tr>
                         </thead>
                         <tfoot style="display: table-header-group">
                         <tr>
+                            <td></td>
+                            <th></th>
                             <th></th>
                             <td style="z-index: 9999">
                                 <input type="text" name="custom_search" id="id_date">
                             </td>
-                            <th></th>
-                            <th></th>
+                            <td style="z-index: 9999">
+                                <input type="text" name="custom_search" id="id_month">
+                            </td>
                             <th></th>
                             <th></th>
                             <th></th>
@@ -152,60 +158,36 @@
                         </tr>
                         </tfoot>
                         <tbody>
-                        {% for cash in cash_box %}
-                        <tr data-href="{% url 'detail_cash_box' cash.id %}">
-                            <td>{{ cash.number }}</td>
-                            <td>{{ cash.date|date:"d.m.Y" }}</td>
-                            {% if cash.status %}
-                            <td>Проведен</td>
-                            {% else %}
-                            <td>Не проведен</td>
-                            {% endif %}
-                            {% if cash.payment_items %}
-                            <td>{{ cash.payment_items }}</td>
-                            {% else %}
-                            <td>(не задано)</td>
-                            {% endif %}
-                            {% if cash.owner %}
-                            <td>{{ cash.owner }}</td>
-                            {% else %}
-                            <td>(не задано)</td>
-                            {% endif %}
-                            {% if cash.personal_account %}
-                            <td>{{ cash.personal_account }}</td>
-                            {% else %}
-                            <td>(не задано)</td>
-                            {% endif %}
-                            {% if cash.type %}
-                            <td>Приход</td>
-                            {% else %}
-                            <td>Расход</td>
-                            {% endif %}
-                            {% if cash.type %}
-                            {% if cash.status %}
-                            <td data-filter="income" value="{{ cash.sum|formatted_float }}">
-                                <span class="text-green">{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
+                        {% for receipt in receipts %}
+                        <tr data-href="#">
+                            <td style="z-index: 9999">
+                                <input type="checkbox"
+                                       class="select-on-check-all"
+                                       name="receipt_checkbox"
+                                       id="{{ receipt.id }}">
                             </td>
-                            {% else %}
-                            <td>
-                                <span class="text-green">{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
-                            </td>
+                            <td>{{ receipt.number }}</td>
+                            {% if receipt.status_pay == 'paid' %}
+                            <td><small class="label label-success">Оплачена</small></td>
+                            {% elif receipt.status_pay == 'partially_paid' %}
+                            <td><small class="label label-warning">Частично</small></td>
+                            {% elif receipt.status_pay == 'not_paid' %}
+                            <td><small class="label label-danger">Неоплачен</small></td>
                             {% endif %}
+                            <td>{{ receipt.date|date:"d.m.Y" }}</td>
+                            <td>{{ receipt.date|date:"F Y" }}</td>
+                            <td>{{ receipt.apartment.number }}, {{ receipt.apartment.house.title }}</td>
+                            <td>{{ receipt.apartment.owner }}</td>
+                            {% if receipt.status %}
+                            <td>Проведена</td>
                             {% else %}
-                            {% if cash.status %}
-                            <td data-filter="expense" value="{{ cash.sum|formatted_float }}">
-                                <span class="text-red">-{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
-                            </td>
-                            {% else %}
-                            <td>
-                                <span class="text-red">-{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
-                            </td>
+                            <td>Не проведена</td>
                             {% endif %}
-                            {% endif %}
+                            <td>0</td>
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
-                                       href="{% url 'update_cash_box' cash.id %}"
+                                       href="#"
                                        title="Редактировать" data-toggle="tooltip">
                                         <i class="fa fa-pencil"></i>
                                     </a>
@@ -228,7 +210,7 @@
                                             <span aria-hidden="true">×</span></button>
                                         <h4 class="modal-title">Удаление операции</h4>
                                     </div>
-                                    <form method="post" action="{% url 'delete_cash_box' cash.id %}">
+                                    <form method="post" action="#">
                                         {% csrf_token %}
                                         <div class="modal-body">
                                             <p>
@@ -255,8 +237,6 @@
                     </table>
                 </div>
                 <div class="box-footer">
-                    <div>Проведен приход: <span class="text-bold" id="pri">0.00 грн</span></div>
-                    <div>Проведен расход: <span class="text-bold" id="ras">0.00 грн</span></div>
                 </div>
             </div>
 
@@ -276,15 +256,14 @@
 <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
 <script>
 
-    // Initial date range filter
+
     var minDate, maxDate
 
     $.fn.dataTable.ext.search.push(function (settings, data) {
         var min = new Date(minDate).getTime();
         var max = new Date(maxDate).getTime();
-        var table_date = data[1].split(".")[2] + '-' + data[1].split(".")[1] + '-' + data[1].split(".")[0]
+        var table_date = data[3].split(".")[2] + '-' + data[3].split(".")[1] + '-' + data[3].split(".")[0]
         var date = new Date(table_date).getTime();
-
         if (
             (isNaN(min) && isNaN(max)) ||
             (isNaN(min) && date <= max) ||
@@ -300,8 +279,9 @@
 
     $(document).ready(function () {
         var date_input = $('#id_date')
+        var month_input = $('#id_month')
 
-        //Date range picker
+        // Date range picker
         date_input.daterangepicker({
             timePicker: false,
             timePickerIncrement: 30,
@@ -340,16 +320,40 @@
                 firstDay: 1
             }
         });
+        //
+
+        // Month picker
+        !function (a) {
+            a.fn.datepicker.dates.ru = {
+                days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+                daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
+                daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+                months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+                monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+                today: "Сегодня",
+                clear: "Очистить",
+                format: "dd.mm.yyyy",
+                weekStart: 1,
+                monthsTitle: "Месяцы"
+            }
+        }(jQuery);
+
+        month_input.datepicker({
+            format: " MM yyyy",
+            viewMode: "months",
+            minViewMode: "months",
+            language: 'ru'
+        })
 
 
         // Setup - add a text input to each footer cell
-        $('#table_cash_box tfoot th').each(function () {
+        $('#table_receipts tfoot th').each(function () {
             $(this).html('<input type="text" name="custom_search"/>');
         });
 
 
         // DataTable
-        var table = $('#table_cash_box').DataTable({
+        var table = $('#table_receipts').DataTable({
             dom: 'Bfrtip',
             buttons: [
                 'excel'
@@ -365,7 +369,7 @@
             'columnDefs': [
                 {
                     'orderable': false,
-                    'targets': [0, 2, 3, 4, 5, 6, 7, 8]
+                    'targets': [0, 1, 2, 5, 6, 7, 8, 9]
                 }
             ],
             order: [],
@@ -384,7 +388,7 @@
             initComplete: function () {
                 // Apply the search
                 this.api()
-                    .columns([0, 5])
+                    .columns([1, 4, 5])
                     .every(function () {
                         var that = this;
                         $('input', this.footer()).on('keyup change clear', function () {
@@ -394,7 +398,7 @@
                         });
                     });
                 this.api()
-                    .columns([2, 3, 4, 6])
+                    .columns([2, 6, 7])
 
                     .every(function () {
                         var column = this;
@@ -418,6 +422,19 @@
             },
         });
 
+        //Checkbox all
+        $("#check-all").on("click", function (e) {
+            if ($(this).is(":checked")) {
+                alert("Please select")
+            } else {
+                alert("Please not selected")
+                table.column(1).deselect();
+            }
+        });
+
+
+        //
+
         // export to excel
         $('.buttons-excel').css('display', 'none')
         $('#export').on("click", function () {
@@ -426,7 +443,7 @@
         //
 
         // clean button
-        $("#table_cash_box_filter").css('display', 'none')
+        $("#table_receipts_filter").css('display', 'none')
         $("#clean").on("click", function () {
             $('input').val('');
             $('select').val('');

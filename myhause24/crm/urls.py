@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import get_user_model
+
 from .views import (
     HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView,
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView,
@@ -12,8 +13,9 @@ from .views import (
     PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
     MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView,
     MasterCallCreateView, MasterCallUpdateView, MasterCallDelete, CashBoxListView, CashBoxDetailView, CashBoxCreateView,
-    CashBoxDelete, CashBoxUpdateView
+    CashBoxDelete, CashBoxUpdateView, ReceiptListView, ReceiptCreateView
 )
+
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
@@ -25,14 +27,18 @@ User = get_user_model()
 urlpatterns = [
     path('', index, name='admin'),
 
-    # region cash_box
+    # region cash_box urls
     path('cashbox/', CashBoxListView.as_view(), name='cash_box'),
     path('cashbox/<int:pk>/', CashBoxDetailView.as_view(), name='detail_cash_box'),
     path('cashbox/create/', CashBoxCreateView.as_view(), name='create_cash_box'),
     path('cashbox/delete/<int:pk>/', CashBoxDelete.as_view(), name='delete_cash_box'),
     path('cashbox/update/<int:pk>/', CashBoxUpdateView.as_view(), name='update_cash_box'),
+    # endregion cash_box urls
 
-    # endregion cash_box
+    # region receipts urls
+    path('receipts/', ReceiptListView.as_view(), name='receipts'),
+    path('receipt/create/', ReceiptCreateView.as_view(), name='create_receipt'),
+    # endregion receipts urls
 
     # house
     path('house/', HouseListView.as_view(), name='houses'),
@@ -86,11 +92,9 @@ urlpatterns = [
     path('meter-data/delete/<int:pk>/', MeterDataDelete.as_view(), name='delete_meter_data'),
     # meter_data end
 
-
     # services
     path('services/', ServicesListView.as_view(), name='services'),
     # services end
-
 
     # tariffs
     path('tariffs/', TariffListView.as_view(), name='tariffs'),

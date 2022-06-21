@@ -14,8 +14,12 @@
                     <span>Касса</span>
                 </a>
             </li>
-            <li><a href="/admin/invoice/index"><i class="fa fa-files-o"></i>
-                <span>Квитанции на оплату</span></a></li>
+            <li class="{% if url in '[receipts, detail_receipts, create_receipts, update_receipts]' %}active{% endif %}">
+                <a href="{% url 'receipts' %}">
+                    <i class="fa fa-files-o"></i>
+                    <span>Квитанции на оплату</span>
+                </a>
+            </li>
             <li class="{% if url in '[accounts, create_accounts, update_accounts, detail_accounts]' %}active{% endif %}">
                 <a href="{% url 'accounts' %}">
                     <i class="fa fa-credit-card"></i>
@@ -46,7 +50,7 @@
             <li class="{% if url in '[master_calls, detail_master_call, create_master_call, update_master_call]' %}active{% endif %}">
                 <a href="{% url 'master_calls' %}">
                     <i class="fa fa-wrench"></i>
-                <span>Заявки вызова мастера</span>
+                    <span>Заявки вызова мастера</span>
                 </a>
             </li>
             <li class="{% if url in '[meter_data, create_meter_data, meter_data_for_apartment, create_meter_data_for_apartment, update_meter_data, detail_meter_data]' %}active{% endif %}">

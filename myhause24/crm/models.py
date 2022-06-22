@@ -131,7 +131,7 @@ class Receipt(models.Model):
         PARTIALLY_PAID = 'partially_paid', _("Частично оплачена")
         NOT_PAID = 'not_paid', _("Не оплачена")
 
-    number = models.CharField(max_length=64)
+    number = models.CharField(max_length=64, unique=True)
     date = models.DateField(default=datetime.date.today)
     date_start = models.DateField(default=datetime.date.today)
     date_end = models.DateField(default=datetime.date.today)

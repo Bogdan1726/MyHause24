@@ -82,13 +82,13 @@
                     <table id="table_owners" class="table table-bordered table-hover table-striped linkedRow">
                         <thead>
                         <tr>
-                            <th style="width: 100px; min-width: 100px">ID</th>
-                            <th>ФИО</th>
+                            <th style="width: 80px; min-width: 80px">ID</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">ФИО</th>
                             <th style="width: 140px; min-width: 140px">Телефон</th>
                             <th style="width: 140px; min-width: 140px">Email</th>
-                            <th style="min-width: 250px">Дом</th>
-                            <th style="min-width: 250px">Квартира</th>
-                            <th style="width: 90px; min-width: 90px">Добавлен</th>
+                            <th style="width: 200px; min-width: 200px">Дом</th>
+                            <th style="width: 200px; min-width: 200px">Квартира</th>
+                            <th style="width: 80px; min-width: 80px; color: #3c8dbc">Добавлен</th>
                             <th style="width: 100px; min-width: 100px">Статус</th>
                             <th style="width: 100px; min-width: 100px">Есть долг</th>
                             <th style="width: 114px; min-width: 114px">&nbsp;</th>
@@ -229,18 +229,25 @@
             'paging': true,
             'lengthChange': false,
             'searching': true,
-            'ordering': false,
+            'ordering': true,
             'info': true,
             'autoWidth': true,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [0, 2, 3, 4, 5, 7, 8, 9]
+                }
+            ],
+            order: [],
             "language": {
                 "infoFiltered": "(Отфильтровано _MAX_ записей)",
                 "zeroRecords": "Записей не найдено",
-                "info": "Количество домов: <strong>_TOTAL_</stong>",
+                "info": "Количество владельцев: <strong>_TOTAL_</stong>",
                 "infoEmpty": "Нет записей.",
                 "paginate": {
-                    "previous": "Предыдущая",
+                    "previous": '<i class="fa fa-angle-left" style="color: #337AB7"></i>',
                     "last": "Последняя",
-                    "next": "Следующая"
+                    "next": '<i class="fa fa-angle-right" style="color: #337AB7"></i>',
                 }
             },
             initComplete: function () {

@@ -58,8 +58,8 @@
                         <thead>
                         <tr>
                             <th style="width: 40px; min-width: 40px">#</th>
-                            <th style="width: 50%;">Название</th>
-                            <th style="width: 50%;">Адрес</th>
+                            <th style="width: 50%; color: #3c8dbc">Название</th>
+                            <th style="width: 50%; color: #3c8dbc">Адрес</th>
                             <th style="width: 80px; min-width: 80px">&nbsp;</th>
                         </tr>
                         </thead>
@@ -148,18 +148,25 @@
             'paging': true,
             'lengthChange': false,
             'searching': true,
-            'ordering': false,
+            'ordering': true,
             'info': true,
             'autoWidth': false,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [0, 3]
+                }
+            ],
+            order: [],
             "language": {
                 "infoFiltered": "(Отфильтровано _MAX_ записей)",
                 "zeroRecords": "Записей не найдено",
                 "info": "Количество домов: <strong>_TOTAL_</stong>",
                 "infoEmpty": "Нет записей.",
                 "paginate": {
-                    "previous": "Предыдущая",
+                    "previous": '<i class="fa fa-angle-left" style="color: #337AB7"></i>',
                     "last": "Последняя",
-                    "next": "Следующая"
+                    "next": '<i class="fa fa-angle-right" style="color: #337AB7"></i>',
                 }
             },
             initComplete: function () {

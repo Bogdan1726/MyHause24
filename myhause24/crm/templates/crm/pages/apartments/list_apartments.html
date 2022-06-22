@@ -74,11 +74,11 @@
                     <table id="table_apartment" class="table table-bordered table-hover table-striped linkedRow">
                         <thead>
                         <tr>
-                            <th style="width: 80px; min-width: 80px">№ квартиры</th>
-                            <th style="width: 240px; min-width:240px">Дом</th>
-                            <th style="width: 140px; min-width: 140px">Секция</th>
-                            <th style="width: 140px; min-width: 140px">Этаж</th>
-                            <th style="min-width: 250px">Владелец</th>
+                            <th style="width: 80px; min-width: 80px; color: #3c8dbc">№ квартиры</th>
+                            <th style="width: 240px; min-width:240px; color: #3c8dbc">Дом</th>
+                            <th style="width: 140px; min-width: 140px; color: #3c8dbc">Секция</th>
+                            <th style="width: 140px; min-width: 140px; color: #3c8dbc">Этаж</th>
+                            <th style="min-width: 250px; color: #3c8dbc">Владелец</th>
                             <th style="width: 100px; min-width: 100px">Остаток</th>
                             <th style="width: 114px; min-width: 114px">&nbsp;</th>
                         </tr>
@@ -176,18 +176,25 @@
             'paging': true,
             'lengthChange': false,
             'searching': true,
-            'ordering': false,
+            'ordering': true,
             'info': true,
             'autoWidth': true,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [5, 6]
+                }
+            ],
+            order: [],
             "language": {
                 "infoFiltered": "(Отфильтровано _MAX_ записей)",
                 "zeroRecords": "Записей не найдено",
-                "info": "Количество домов: <strong>_TOTAL_</stong>",
+                "info": "Количество квартир: <strong>_TOTAL_</stong>",
                 "infoEmpty": "Нет записей.",
                 "paginate": {
-                    "previous": "Предыдущая",
+                    "previous": '<i class="fa fa-angle-left" style="color: #337AB7"></i>',
                     "last": "Последняя",
-                    "next": "Следующая"
+                    "next": '<i class="fa fa-angle-right" style="color: #337AB7"></i>',
                 }
             },
             initComplete: function () {

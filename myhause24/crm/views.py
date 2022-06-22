@@ -62,8 +62,11 @@ class CashBoxDetailView(DetailView):
 
 class CashBoxCreateView(CreateView):
     model = CashBox
-    success_url = reverse_lazy('cash_box')
     template_name = 'crm/pages/cash_box/create_cash_box.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Ведомость №{self.object.number} добавлена!')
+        return reverse_lazy('cash_box')
 
     def generate_number(self):
         """
@@ -110,7 +113,6 @@ class CashBoxCreateView(CreateView):
 
 class CashBoxUpdateView(UpdateView):
     model = CashBox
-    success_url = reverse_lazy('cash_box')
     template_name = 'crm/pages/cash_box/update_cash_box.html'
 
     def get_form(self, form_class=None, **kwargs):
@@ -123,6 +125,10 @@ class CashBoxUpdateView(UpdateView):
                                    'personal_account': self.object.personal_account_id,
                                    'type_pay': 'income' if self.object.type else 'expense'})
 
+    def get_success_url(self):
+        messages.success(self.request, f'Ведомость №{self.object.number} обновлена!')
+        return reverse_lazy('cash_box')
+
 
 class CashBoxDelete(DeleteView):
     model = CashBox
@@ -130,6 +136,7 @@ class CashBoxDelete(DeleteView):
     def get_success_url(self):
         messages.success(self.request, f'Платеж №{self.object.number} удален!')
         return reverse_lazy('cash_box')
+
 
 # endregion CashBox
 
@@ -141,11 +148,18 @@ class ReceiptListView(ListView):
     template_name = 'crm/pages/receipts/list_receipts.html'
     context_object_name = 'receipts'
 
+    def get_queryset(self):
+        return self.model.objects.all().select_related(
+            'tariff', 'apartment', 'apartment__owner', 'apartment__house').order_by('-date', '-id')
+
 
 class ReceiptCreateView(CreateView):
     model = Receipt
-    success_url = reverse_lazy('receipts')
     template_name = 'crm/pages/receipts/create_receipt.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Квитанция №{self.object.number} добавлена!')
+        return reverse_lazy('receipts')
 
     def generate_number(self):
         """
@@ -164,13 +178,64 @@ class ReceiptCreateView(CreateView):
 
     def get_form(self, form_class=None):
         if form_class is None:
+            receipt_id = self.request.GET.get('receipt_id', None)
+            if receipt_id:
+                obj = get_object_or_404(Receipt, id=receipt_id)
+                personal_account = PersonalAccount.objects.filter(apartment=obj.apartment_id).first()
+                return ReceiptForm(self.request.POST or None,
+                                   initial={'number': self.generate_number(),
+                                            'date': obj.date,
+                                            'status': obj.status,
+                                            'status_pay': obj.status_pay,
+                                            'tariff': obj.tariff_id,
+                                            'date_start': obj.date_start,
+                                            'date_end': obj.date_end,
+                                            'house': obj.apartment.house_id,
+                                            'section': obj.apartment.section_id,
+                                            'apartment': obj.apartment_id,
+                                            'personal_accounts': personal_account.id if personal_account else None})
+
             return ReceiptForm(self.request.POST or None,
                                initial={'number': self.generate_number()})
 
+    def get_context_data(self, **kwargs):
+        context = super(ReceiptCreateView, self).get_context_data()
+        receipt_id = self.request.GET.get('receipt_id', None)
+        if receipt_id:
+            obj = get_object_or_404(Receipt, id=receipt_id)
+            context['owner_data'] = Apartment.objects.filter(id=obj.apartment_id).first()
+        return context
+
+
+class ReceiptUpdateView(UpdateView):
+    model = Receipt
+    template_name = 'crm/pages/receipts/update_receipt.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Квитанция №{self.object.number} обновлена!')
+        return reverse_lazy('receipts')
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            personal_account = PersonalAccount.objects.filter(
+                apartment=self.object.apartment_id).first()
+            return ReceiptForm(self.request.POST or None,
+                               instance=self.object,
+                               initial={
+                                   'house': self.object.apartment.house_id,
+                                   'section': self.object.apartment.section_id,
+                                   'personal_accounts': personal_account.id if personal_account else None
+                               })
+
+
+class ReceiptDelete(DeleteView):
+    model = Receipt
+
+    def get_success_url(self):
+        messages.success(self.request, f'Квитанция №{self.object.number} удалена!')
+        return reverse_lazy('receipts')
 
 # endregion Receipts
-
-
 
 
 # region Houses

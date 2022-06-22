@@ -67,7 +67,7 @@
         <h3 class="box-title">Расходная ведомость</h3>
         {% endif %}
         <div class="box-tools">
-            <a href="{% url 'create_cash_box' %}?type={% if cash_box.type %}income{% else %}expense{% endif %}&cash={{ cash_box.id }}"
+            <a href="{% url 'create_cash_box' %}?type_pay={% if cash_box.type %}income{% else %}expense{% endif %}&cash={{ cash_box.id }}"
                class="btn btn-default btn-sm">
                 <span class="hidden-xs">Копировать</span>
                 <i class="fa fa-print visible-xs" aria-hidden="true"></i>

@@ -136,7 +136,7 @@
                             <th style="min-width: 100px">Владелец</th>
                             <th style="width: 120px; min-width: 120px">Проведена</th>
                             <th style="width: 120px; min-width: 120px">Сумма (грн)</th>
-                            <th style="width: 80px; min-width: 80px">&nbsp;</th>
+                            <th style="width: 100px; min-width: 100px">&nbsp;</th>
                         </tr>
                         </thead>
                         <tfoot style="display: table-header-group">
@@ -187,7 +187,13 @@
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"
-                                       href="#"
+                                       href="{% url 'create_receipt' %}?receipt_id={{ receipt.id }}"
+                                       title="Копировать"
+                                       data-toggle="tooltip">
+                                        <i class="fa fa-clone"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_receipt' receipt.id %}"
                                        title="Редактировать" data-toggle="tooltip">
                                         <i class="fa fa-pencil"></i>
                                     </a>
@@ -208,18 +214,13 @@
                                         <button type="button" class="close" data-dismiss="modal"
                                                 aria-label="Close">
                                             <span aria-hidden="true">×</span></button>
-                                        <h4 class="modal-title">Удаление операции</h4>
+                                        <h4 class="modal-title">Удаление квитанции</h4>
                                     </div>
-                                    <form method="post" action="#">
+                                    <form method="post" action="{% url 'delete_receipt' receipt.id %}">
                                         {% csrf_token %}
                                         <div class="modal-body">
                                             <p>
-                                                Вы уверены, что хотите удалить
-                                                {% if cash.type is True %}
-                                                Приход
-                                                {% else %}
-                                                Расход
-                                                {% endif %} № {{ cash.number }}?
+                                                Вы уверены, что хотите удалить квитанцию №{{ receipt.number }}?
                                             </p>
                                         </div>
                                         <div class="modal-footer">
@@ -425,15 +426,17 @@
         //Checkbox all
         $("#check-all").on("click", function (e) {
             if ($(this).is(":checked")) {
-                alert("Please select")
+                table.column(0).nodes().to$().each(function (d, j) {
+                    $(j).find('input').attr('checked', true)
+                })
             } else {
-                alert("Please not selected")
-                table.column(1).deselect();
+                table.column(0).nodes().to$().each(function (d, j) {
+                    $(j).find('input').attr('checked', false)
+                })
             }
         });
-
-
         //
+
 
         // export to excel
         $('.buttons-excel').css('display', 'none')

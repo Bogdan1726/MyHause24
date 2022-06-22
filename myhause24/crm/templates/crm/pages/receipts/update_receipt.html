@@ -1,10 +1,889 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Новая квитанция
+{% endblock %}
 
-</body>
-</html>
+{% block style %}
+
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Новая квитанция</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'receipts' %}">Квитанции</a></li>
+    <li class="active">Новая квитанция</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="receipt-create">
+    <form id="receipt-form" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-xs-12 col-md-7 col-lg-6">
+                <div class="page-header-spec">
+                    <div class="form-group field-invoice-uid required">
+                        <div class="input-group">
+                            <div class="input-group-addon">
+                                №
+                            </div>
+                            {{ form.number }}
+                        </div>
+                    </div>
+                    <span class="label-mid">от</span>
+                    <div class="form-group">
+                        <div class="input-group date">
+                            <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                            {{ form.date }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-5 col-lg-6">
+                <div class="btn-group pull-right margin-bottom">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                        Выберите действие <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#!" class="set-tariff-services">Выставить все услуги согласно тарифу</a></li>
+                        <li><a href="#!" class="add-counters">Добавить показания счетчиков</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="box">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label">Дом</label>
+                            {{ form.house }}
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Секция</label>
+                            {{ form.section }}
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Квартира</label>
+                            {{ form.apartment }}
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-6">
+                        <div class="form-group">
+                            {{ form.status }}
+                            <label>Проведен</label>
+                        </div>
+                        <div class="form-group field-invoice-status required">
+                            <label class="control-label">Статус</label>
+                            {{ form.status_pay }}
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Тариф</label>
+                            {{ form.tariff }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <div class="form-group">
+                                    <label class="control-label">Период с</label>
+                                    <div class="input-group date">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        {{ form.date_start }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div class="form-group">
+                                    <label class="control-label">Период по</label>
+                                    <div class="input-group date">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        {{ form.date_end }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label">Лицевой счет</label>
+                            {{ form.personal_accounts }}
+                        </div>
+                        {% if object.apartment.owner %}
+                        <p>
+                            <b>Владелец:</b>
+                            <span id="owner-fullname">
+                                <a href="{% url 'detail_owner' object.apartment.owner.id %}">
+                                    {{ object.apartment.owner }}
+                                </a>
+                            </span>
+                        </p>
+                        {% else %}
+                        <p><b>Владелец:</b> <span id="owner-fullname">не выбран</span></p>
+                        {% endif %}
+                        {% if object.apartment.owner.phone %}
+                        <p><b>Телефон:</b>
+                            <span id="owner-phone">
+                                <a href="tel:+{{ object.apartment.owner.phone }}">
+                                    {{ object.apartment.owner.phone }}
+                                </a>
+                            </span>
+                        </p>
+                        {% else %}
+                        <p><b>Телефон:</b> <span id="owner-phone">не выбран</span></p>
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-12 col-sm-6">
+                    </div>
+                </div>
+                <!--                <div class="row">-->
+                <!--                    <div class="col-xs-12">-->
+                <!--                        <div class="table-responsive no-padding">-->
+                <!--                            <table class="table table-bordered table-hover">-->
+                <!--                                <thead>-->
+                <!--                                <tr>-->
+                <!--                                    <th style="min-width: 200px;">Услуга</th>-->
+                <!--                                    &lt;!&ndash;<th style="min-width: 180px;">Показания</th>&ndash;&gt;-->
+                <!--                                    <th style="min-width: 180px;">Расход</th>-->
+                <!--                                    <th style="min-width: 120px;">Ед. изм.</th>-->
+                <!--                                    <th style="min-width: 180px;">Цена за ед., грн.</th>-->
+                <!--                                    <th style="min-width: 180px;">Стоимость, грн.</th>-->
+                <!--                                    <th style="width: 40px; min-width: 40px;"></th>-->
+                <!--                                </tr>-->
+                <!--                                </thead>-->
+                <!--                                <tbody id="form-invoiceservice-rows">-->
+                <!--                                <tr id="form-invoiceservice-2" class="form-invoiceservice">-->
+                <!--                                    <td>-->
+                <!--                                        <input type="hidden" id="invoiceservice-2-id" name="InvoiceService[2][id]">-->
+                <!--                                        <input type="hidden" id="invoiceservice-2-invoice_id"-->
+                <!--                                               name="InvoiceService[2][invoice_id]" value="0"> <input type="hidden"-->
+                <!--                                                                                                      id="invoiceservice-2-counter_data_id"-->
+                <!--                                                                                                      class="data-counter_data_id"-->
+                <!--                                                                                                      name="InvoiceService[2][counter_data_id]">-->
+                <!--                                        <select id="invoiceservice-2-service_id" class="form-control service-select"-->
+                <!--                                                name="InvoiceService[2][service_id]">-->
+                <!--                                            <option value="">Выберите...</option>-->
+                <!--                                            <option value="2" selected="">Холодная вода</option>-->
+                <!--                                            <option value="5">Уборка территории</option>-->
+                <!--                                            <option value="6">Полив</option>-->
+                <!--                                            <option value="7">Охрана</option>-->
+                <!--                                            <option value="16">Уборка</option>-->
+                <!--                                            <option value="21">Горячая вода</option>-->
+                <!--                                        </select></td>-->
+                <!--                                    <td>-->
+                <!--                                        <input type="text" id="invoiceservice-2-amount" class="form-control data-amount"-->
+                <!--                                               name="InvoiceService[2][amount]"></td>-->
+                <!--                                    <td>-->
+                <!--                                        <select id="2-unit" class="form-control data-unit" name="[2]unit">-->
+                <!--                                            <option value="">Выберите...</option>-->
+                <!--                                            <option value="2" selected="">м3</option>-->
+                <!--                                            <option value="3">кв.м.кКал</option>-->
+                <!--                                            <option value="4">кв.м</option>-->
+                <!--                                            <option value="6">мес.</option>-->
+                <!--                                            <option value="8">кВт.ч</option>-->
+                <!--                                            <option value="9">грн/м2</option>-->
+                <!--                                            <option value="15">м3</option>-->
+                <!--                                        </select></td>-->
+                <!--                                    <td>-->
+                <!--                                        <input type="text" id="invoiceservice-2-price_unit"-->
+                <!--                                               class="form-control data-price_unit" name="InvoiceService[2][price_unit]"-->
+                <!--                                               value="35.00"></td>-->
+                <!--                                    <td>-->
+                <!--                                        <input type="text" id="invoiceservice-2-price" class="form-control data-price"-->
+                <!--                                               name="InvoiceService[2][price]"></td>-->
+                <!--                                    <td>-->
+                <!--                                        <button type="button" class="btn btn-default btn-sm form-row-remove-btn"-->
+                <!--                                                title="Удалить услугу"><i class="fa fa-trash"></i></button>-->
+                <!--                                    </td>-->
+                <!--                                </tr>-->
+
+                <!--                                <tr id="form-invoiceservice-3" class="form-invoiceservice">-->
+                <!--                                    <td>-->
+                <!--                                        <input type="hidden" id="invoiceservice-3-id" name="InvoiceService[3][id]">-->
+                <!--                                        <input type="hidden" id="invoiceservice-3-invoice_id"-->
+                <!--                                               name="InvoiceService[3][invoice_id]" value="0"> <input type="hidden"-->
+                <!--                                                                                                      id="invoiceservice-3-counter_data_id"-->
+                <!--                                                                                                      class="data-counter_data_id"-->
+                <!--                                                                                                      name="InvoiceService[3][counter_data_id]">-->
+                <!--                                        <select id="invoiceservice-3-service_id" class="form-control service-select"-->
+                <!--                                                name="InvoiceService[3][service_id]">-->
+                <!--                                            <option value="">Выберите...</option>-->
+                <!--                                            <option value="2">Холодная вода</option>-->
+                <!--                                            <option value="5" selected="">Уборка территории</option>-->
+                <!--                                            <option value="6">Полив</option>-->
+                <!--                                            <option value="7">Охрана</option>-->
+                <!--                                            <option value="16">Уборка</option>-->
+                <!--                                            <option value="21">Горячая вода</option>-->
+                <!--                                        </select></td>-->
+                <!--                                    <td>-->
+                <!--                                        <input type="text" id="invoiceservice-3-amount" class="form-control data-amount"-->
+                <!--                                               name="InvoiceService[3][amount]"></td>-->
+                <!--                                    <td>-->
+                <!--                                        <select id="3-unit" class="form-control data-unit" name="[3]unit">-->
+                <!--                                            <option value="">Выберите...</option>-->
+                <!--                                            <option value="2">м3</option>-->
+                <!--                                            <option value="3">кв.м.кКал</option>-->
+                <!--                                            <option value="4">кв.м</option>-->
+                <!--                                            <option value="6">мес.</option>-->
+                <!--                                            <option value="8">кВт.ч</option>-->
+                <!--                                            <option value="9" selected="">грн/м2</option>-->
+                <!--                                            <option value="15">м3</option>-->
+                <!--                                        </select></td>-->
+                <!--                                    <td>-->
+                <!--                                        <input type="text" id="invoiceservice-3-price_unit"-->
+                <!--                                               class="form-control data-price_unit" name="InvoiceService[3][price_unit]"-->
+                <!--                                               value="0.00"></td>-->
+                <!--                                    <td>-->
+                <!--                                        <input type="text" id="invoiceservice-3-price" class="form-control data-price"-->
+                <!--                                               name="InvoiceService[3][price]"></td>-->
+                <!--                                    <td>-->
+                <!--                                        <button type="button" class="btn btn-default btn-sm form-row-remove-btn"-->
+                <!--                                                title="Удалить услугу"><i class="fa fa-trash"></i></button>-->
+                <!--                                    </td>-->
+                <!--                                </tr>-->
+                <!--                                </tbody>-->
+                <!--                                <tfoot>-->
+                <!--                                <tr>-->
+                <!--                                    <td colspan="4" valing="middle">-->
+                <!--                                        <button type="button"-->
+                <!--                                                class="btn btn-default btn-hover-change form-row-add-invoiceservice-btn">-->
+                <!--                                            Добавить услугу-->
+                <!--                                        </button>-->
+                <!--                                        <button type="button" class="btn btn-default set-tariff-services">-->
+                <!--                                            Установить все услуги согласно тарифу-->
+                <!--                                        </button>-->
+                <!--                                        <button type="button" class="btn btn-default add-counters">-->
+                <!--                                            Добавить показания счетчиков-->
+                <!--                                        </button>-->
+                <!--                                    </td>-->
+                <!--                                    <td style="min-width: 180px;">-->
+                <!--                                        <div class="h4">-->
+                <!--                                            Итого: <b><span id="price-total">0.00</span></b> грн-->
+                <!--                                        </div>-->
+                <!--                                    </td>-->
+                <!--                                    <td style="width: 40px; min-width: 40px;"></td>-->
+                <!--                                </tr>-->
+                <!--                                </tfoot>-->
+                <!--                            </table>-->
+                <!--                        </div>-->
+                <!--                    </div>-->
+                <!--                </div>-->
+
+                <div class="row">
+                    <div class="col-xs-12 text-right">
+                        <div class="form-group">
+                            <a href="{% url 'receipts' %}" class="btn btn-default">Отменить</a>
+                            <button type="submit" class="btn btn-success">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <!--    <div class="row">-->
+    <!--        <div class="col-xs-12">-->
+    <!--            <div class="box">-->
+    <!--                <div class="box-header with-border">-->
+    <!--                    <h3 class="box-title">Показания счетчиков</h3>-->
+    <!--                </div>-->
+
+    <!--                <div id="counters" data-pjax-container="" data-pjax-push-state="" data-pjax-timeout="1000">-->
+    <!--                    <div id="w0" class="grid-view">-->
+    <!--                        <div class="box-body table-responsive no-padding">-->
+    <!--                            <table class="table table-bordered table-hover table-striped table-nowrap">-->
+    <!--                                <thead>-->
+    <!--                                <tr>-->
+    <!--                                    <th style="width: 125px; min-width: 125px">№</th>-->
+    <!--                                    <th>Статус</th>-->
+    <!--                                    <th style="width: 125px; min-width: 125px">Дата</th>-->
+    <!--                                    <th style="width: 125px; min-width: 125px">Месяц</th>-->
+    <!--                                    <th style="min-width: 200px">Дом</th>-->
+    <!--                                    <th style="min-width: 160px">Секция</th>-->
+    <!--                                    <th style="width: 110px; min-width: 110px">№ квартиры</th>-->
+    <!--                                    <th>Счетчик</th>-->
+    <!--                                    <th style="width: 90px; min-width: 90px">Показания</th>-->
+    <!--                                    <th style="width: 90px; min-width: 90px">Ед. изм.</th>-->
+    <!--                                </tr>-->
+    <!--                                <tr id="w0-filters" class="filter-hidden">-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                    <td><input type="hidden" id="filterMonthYear"-->
+    <!--                                               name="CounterDataSearch[searchUidMonthYear]"><input type="hidden"-->
+    <!--                                                                                                   id="filterFlatId"-->
+    <!--                                                                                                   name="CounterDataSearch[flat_id]">-->
+    <!--                                    </td>-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                    <td>&nbsp;</td>-->
+    <!--                                </tr>-->
+    <!--                                </thead>-->
+    <!--                                <tbody>-->
+    <!--                                <tr data-key="108">-->
+    <!--                                    <td>13062200108</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>13.06.2022</td>-->
+    <!--                                    <td>Июнь 2022</td>-->
+    <!--                                    <td>ЖК "Морская Симфония"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>3425</td>-->
+    <!--                                    <td>Горячая вода</td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal">0.0</td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal">м3</td>-->
+    <!--                                </tr>-->
+    <!--                                <tr data-key="107">-->
+    <!--                                    <td>13062200107</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>13.06.2022</td>-->
+    <!--                                    <td>Июнь 2022</td>-->
+    <!--                                    <td>ЖК "Башня Чкалов"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>453</td>-->
+    <!--                                    <td><span class="not-set">(не задано)</span></td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                </tr>-->
+    <!--                                <tr data-key="106">-->
+    <!--                                    <td>13062200106</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>13.06.2022</td>-->
+    <!--                                    <td>Июнь 2022</td>-->
+    <!--                                    <td>ЖК "Башня Чкалов"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>3425</td>-->
+    <!--                                    <td><span class="not-set">(не задано)</span></td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                </tr>-->
+    <!--                                <tr data-key="105">-->
+    <!--                                    <td>13062200100</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>13.06.2022</td>-->
+    <!--                                    <td>Июнь 2022</td>-->
+    <!--                                    <td>ЖК "Башня Чкалов"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>3425</td>-->
+    <!--                                    <td><span class="not-set">(не задано)</span></td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                </tr>-->
+    <!--                                <tr data-key="99">-->
+    <!--                                    <td>11062200099</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>11.06.2022</td>-->
+    <!--                                    <td>Июнь 2022</td>-->
+    <!--                                    <td>ЖК "Морская Симфония"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>11</td>-->
+    <!--                                    <td><span class="not-set">(не задано)</span></td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                </tr>-->
+    <!--                                <tr data-key="97">-->
+    <!--                                    <td>11062200097</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>11.06.2022</td>-->
+    <!--                                    <td>Июнь 2022</td>-->
+    <!--                                    <td>ЖК "Башня Чкалов"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>3425</td>-->
+    <!--                                    <td><span class="not-set">(не задано)</span></td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                </tr>-->
+    <!--                                <tr data-key="96">-->
+    <!--                                    <td>11062200091</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>11.06.2022</td>-->
+    <!--                                    <td>Июнь 2022</td>-->
+    <!--                                    <td>ЖК "Морская Симфония"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>11</td>-->
+    <!--                                    <td><span class="not-set">(не задано)</span></td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal">40.0</td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                </tr>-->
+    <!--                                <tr data-key="90">-->
+    <!--                                    <td>09052200090</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>09.05.2022</td>-->
+    <!--                                    <td>Май 2022</td>-->
+    <!--                                    <td>ЖК "Морская Симфония"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>11</td>-->
+    <!--                                    <td><span class="not-set">(не задано)</span></td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal">34.0</td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal"><span class="not-set">(не задано)</span>-->
+    <!--                                    </td>-->
+    <!--                                </tr>-->
+    <!--                                <tr data-key="89">-->
+    <!--                                    <td>13032200089</td>-->
+    <!--                                    <td><small class="label label-warning">Новое</small></td>-->
+    <!--                                    <td>13.03.2022</td>-->
+    <!--                                    <td>Март 2022</td>-->
+    <!--                                    <td>ЖК "Морская Симфония"</td>-->
+    <!--                                    <td>Секция 1</td>-->
+    <!--                                    <td>11</td>-->
+    <!--                                    <td>Холодная вода</td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal">313.0</td>-->
+    <!--                                    <td style="background-color: #DFD5; font-weight: normal">м3</td>-->
+    <!--                                </tr>-->
+    <!--                                </tbody>-->
+    <!--                            </table>-->
+    <!--                        </div>-->
+    <!--                        <div class="box-footer clearfix"></div>-->
+    <!--                    </div>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+<script>
+    $(document).ready(function () {
+
+        var personal_accounts = $('select[name=personal_accounts]')
+        var select_house = $("select[name='house']")
+        var select_section = $("select[name='section']")
+        var select_apartment = $("select[name='apartment']")
+        var select_tariff = $("select[name='tariff']")
+        select_tariff.attr('readonly', true).find('option:not([selected])').remove()
+        var fullname = $("#owner-fullname")
+        var phone = $("#owner-phone")
+        var initial_options = []
+        var options = []
+
+
+        // select2 of personal account
+        $('select[name=personal_accounts] option').each(function () {
+            initial_options.push({
+                id: $(this).val(),
+                text: $(this).text()
+            })
+        })
+
+        personal_accounts.select2({
+            allowClear: true,
+            placeholder: "Выберите...",
+            language: {
+                noResults: function () {
+                    return "Совпавдений не найдено";
+                }
+            }
+        })
+
+        //
+
+        // clear data
+        function clear_owner_data() {
+            fullname.html('не выбран')
+            phone.html('не выбран')
+            select_tariff.find('option[value=""]').prop('selected', true);
+            personal_accounts.empty().select2({
+                data: initial_options,
+                placeholder: "Выберите...",
+                language: {
+                    noResults: function () {
+                        return "Совпавдений не найдено";
+                    }
+                }
+            });
+        }
+
+        //
+
+        // if house
+        if (select_section.val()) {
+            select_apartment.find('option:not([selected])').slice(1).remove();
+            send_ajax_for_apartment(select_section.val(), true)
+        } else {
+            select_apartment.find('option:not([selected])').remove();
+        }
+        //
+
+        // if section
+        if (select_house.val()) {
+            select_apartment.find('option:not([selected])').slice(1).remove();
+            select_section.find('option:not([selected])').slice(1).remove();
+            send_ajax_for_section(select_house.val(), true)
+        } else {
+            select_apartment.find('option:not([selected])').remove();
+            select_section.find('option:not([selected])').remove();
+        }
+        //
+
+
+        // changes select
+        select_house.on("change", function () {
+            clear_owner_data();
+            select_apartment.find('option').slice(1).remove();
+            if (this.value) {
+                send_ajax_for_section(this.value, false)
+            } else {
+                select_section.find('option').slice(1).remove();
+                select_apartment.find('option').slice(1).remove();
+            }
+        })
+
+        select_section.on('change', function () {
+            clear_owner_data();
+            if (this.value) {
+                send_ajax_for_apartment(this.value, false)
+            } else {
+                select_apartment.find('option').slice(1).remove();
+                select_apartment.find('option').slice(1).remove();
+            }
+        })
+
+        select_apartment.on('change', function () {
+            if (this.value) {
+                send_ajax_for_owner(this.value, false);
+            } else {
+            }
+        })
+
+        personal_accounts.on('change', function () {
+            if (this.value) {
+                send_ajax_for_personal_account(this.value);
+            } else {
+                select_tariff.find('option[value=""]').prop('selected', true);
+                select_house.find('option[value=""]').prop('selected', true);
+                select_section.find('option').slice(1).remove();
+                select_apartment.find('option').slice(1).remove();
+                fullname.html('не выбран')
+                phone.html('не выбран')
+            }
+        })
+        //
+
+        // ajax
+        function send_ajax_for_personal_account(data) {
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'loading_personal_account' %}",
+                data: {
+                    'id': data
+                },
+                success: function (response) {
+                    var owner_last_name = response.personal_account[0].apartment__owner__last_name
+                    var owner_first_name = response.personal_account[0].apartment__owner__first_name
+                    var owner_username = response.personal_account[0].apartment__owner__username
+                    var owner_phone = response.personal_account[0].apartment__owner__phone
+                    if (owner_username !== null) {
+                        show_owner(
+                            [
+                                {
+                                    'owner__last_name': owner_last_name,
+                                    'owner__first_name': owner_first_name,
+                                    'owner__username': owner_username,
+                                    'owner__phone': owner_phone
+                                }]
+                        )
+                    } else {
+                        fullname.html('не выбран')
+                        phone.html('не выбран')
+                    }
+                    var apartment_id = response.personal_account[0].apartment
+                    var house_id = response.personal_account[0].apartment__house
+                    var section_id = response.personal_account[0].apartment__section
+                    var section_title = response.personal_account[0].apartment__section__title
+                    var apartment_number = response.personal_account[0].apartment__number
+                    var tariff_id = response.personal_account[0].apartment__tariff
+                    if (house_id) {
+                        select_house.find('option[value="' + house_id + '"]').prop('selected', true)
+                        send_ajax_for_section(house_id, true)
+                    } else {
+                        select_section.find('option').slice(1).remove();
+                        select_house.find('option[value=""]').prop('selected', true)
+                    }
+                    if (section_id) {
+                        select_section.append(
+                            '<option selected value="' + section_id + '">' + section_title + '</option>'
+                        )
+                        send_ajax_for_apartment(section_id, true)
+                    } else {
+                        select_apartment.find('option').slice(1).remove();
+                    }
+                    if (apartment_id) {
+                        select_apartment.append(
+                            '<option selected value ="' + apartment_id + '">' + apartment_number + '</option>'
+                        )
+                    }
+                    if (tariff_id) {
+                        select_tariff.find('option[value="' + tariff_id + '"]').prop('selected', true)
+                    } else {
+                        select_tariff.find('option[value=""]').prop('selected', true)
+                    }
+
+
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function send_ajax_for_section(data, flag) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_section_for_house' %}",
+                data: {
+                    'house_id': data,
+                },
+                success: function (response) {
+                    section_select(response.section, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function send_ajax_for_apartment(data, flag) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_apartment_for_section' %}",
+                data: {
+                    'section_id': data,
+                },
+                success: function (response) {
+                    apartment_select(response.apartment, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function send_ajax_for_owner(data, flag) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_apartment_owner' %}",
+                data: {
+                    'apartment_id': data,
+                },
+                success: function (response) {
+                    show_owner(response.owner)
+                    tariff_select(response.tariff)
+                    load_personal_account(response.personal_account, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        //
+
+        function section_select(data, flag) {
+            if (flag) {
+                select_section.find('option:not([selected])').slice(1).remove();
+            } else {
+                select_section.find('option').slice(1).remove();
+            }
+            for (section in data) {
+                if (!select_section.find('option[value="' + data[section].id + '"]').length) {
+                    select_section.append(
+                        '<option value="' + data[section].id + '">' + data[section].title + '</option>\n'
+                    )
+                }
+            }
+        }
+
+        function apartment_select(data, flag) {
+            if (flag) {
+                select_apartment.find('option:not([selected])').slice(1).remove();
+            } else {
+                select_apartment.find('option').slice(1).remove();
+            }
+            console.log(data, flag)
+            for (apartment in data) {
+                if (!select_apartment.find('option[value="' + data[apartment].id + '"]').length) {
+                    select_apartment.append(
+                        '<option value="' + data[apartment].id + '">' + data[apartment].number + '</option>\n'
+                    )
+                }
+            }
+        }
+
+        function tariff_select(data) {
+            if (data[0].tariff_id !== null) {
+                select_tariff.find('option[value="' + data[0].tariff_id + '"]').prop('selected', true);
+            } else {
+                select_tariff.find('option[value=""]').prop('selected', true);
+            }
+        }
+
+
+        function show_owner(data) {
+            console.log(data)
+            if (data[0].owner__first_name || data[0].owner__last_name) {
+                fullname.html(
+                    '<a href="/admin/owner/' + data[0].owner_id + '/">' + data[0].owner__last_name + ' ' + data[0].owner__first_name + '</a>'
+                )
+            } else {
+                fullname.html(
+                    '<a href="/admin/owner/' + data[0].owner_id + '/">' + data[0].owner__username + '</a>'
+                )
+            }
+            if (data[0].owner__phone) {
+                phone.html(
+                    '<a href="tel:' + data[0].owner__phone + '">' + data[0].owner__phone + '</a>'
+                )
+            }
+        }
+
+
+        function load_personal_account(data, flag) {
+            if (flag) {
+                personal_accounts.find('option:not([selected])').slice(1).remove();
+            } else {
+                personal_accounts.find('option').slice(1).remove();
+            }
+            if (data.length > 0) {
+                options.push({
+                    text: data[0].number,
+                    id: data[0].id,
+                    selected: true
+                })
+                personal_accounts.select2({
+                    data: options,
+                    placeholder: "Выберите...",
+                    language: {
+                        noResults: function () {
+                            return "Совпавдений не найдено";
+                        }
+                    }
+                });
+            }
+            options = []
+        }
+
+        // datepicker
+        !function (a) {
+            a.fn.datepicker.dates.ru = {
+                days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+                daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
+                daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+                months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+                monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+                today: "Сегодня",
+                clear: "Очистить",
+                format: "dd.mm.yyyy",
+                weekStart: 1,
+                monthsTitle: "Месяцы"
+            }
+        }(jQuery);
+
+
+        $('#id_date').datepicker({
+            format: 'dd.mm.yyyy',
+            startDate: '-100y',
+            default: 'date',
+            language: 'ru'
+        });
+        $('#id_date_start').datepicker({
+            format: 'dd.mm.yyyy',
+            startDate: '-100y',
+            default: 'date',
+            language: 'ru'
+        });
+
+        $('#id_date_end').datepicker({
+            format: 'dd.mm.yyyy',
+            startDate: '-100y',
+            default: 'date',
+            language: 'ru'
+        });
+        //
+
+        //  jQuery Validations Form
+        $('#receipt-form').validate({
+            rules: {
+                date: {
+                    required: true,
+                },
+                number: {
+                    required: true,
+                    minlength: 8
+                },
+                apartment: {
+                    required: true,
+                },
+                tariff: {
+                    required: true,
+                },
+
+            },
+            messages: {
+                date: {
+                    required: "Обязательное поле",
+                },
+                date_start: {
+                    required: "Обязательное поле",
+                },
+                date_end: {
+                    required: "Обязательное поле",
+                },
+                number: {
+                    required: "Обязательное поле",
+                    minlength: "Пожалуйста, введите не менее 8 символов"
+                },
+                apartment: {
+                    required: "Обязательное поле",
+                },
+                tariff: {
+                    required: "Обязательное поле",
+                }
+            },
+
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element) {
+                $(element).closest('.form-group').addClass('has-error');
+            },
+            unhighlight: function (element) {
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+        });
+        //
+    })
+
+</script>
+
+
+{% endblock %}

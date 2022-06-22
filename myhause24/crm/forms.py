@@ -19,6 +19,10 @@ User = get_user_model()
 # region Receipts Forms
 
 class ReceiptForm(forms.ModelForm):
+    error_messages = {
+        'len_number': _('Длина номера должна быть не менее 8 символов..'),
+    }
+
     house = forms.ChoiceField(
         required=False,
         widget=forms.Select(attrs={
@@ -62,6 +66,16 @@ class ReceiptForm(forms.ModelForm):
             [('', '')] + [(obj.id, obj.number) for obj in PersonalAccount.objects.filter(
                 status='active'
             )]
+        self.fields['number'].error_messages = {'unique': 'Квитанция с таким номером уже существует.'}
+
+
+    def clean_number(self):
+        number = self.cleaned_data.get("number")
+        if len(number) < 8:
+            raise ValidationError(
+                self.error_messages['len_number'],
+            )
+        return number
 
 
 # endregion Receipts Form

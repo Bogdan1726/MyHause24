@@ -122,8 +122,29 @@
                             <label class="control-label">Лицевой счет</label>
                             {{ form.personal_accounts }}
                         </div>
+                        {% if owner_data.owner %}
+                        <p>
+                            <b>Владелец:</b>
+                            <span id="owner-fullname">
+                                <a href="{% url 'detail_owner' owner_data.owner.id %}">
+                                    {{ owner_data.owner }}
+                                </a>
+                            </span>
+                        </p>
+                        {% else %}
                         <p><b>Владелец:</b> <span id="owner-fullname">не выбран</span></p>
+                        {% endif %}
+                        {% if owner_data.owner.phone %}
+                        <p><b>Телефон:</b>
+                            <span id="owner-phone">
+                                <a href="tel:+{{ owner_data.owner.phone }}">
+                                    {{ owner_data.owner.phone }}
+                                </a>
+                            </span>
+                        </p>
+                        {% else %}
                         <p><b>Телефон:</b> <span id="owner-phone">не выбран</span></p>
+                        {% endif %}
                     </div>
                     <div class="col-xs-12 col-sm-6">
                     </div>
@@ -503,6 +524,15 @@
         //
 
         // if house
+        if (select_section.val()) {
+            select_apartment.find('option:not([selected])').slice(1).remove();
+            send_ajax_for_apartment(select_section.val(), true)
+        } else {
+            select_apartment.find('option:not([selected])').remove();
+        }
+        //
+
+        // if section
         if (select_house.val()) {
             select_apartment.find('option:not([selected])').slice(1).remove();
             select_section.find('option:not([selected])').slice(1).remove();
@@ -799,16 +829,19 @@
         //
 
         //  jQuery Validations Form
-        $('#cash_box_form').validate({
+        $('#receipt-form').validate({
             rules: {
                 date: {
                     required: true,
                 },
                 number: {
                     required: true,
-                    minlength: 10
+                    minlength: 8
                 },
-                sum: {
+                apartment: {
+                    required: true,
+                },
+                tariff: {
                     required: true,
                 },
 
@@ -817,11 +850,20 @@
                 date: {
                     required: "Обязательное поле",
                 },
+                date_start: {
+                    required: "Обязательное поле",
+                },
+                date_end: {
+                    required: "Обязательное поле",
+                },
                 number: {
                     required: "Обязательное поле",
-                    minlength: "Пожалуйста, введите не менее 10 символов"
+                    minlength: "Пожалуйста, введите не менее 8 символов"
                 },
-                sum: {
+                apartment: {
+                    required: "Обязательное поле",
+                },
+                tariff: {
                     required: "Обязательное поле",
                 }
             },

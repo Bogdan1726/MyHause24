@@ -80,9 +80,13 @@ class Tariff(models.Model):
 
 
 class PriceTariffServices(models.Model):
+    objects = None
     price = models.DecimalField(max_digits=10, decimal_places=2)
     tariff = models.ForeignKey('Tariff', on_delete=models.CASCADE)
     services = models.ForeignKey('Services', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('tariff', 'services')
 
 
 class Services(models.Model):
@@ -142,6 +146,7 @@ class Receipt(models.Model):
 
 
 class CalculateReceiptService(models.Model):
+    objects = None
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     cost = models.DecimalField(max_digits=10, decimal_places=2)
@@ -204,6 +209,8 @@ class Requisites(models.Model):
 # region CallRequest and Messages
 
 class CallRequest(models.Model):
+    objects = None
+
     class Status(models.TextChoices):
         NEW = "new", _("Новое")
         IN_WORK = "in_work", _("В работе")

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -16,13 +17,13 @@ from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateVie
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
     Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest,
-    CashBox, Receipt)
+    CashBox, Receipt, CalculateReceiptService)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
     UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
-    CashBoxForm, ReceiptForm
+    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm
 )
 
 User = get_user_model()
@@ -70,7 +71,7 @@ class CashBoxCreateView(CreateView):
 
     def generate_number(self):
         """
-        Returns the number for the initial form data
+        Returns the number for the initial form CashBox
         """
         counter = 1
         while True:
@@ -148,6 +149,7 @@ class ReceiptListView(ListView):
     template_name = 'crm/pages/receipts/list_receipts.html'
     context_object_name = 'receipts'
 
+
     def get_queryset(self):
         return self.model.objects.all().select_related(
             'tariff', 'apartment', 'apartment__owner', 'apartment__house').order_by('-date', '-id')
@@ -156,6 +158,8 @@ class ReceiptListView(ListView):
 class ReceiptCreateView(CreateView):
     model = Receipt
     template_name = 'crm/pages/receipts/create_receipt.html'
+    formset_for_services = modelformset_factory(
+        CalculateReceiptService, form=CalculateReceiptServiceForm, extra=0, can_delete=True)
 
     def get_success_url(self):
         messages.success(self.request, f'Квитанция №{self.object.number} добавлена!')
@@ -204,12 +208,38 @@ class ReceiptCreateView(CreateView):
         if receipt_id:
             obj = get_object_or_404(Receipt, id=receipt_id)
             context['owner_data'] = Apartment.objects.filter(id=obj.apartment_id).first()
+        context['formset_for_services'] = self.formset_for_services(
+            self.request.POST or None,
+            queryset=CalculateReceiptService.objects.none(),
+            prefix='services'
+        )
         return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset_for_services = context['formset_for_services']
+        self.object = form.save()
+        if formset_for_services.is_valid():
+            for forms in formset_for_services:
+                if forms.cleaned_data and forms.cleaned_data['DELETE'] is False:
+                    if forms.is_valid():
+                        services = forms.save(commit=False)
+                        services.receipt = self.object
+                        services.save()
+                    else:
+                        Receipt.objects.get(id=self.object.id).delete()
+            formset_for_services.save()
+            return super().form_valid(form)
+        Receipt.objects.get(id=self.object.id).delete()
+        messages.error(self.request, formset_for_services.errors)
+        return self.form_invalid(form)
 
 
 class ReceiptUpdateView(UpdateView):
     model = Receipt
     template_name = 'crm/pages/receipts/update_receipt.html'
+    formset_for_services = modelformset_factory(
+        CalculateReceiptService, form=CalculateReceiptServiceForm, extra=0, can_delete=True)
 
     def get_success_url(self):
         messages.success(self.request, f'Квитанция №{self.object.number} обновлена!')
@@ -226,6 +256,32 @@ class ReceiptUpdateView(UpdateView):
                                    'section': self.object.apartment.section_id,
                                    'personal_accounts': personal_account.id if personal_account else None
                                })
+
+    def get_context_data(self, **kwargs):
+        context = super(ReceiptUpdateView, self).get_context_data()
+        context['formset_for_services'] = self.formset_for_services(
+            self.request.POST or None,
+            queryset=CalculateReceiptService.objects.filter(receipt=self.object),
+            prefix='services'
+        )
+        return context
+
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset_for_services = context['formset_for_services']
+        self.object = form.save()
+        if formset_for_services.is_valid():
+            for forms in formset_for_services:
+                if forms.cleaned_data and forms.cleaned_data['DELETE'] is False:
+                    if forms.is_valid():
+                        services = forms.save(commit=False)
+                        services.receipt = self.object
+                        services.save()
+            formset_for_services.save()
+            return super().form_valid(form)
+        messages.error(self.request, formset_for_services.errors)
+        return self.form_invalid(form)
 
 
 class ReceiptDelete(DeleteView):
@@ -802,6 +858,12 @@ class TariffCreateView(CreateView):
                     if forms.is_valid():
                         services_price = forms.save(commit=False)
                         services_price.tariff = self.object
+                        try:
+                            services_price.full_clean()
+                        except ValidationError:
+                            messages.error(self.request, 'У Тарифа не должно быть одинаковых Услуг')
+                            self.model.objects.get(id=self.object.id).delete()
+                            return self.form_invalid(formset)
                         services_price.save()
             formset.save()
             return super().form_valid(form)
@@ -843,6 +905,11 @@ class TariffUpdateView(UpdateView):
                     if forms.is_valid():
                         services_price = forms.save(commit=False)
                         services_price.tariff = self.object
+                        try:
+                            services_price.full_clean()
+                        except ValidationError:
+                            messages.error(self.request, 'У Тарифа не должно быть одинаковых Услуги')
+                            return self.form_invalid(formset)
                         services_price.save()
             formset.save()
             return super().form_valid(form)
@@ -1046,7 +1113,6 @@ class MasterCallCreateView(CreateView):
 
 class MasterCallUpdateView(UpdateView):
     model = CallRequest
-    success_url = reverse_lazy('master_calls')
     template_name = 'crm/pages/master_calls/update_master_call.html'
 
     def get_object(self, queryset=None):

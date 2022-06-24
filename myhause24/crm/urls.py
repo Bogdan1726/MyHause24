@@ -19,7 +19,8 @@ from .views import (
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
-    send_invite, new_users, loading_apartment_of_owner, loading_master_of_type_master, loading_personal_account_of_owner
+    send_invite, new_users, loading_apartment_of_owner, loading_master_of_type_master,
+    loading_personal_account_of_owner, loading_services_for_tariff
 )
 
 User = get_user_model()
@@ -136,6 +137,7 @@ urlpatterns = [
     path('load_role/', load_role, name='load_role'),
     path('loading_personal_account_of_owner/', loading_personal_account_of_owner,
          name='loading_personal_account_of_owner'),
+    path('loading_services_for_tariff/', loading_services_for_tariff, name='loading_services_for_tariff'),
     path('loading_apartment_of_owner/', loading_apartment_of_owner, name='loading_apartment_of_owner'),
     path('loading_master_of_type_master/', loading_master_of_type_master, name='loading_master_of_type_master'),
     path('loading_floor_section/', loading_floor_section, name='loading_floor_section'),

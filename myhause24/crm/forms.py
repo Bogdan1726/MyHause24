@@ -4,9 +4,9 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 from django.shortcuts import get_object_or_404
-
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
-    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt
+    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt, \
+    CalculateReceiptService
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
@@ -68,7 +68,6 @@ class ReceiptForm(forms.ModelForm):
             )]
         self.fields['number'].error_messages = {'unique': 'Квитанция с таким номером уже существует.'}
 
-
     def clean_number(self):
         number = self.cleaned_data.get("number")
         if len(number) < 8:
@@ -76,6 +75,39 @@ class ReceiptForm(forms.ModelForm):
                 self.error_messages['len_number'],
             )
         return number
+
+
+class CalculateReceiptServiceForm(forms.ModelForm):
+
+    unit = forms.CharField(required=False,
+                           initial='Выберите услугу',
+                           widget=forms.TextInput(attrs={'class': 'form-control',
+                                                         'readonly': 'true'}))
+
+    class Meta:
+        model = CalculateReceiptService
+        exclude = ('receipt', )
+
+        widgets = {
+            'services': forms.Select(attrs={'class': 'form-control',
+                                            'onchange': "selectServices(this)"}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control',
+                                                 'onchange': "calcСost(this)"}),
+            'price': forms.NumberInput(attrs={'class': 'form-control',
+                                              'onchange': "calcСost(this)"}),
+            'cost': forms.NumberInput(attrs={'class': 'form-control total_cost'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CalculateReceiptServiceForm, self).__init__(*args, **kwargs)
+        self.fields['services'].empty_label = 'Выберите...'
+        self.fields['services'].error_messages = {'required': _('Выберите услугу.')}
+        self.fields['price'].error_messages = {'required': _('Цена обязательое поле.')}
+        self.fields['quantity'].error_messages = {'required': _('Расход обязательное поле.')}
+        self.fields['cost'].error_messages = {'required': _('Стоимость обязательное поле.')}
+
+
+
 
 
 # endregion Receipts Form
@@ -446,7 +478,6 @@ class PriceTariffServicesForm(forms.ModelForm):
         self.fields['services'].empty_label = 'Выберите...'
         self.fields['price'].error_messages = {'required': 'Поле цена в форме услуги является обязательным полем'}
 
-
 # endregion Tariff Form
 
 
@@ -659,7 +690,7 @@ class MasterCallForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(MasterCallForm, self).__init__(*args, **kwargs)
         self.fields['type_master'].empty_label = 'Выберите...'
-        self.fields['type_master'].queryset = Role.objects.exclude(id=1)
+        self.fields['type_master'].queryset = Role.objects.exclude(id__in=[1, 2, 3])
         self.fields['master'].empty_label = 'Выберите...'
         self.fields['master'].queryset = User.objects.filter(is_staff=True)
         self.fields['apartment'].choices = \

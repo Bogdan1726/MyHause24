@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from .task import send_invite_user
 from .models import (
-    Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services
+    Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services, PriceTariffServices
 )
 
 User = get_user_model()
@@ -108,9 +108,15 @@ def check_units(request):
 def loading_unit_for_services(request):
     if request.is_ajax():
         service_id = request.GET.get('service_id')
+        tariff_id = request.GET.get('tariff_id')
+        services_price = 0
+        if service_id and tariff_id:
+            price = PriceTariffServices.objects.filter(services=service_id, tariff=tariff_id).first()
+            services_price += price.price if price else services_price
         service = Services.objects.filter(id=service_id).values('u_measurement__title')
         response = {
-            'unit': list(service)
+            'unit': list(service),
+            'services_price': services_price
         }
         return JsonResponse(response, status=200)
 
@@ -152,6 +158,18 @@ def loading_personal_account_of_owner(request):
         )
         response = {
             'personal_account': list(personal_account)
+        }
+        return JsonResponse(response, status=200)
+
+
+def loading_services_for_tariff(request):
+    if request.is_ajax():
+        tariff_id = request.GET.get('tariff_id')
+        services = PriceTariffServices.objects.filter(tariff=tariff_id).values(
+            'services', 'price', 'services__u_measurement__title'
+        )
+        response = {
+            'services': list(services)
         }
         return JsonResponse(response, status=200)
 

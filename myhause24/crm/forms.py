@@ -6,7 +6,7 @@ from django.core.files.images import get_image_dimensions
 from django.shortcuts import get_object_or_404
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
     Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt, \
-    CalculateReceiptService
+    CalculateReceiptService, ReceiptTemplate
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
@@ -108,7 +108,14 @@ class CalculateReceiptServiceForm(forms.ModelForm):
 
 
 
+class SettingsTemplatesForm(forms.ModelForm):
+    class Meta:
+        model = ReceiptTemplate
+        exclude = ('is_default',)
 
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'})
+        }
 
 # endregion Receipts Form
 

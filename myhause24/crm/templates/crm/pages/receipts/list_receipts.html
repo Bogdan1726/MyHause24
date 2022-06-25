@@ -159,7 +159,7 @@
                         </tfoot>
                         <tbody>
                         {% for receipt in receipts %}
-                        <tr data-href="#">
+                        <tr data-href="{% url 'detail_receipt' receipt.id %}">
                             <td style="z-index: 9999">
                                 <input type="checkbox"
                                        class="select-on-check-all"

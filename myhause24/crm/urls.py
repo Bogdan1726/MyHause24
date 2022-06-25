@@ -13,7 +13,8 @@ from .views import (
     PaymentItemsUpdateView, PaymentItemsDelete, MeterDataListView, MeterDataCreateView, MeterDataApartmentListView,
     MeterDataUpdateView, MeterDataDelete, MeterDataDetailView, MasterCallListView, MasterCallDetailView,
     MasterCallCreateView, MasterCallUpdateView, MasterCallDelete, CashBoxListView, CashBoxDetailView, CashBoxCreateView,
-    CashBoxDelete, CashBoxUpdateView, ReceiptListView, ReceiptCreateView, ReceiptUpdateView, ReceiptDelete
+    CashBoxDelete, CashBoxUpdateView, ReceiptListView, ReceiptCreateView, ReceiptUpdateView, ReceiptDelete,
+    ReceiptDetailView, ReceiptTemplateListView, receipt_template, SettingsTemplate
 )
 
 from .api_views import (
@@ -41,6 +42,11 @@ urlpatterns = [
     path('receipt/create/', ReceiptCreateView.as_view(), name='create_receipt'),
     path('receipt/update/<int:pk>/', ReceiptUpdateView.as_view(), name='update_receipt'),
     path('receipt/delete/<int:pk>/', ReceiptDelete.as_view(), name='delete_receipt'),
+    path('receipt/<int:pk>/', ReceiptDetailView.as_view(), name='detail_receipt'),
+    path('receipt/templates/<int:pk>/', ReceiptTemplateListView.as_view(), name='template_receipt'),
+    path('receipt/templates/settings/<int:pk>/', SettingsTemplate.as_view(), name='settings_templates'),
+
+    path('receipt/templates/send/', receipt_template, name='receipt_template'),
     # endregion receipts urls
 
     # house

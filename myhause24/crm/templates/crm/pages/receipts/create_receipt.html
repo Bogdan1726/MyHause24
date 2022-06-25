@@ -303,10 +303,6 @@
             })
         }
     })
-    //
-
-    // Formset for Services
-    total_cost()
 
     function addForm_for_tariff(service_id, price, unit) {
         const totalForms = $('#id_services-TOTAL_FORMS')
@@ -320,6 +316,11 @@
         select_services.find('option[value=' + service_id + ']').prop('selected', true)
         totalForms.val(parseInt(form_idx) + 1);
     }
+
+    //
+
+    // Formset for Services
+    total_cost()
 
     function addEmptyForm(prefix) {
         console.log(prefix)

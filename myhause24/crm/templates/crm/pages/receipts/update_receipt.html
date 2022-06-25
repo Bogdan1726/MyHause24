@@ -14,7 +14,7 @@
 <ul class="breadcrumb">
     <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
     <li><a href="{% url 'receipts' %}">Квитанции</a></li>
-    <li><a href="{% url 'receipts' %}">Квитанции №{{ object.number }}</a></li>
+    <li><a href="{% url 'detail_receipt' object.id %}">Квитанции №{{ object.number }}</a></li>
     <li class="active">Редактирование</li>
 </ul>
 {% endblock %}
@@ -271,6 +271,51 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 <script>
+
+    // Options Formset according Tariff
+    var select_tariff = $("select[name='tariff']")
+
+    $(".set-tariff-services").on("click", function () {
+        if (select_tariff.val()) {
+            $.ajax({
+                type: "GET",
+                url: '{% url "loading_services_for_tariff" %}',
+                data: {
+                    'tariff_id': select_tariff.val(),
+                },
+                success: function (response) {
+                    $("#form-services-rows").empty()
+                    $('#id_services-TOTAL_FORMS').val(0)
+                    for (service in response.services) {
+                        var service_id = response.services[service].services
+                        var price = response.services[service].price
+                        var unit = response.services[service].services__u_measurement__title
+                        console.log(response.services[service])
+                        addForm_for_tariff(service_id, price, unit)
+                    }
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+    })
+
+    function addForm_for_tariff(service_id, price, unit) {
+        const totalForms = $('#id_services-TOTAL_FORMS')
+        const form_idx = totalForms.val();
+        $("#form-services-rows").append($('#empty_form-services').html().replace(/__prefix__/g, form_idx))
+        var select_services = $("select[name='services-" + form_idx + "-services']")
+        var input_price = $("input[name='services-" + form_idx + "-price']")
+        var input_unit = $("input[name='services-" + form_idx + "-unit']")
+        input_price.val(price)
+        input_unit.val(unit)
+        select_services.find('option[value=' + service_id + ']').prop('selected', true)
+        totalForms.val(parseInt(form_idx) + 1);
+    }
+
+    //
+
 
     // Formset for Services
     total_cost()

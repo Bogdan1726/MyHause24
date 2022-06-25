@@ -14,7 +14,7 @@
                     <span>Касса</span>
                 </a>
             </li>
-            <li class="{% if url in '[receipts, detail_receipts, create_receipts, update_receipts]' %}active{% endif %}">
+            <li class="{% if url in '[receipts, detail_receipts, create_receipts, update_receipts, template_receipt, settings_templates]' %}active{% endif %}">
                 <a href="{% url 'receipts' %}">
                     <i class="fa fa-files-o"></i>
                     <span>Квитанции на оплату</span>

@@ -1,29 +1,35 @@
+import os
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.core.files import File
+from django.core.files.storage import FileSystemStorage
+from django.db.models import Sum
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from .task import send_email
 import random
 from user.models import Role
+from django.http import FileResponse
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
     Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest,
-    CashBox, Receipt, CalculateReceiptService)
+    CashBox, Receipt, CalculateReceiptService, ReceiptTemplate)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
     UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
-    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm
+    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm
 )
 
 User = get_user_model()
@@ -149,10 +155,68 @@ class ReceiptListView(ListView):
     template_name = 'crm/pages/receipts/list_receipts.html'
     context_object_name = 'receipts'
 
-
     def get_queryset(self):
         return self.model.objects.all().select_related(
             'tariff', 'apartment', 'apartment__owner', 'apartment__house').order_by('-date', '-id')
+
+
+class ReceiptTemplateListView(ListView):
+    model = ReceiptTemplate
+    template_name = 'crm/pages/receipts/list_templates.html'
+    context_object_name = 'templates'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['receipt'] = Receipt.objects.filter(id=self.kwargs.get('pk')).first()
+        return context
+
+
+def receipt_template(request):
+    if request.method == 'POST':
+        print(request.POST)
+        file = get_object_or_404(ReceiptTemplate, id=request.POST.get('template'))
+        # response = HttpResponse(files.template, content_type='application/vnd.ms-excel')
+        # response['Content-Disposition'] = 'attachment; filename=test.xls'
+        # return response
+    return HttpResponseRedirect('/admin/receipt/templates/36/')
+
+
+class SettingsTemplate(CreateView):
+    model = ReceiptTemplate
+    template_name = 'crm/pages/receipts/settings_templates.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'success')
+        return reverse_lazy('settings_templates', kwargs={'pk': self.kwargs.get('pk')})
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return SettingsTemplatesForm(self.request.POST or None,
+                                         self.request.FILES or None)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['receipt_id'] = self.kwargs.get('pk')
+        context['templates'] = ReceiptTemplate.objects.all()
+        return context
+
+
+class ReceiptDetailView(DetailView):
+    model = Receipt
+    template_name = 'crm/pages/receipts/detail_receipt.html'
+    context_object_name = 'receipt'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'tariff', 'apartment', 'apartment__owner', 'apartment__house', 'apartment__section')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['personal_account'] = PersonalAccount.objects.filter(apartment=self.object.apartment_id).first()
+        context['services'] = CalculateReceiptService.objects.filter(receipt=self.object).select_related(
+            'services', 'services__u_measurement', 'receipt')
+        context['sum'] = context['services'].aggregate(sum=Sum('cost'))
+        return context
 
 
 class ReceiptCreateView(CreateView):
@@ -184,8 +248,10 @@ class ReceiptCreateView(CreateView):
         if form_class is None:
             receipt_id = self.request.GET.get('receipt_id', None)
             if receipt_id:
-                obj = get_object_or_404(Receipt, id=receipt_id)
-                personal_account = PersonalAccount.objects.filter(apartment=obj.apartment_id).first()
+                obj = Receipt.objects.filter(id=receipt_id).select_related(
+                    'apartment', 'tariff').first()
+                personal_account = PersonalAccount.objects.filter(
+                    apartment=obj.apartment_id).select_related('apartment').first()
                 return ReceiptForm(self.request.POST or None,
                                    initial={'number': self.generate_number(),
                                             'date': obj.date,
@@ -203,15 +269,32 @@ class ReceiptCreateView(CreateView):
                                initial={'number': self.generate_number()})
 
     def get_context_data(self, **kwargs):
-        context = super(ReceiptCreateView, self).get_context_data()
+        obj = False
         receipt_id = self.request.GET.get('receipt_id', None)
+        calculate_receipt_service = CalculateReceiptService.objects.all().select_related(
+            'services', 'receipt', 'services__u_measurement'
+        )
+        context = super(ReceiptCreateView, self).get_context_data()
         if receipt_id:
             obj = get_object_or_404(Receipt, id=receipt_id)
-            context['owner_data'] = Apartment.objects.filter(id=obj.apartment_id).first()
+            count_form = calculate_receipt_service.filter(receipt=obj).count()
+            self.formset_for_services = modelformset_factory(
+                CalculateReceiptService, form=CalculateReceiptServiceForm, extra=count_form, can_delete=True)
+            context['owner_data'] = Apartment.objects.filter(id=obj.apartment_id).select_related(
+                'owner'
+            ).first()
         context['formset_for_services'] = self.formset_for_services(
             self.request.POST or None,
             queryset=CalculateReceiptService.objects.none(),
-            prefix='services'
+            initial=[
+                {'services': obj.services,
+                 'price': obj.price,
+                 'quantity': obj.quantity,
+                 'cost': obj.cost,
+                 'unit': obj.services.u_measurement}
+                for obj in calculate_receipt_service.filter(receipt=obj)
+            ] if obj else None,
+            prefix='services',
         )
         return context
 
@@ -266,7 +349,6 @@ class ReceiptUpdateView(UpdateView):
         )
         return context
 
-
     def form_valid(self, form):
         context = self.get_context_data()
         formset_for_services = context['formset_for_services']
@@ -290,6 +372,7 @@ class ReceiptDelete(DeleteView):
     def get_success_url(self):
         messages.success(self.request, f'Квитанция №{self.object.number} удалена!')
         return reverse_lazy('receipts')
+
 
 # endregion Receipts
 

@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
@@ -152,6 +154,17 @@ class CalculateReceiptService(models.Model):
     cost = models.DecimalField(max_digits=10, decimal_places=2)
     services = models.ForeignKey('Services', on_delete=models.CASCADE)
     receipt = models.ForeignKey('Receipt', on_delete=models.CASCADE)
+
+
+class ReceiptTemplate(models.Model):
+    objects = None
+
+    is_default = models.BooleanField(default=False)
+    name = models.CharField(max_length=64)
+    template = models.FileField(upload_to='crm/receipt-templates/')
+
+    # def __str__(self):
+    #     return os.path.basename(self.template.name)
 
 
 class PersonalAccount(models.Model):

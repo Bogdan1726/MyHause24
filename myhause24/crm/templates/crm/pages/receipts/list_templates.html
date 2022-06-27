@@ -34,7 +34,7 @@
         </div>
     </div>
     <div class="box-body">
-        <form id="receipt-templates" action="{% url 'receipt_template' %}" method="post">
+        <form id="receipt-templates" action="{% url 'receipt_template' receipt.id %}" method="post">
             {% csrf_token %}
             <div class="row">
                 <div class="col-xs-12 col-sm-7 col-lg-4">

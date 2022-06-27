@@ -35,18 +35,73 @@
             {% else %}
             <p>{{ template.name }}</p>
             {% endif %}
-            <a href="http://myhouse24.avada-media.ua/upload/InvoiceTemplate/tpl-27.xls">
+            <a href="{% url 'upload_template' template.id %}">
                 <i class="fa fa-download" aria-hidden="true"></i>
                 Скачать шаблон
             </a>
-            <a href="/admin/invoice/template?default_id=27" class="text-success">
-                • Назначить шаблоном по умоланию
+            <a href="/admin/invoice/template?default_id=27"
+               class="text-success"
+               data-toggle="modal"
+               data-target="#modal-default-{{ forloop.counter }}">
+                Назначить шаблоном по умоланию
             </a>
-            <a href="/admin/invoice/template?delete_id=27" class="text-danger"
-               data-confirm="Вы уверены, что хотите удалить этот элемент?">
+            <a href="/admin/invoice/template?delete_id=27"
+               class="text-danger"
+               data-toggle="modal"
+               data-target="#modal-delete-{{ forloop.counter }}">
                 <i class="fa fa-trash" aria-hidden="true"></i>
                 Удалить шаблон
             </a>
+        </div>
+        <div class="modal fade"
+             id="modal-delete-{{ forloop.counter }}" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close">
+                            <span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title">Удаление шаблона</h4>
+                    </div>
+                    <form method="post" action="{% url 'delete_template' template.id receipt_id %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <p>Вы уверены, что хотите удалить {{ template.name }}?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default pull-left"
+                                    data-dismiss="modal">Отмена
+                            </button>
+                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade"
+             id="modal-default-{{ forloop.counter }}" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close">
+                            <span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title">Управление шаблоном</h4>
+                    </div>
+                    <form method="post" action="{% url 'edit_template' template.id receipt_id %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <p>Назначить {{ template.name }} шаблоном по умолчанию?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default pull-left"
+                                    data-dismiss="modal">Отмена
+                            </button>
+                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
         {% endfor %}
         <form id="create_template" method="post" enctype="multipart/form-data">

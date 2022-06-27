@@ -1,5 +1,8 @@
 {% extends 'crm/elements/layout.html'%}
+
 {% load static %}
+{% load floattags %}
+
 {% block title %}
 Лицевой счет
 {% endblock %}
@@ -110,8 +113,19 @@
                     </tr>
                     <tr>
                         <td>Остаток, грн.</td>
+                        {% if accounts.sum > 0 %}
                         <td>
-                            <span class="text-default">0.00</span></td>
+                            <span class="text-green">{{ accounts.sum|floatformat:"2g"|formatted_float }}</span>
+                        </td>
+                        {% elif accounts.sum < 0 %}
+                        <td>
+                            <span class="text-red">-{{ accounts.sum|floatformat:"2g"|formatted_float }}</span>
+                        </td>
+                        {% else %}
+                        <td>
+                            <span class="text-default">0.00</span>
+                        </td>
+                        {% endif %}
                     </tr>
                     </tbody>
                 </table>

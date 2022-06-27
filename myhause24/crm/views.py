@@ -5,25 +5,30 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
+from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+
+from .services.xlsx_services import write_to_file, serializers_queryset
 from .task import send_email
 import random
 from user.models import Role
+from openpyxl import load_workbook
+
 from django.http import FileResponse
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
     Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest,
-    CashBox, Receipt, CalculateReceiptService, ReceiptTemplate)
+    CashBox, Receipt, CalculateReceiptService, ReceiptTemplate, Requisites)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
@@ -158,47 +163,6 @@ class ReceiptListView(ListView):
     def get_queryset(self):
         return self.model.objects.all().select_related(
             'tariff', 'apartment', 'apartment__owner', 'apartment__house').order_by('-date', '-id')
-
-
-class ReceiptTemplateListView(ListView):
-    model = ReceiptTemplate
-    template_name = 'crm/pages/receipts/list_templates.html'
-    context_object_name = 'templates'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['receipt'] = Receipt.objects.filter(id=self.kwargs.get('pk')).first()
-        return context
-
-
-def receipt_template(request):
-    if request.method == 'POST':
-        print(request.POST)
-        file = get_object_or_404(ReceiptTemplate, id=request.POST.get('template'))
-        # response = HttpResponse(files.template, content_type='application/vnd.ms-excel')
-        # response['Content-Disposition'] = 'attachment; filename=test.xls'
-        # return response
-    return HttpResponseRedirect('/admin/receipt/templates/36/')
-
-
-class SettingsTemplate(CreateView):
-    model = ReceiptTemplate
-    template_name = 'crm/pages/receipts/settings_templates.html'
-
-    def get_success_url(self):
-        messages.success(self.request, f'success')
-        return reverse_lazy('settings_templates', kwargs={'pk': self.kwargs.get('pk')})
-
-    def get_form(self, form_class=None):
-        if form_class is None:
-            return SettingsTemplatesForm(self.request.POST or None,
-                                         self.request.FILES or None)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['receipt_id'] = self.kwargs.get('pk')
-        context['templates'] = ReceiptTemplate.objects.all()
-        return context
 
 
 class ReceiptDetailView(DetailView):
@@ -375,6 +339,88 @@ class ReceiptDelete(DeleteView):
 
 
 # endregion Receipts
+
+
+# region Receipt Template
+
+class ReceiptTemplateListView(ListView):
+    model = ReceiptTemplate
+    template_name = 'crm/pages/receipts/list_templates.html'
+    context_object_name = 'templates'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['receipt'] = Receipt.objects.filter(id=self.kwargs.get('pk')).first()
+        return context
+
+
+def receipt_template(request, pk):
+    if request.method == 'POST':
+        file = get_object_or_404(ReceiptTemplate, id=request.POST.get('template'))
+        receipt = Receipt.objects.filter(id=pk).first()
+        account = PersonalAccount.objects.filter(apartment=receipt.apartment_id).first()
+        requisites = Requisites.objects.all().first().description
+        serializers_queryset(receipt, account, requisites, file)
+        # write_to_file(file, serializers_queryset)
+
+        response = HttpResponse(file.template, content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
+        return response
+    return HttpResponseRedirect('/admin/receipt/templates/36/')
+
+
+class SettingsTemplate(CreateView):
+    model = ReceiptTemplate
+    template_name = 'crm/pages/receipts/settings_templates.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Добавлен новый шаблон')
+        return reverse_lazy('settings_templates', kwargs={'pk': self.kwargs.get('pk')})
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return SettingsTemplatesForm(self.request.POST or None,
+                                         self.request.FILES or None)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['receipt_id'] = self.kwargs.get('pk')
+        context['templates'] = ReceiptTemplate.objects.all().order_by('id')
+        return context
+
+class ReceiptTemplateDelete(DeleteView):
+    model = ReceiptTemplate
+
+    def get_success_url(self):
+        messages.success(self.request, f'{self.object.name} удалён!')
+        return reverse_lazy('settings_templates', kwargs={'pk': self.kwargs.get('slug')})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.is_default is True:
+            messages.error(request, 'Нельзя удалить шаблон по-умолчанию')
+            return HttpResponseRedirect(reverse_lazy('settings_templates', kwargs={'pk': self.kwargs.get('slug')}))
+        self.object.delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+def receipt_templates_edit(request, pk, slug):
+    templates = ReceiptTemplate.objects.all()
+    if request.method == 'POST':
+        templates.update(is_default=False)
+        templates.filter(id=pk).update(is_default=True)
+        messages.success(request, 'Назначен новый шаблон по-умолчанию')
+    return HttpResponseRedirect(reverse_lazy('settings_templates', kwargs={'pk': slug}))
+
+
+def receipt_templates_upload(request, pk):
+    file = get_object_or_404(ReceiptTemplate, id=pk)
+    response = HttpResponse(file.template, content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
+    return response
+
+
+# endregion Receipt Template
 
 
 # region Houses
@@ -744,12 +790,21 @@ class AccountsListView(ListView):
     context_object_name = 'accounts'
 
     def get_queryset(self):
-        return self.model.objects.order_by('-id').select_related(
+        # return self.model.objects.select_related(
+        #     'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+        # ).prefetch_related('cash_account').annotate(sum=Sum('cash_account__sum')).order_by('-id')
+        queryset = self.model.objects.select_related(
             'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
-        )
+        ).prefetch_related().order_by('-id')
+
+        # queryset = queryset.annotate(sum=Sum('cash_account__sum'))
+        queryset = queryset.annotate(sum2=Sum('apartment__receipt_apartment__calculate_receipt__cost'))
+        return queryset
 
 
-class AccountsDetailView(DeleteView):
+
+
+class AccountsDetailView(DetailView):
     model = PersonalAccount
     template_name = 'crm/pages/accounts/detail_accounts.html'
     context_object_name = 'accounts'
@@ -757,7 +812,22 @@ class AccountsDetailView(DeleteView):
     def get_queryset(self):
         return self.model.objects.select_related(
             'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+        ).prefetch_related(
+            'apartment', 'cash_account'
+        ).annotate(
+            sum=Sum('apartment__cash_apartment__calculate_receipt__cost')
         )
+
+    def get_context_data(self, **kwargs):
+        receipt = [obj.id for obj in Receipt.objects.filter(apartment=self.object.apartment_id)]
+        context = super(AccountsDetailView, self).get_context_data()
+        # context['total'] = CashBox.objects.filter(personal_account=self.object).aggregate(sum=Sum('sum'))
+        # context['expense'] = CalculateReceiptService.objects.filter(receipt__in=receipt).aggregate(sum=Sum('cost'))
+        # context['balance'] = context['total']['sum'] - context['expense']['sum']
+        # print(context['total'])
+        # print(context['expense'])
+        # print(context['balance'])
+        return context
 
 
 class AccountsCreateView(CreateView):

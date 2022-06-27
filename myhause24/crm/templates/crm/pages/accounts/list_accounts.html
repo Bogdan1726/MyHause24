@@ -1,5 +1,7 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
+{% load floattags %}
+
 {% block title %}
 Лицевые счета
 {% endblock %}
@@ -165,7 +167,20 @@
                             <td>(не задано)</td>
                             <td>(не задано)</td>
                             {% endif %}
-                            <td>0</td>
+                            <td>{{ account.sum }}-{{ account.sum2 }}</td>
+<!--                            {% if account.balance > 0 %}-->
+<!--                            <td>-->
+<!--                                <span class="text-green">{{ account.balance|floatformat:"2g"|formatted_float }}</span>-->
+<!--                            </td>-->
+<!--                            {% elif account.sum < 0 %}-->
+<!--                            <td>-->
+<!--                                <span class="text-red">-{{ account.balance|floatformat:"2g"|formatted_float }}</span>-->
+<!--                            </td>-->
+<!--                            {% else %}-->
+<!--                            <td>-->
+<!--                                <span class="text-default">0.00</span>-->
+<!--                            </td>-->
+<!--                            {% endif %}-->
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"

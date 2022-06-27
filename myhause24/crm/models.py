@@ -144,7 +144,8 @@ class Receipt(models.Model):
     status = models.BooleanField(default=True)
     status_pay = models.CharField(max_length=15, choices=PayStatus.choices, default=PayStatus.NOT_PAID)
     tariff = models.ForeignKey('Tariff', null=True, on_delete=models.SET_NULL)
-    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.SET_NULL)
+    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.SET_NULL,
+                                  related_name='receipt_apartment')
 
 
 class CalculateReceiptService(models.Model):
@@ -153,7 +154,7 @@ class CalculateReceiptService(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     cost = models.DecimalField(max_digits=10, decimal_places=2)
     services = models.ForeignKey('Services', on_delete=models.CASCADE)
-    receipt = models.ForeignKey('Receipt', on_delete=models.CASCADE)
+    receipt = models.ForeignKey('Receipt', on_delete=models.CASCADE, related_name='calculate_receipt')
 
 
 class ReceiptTemplate(models.Model):
@@ -163,8 +164,8 @@ class ReceiptTemplate(models.Model):
     name = models.CharField(max_length=64)
     template = models.FileField(upload_to='crm/receipt-templates/')
 
-    # def __str__(self):
-    #     return os.path.basename(self.template.name)
+    def __str__(self):
+        return os.path.basename(self.template.name)
 
 
 class PersonalAccount(models.Model):
@@ -193,7 +194,8 @@ class CashBox(models.Model):
     payment_items = models.ForeignKey('PaymentItems', blank=True, null=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='owner')
     manager = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='manager')
-    personal_account = models.ForeignKey('PersonalAccount', blank=True, null=True, on_delete=models.SET_NULL)
+    personal_account = models.ForeignKey('PersonalAccount', blank=True, null=True,
+                                         on_delete=models.SET_NULL, related_name='cash_account')
     receipt = models.ForeignKey('Receipt', blank=True, null=True, on_delete=models.SET_NULL)
 
 
@@ -212,6 +214,7 @@ class PaymentItems(models.Model):
 
 
 class Requisites(models.Model):
+    objects = None
     title = models.CharField(max_length=64)
     description = models.TextField()
 

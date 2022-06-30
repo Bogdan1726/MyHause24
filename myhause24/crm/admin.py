@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure, Tariff, \
-    PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt, ReceiptTemplate
+    PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt, ReceiptTemplate, \
+    CalculateReceiptService
 
 
 # Register your models here.
@@ -82,5 +83,10 @@ class ReceiptAdmin(admin.ModelAdmin):
 
 @admin.register(ReceiptTemplate)
 class ReceiptTemplateAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(CalculateReceiptService)
+class CalculateReceiptServiceAdmin(admin.ModelAdmin):
     pass
 

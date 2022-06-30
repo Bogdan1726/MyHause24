@@ -164,7 +164,15 @@
                 <tfoot>
                 <tr>
                     <td colspan="5"></td>
-                    <td colspan="2"><b>Итого: {{ sum.sum|floatformat:"2g"|formatted_float }}</b></td>
+                    <td colspan="2">
+                        <b>Итого:
+                            {% if sum.sum %}
+                            {{ sum.sum|floatformat:"2g"|formatted_float }}
+                            {% else %}
+                            0.00
+                            {% endif %}
+                        </b>
+                    </td>
                 </tr>
                 </tfoot>
                 <tbody>

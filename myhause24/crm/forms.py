@@ -34,7 +34,7 @@ class ReceiptForm(forms.ModelForm):
             'class': 'form-control'}))
 
     personal_accounts = forms.ChoiceField(
-        required=False,
+        required=True,
         widget=forms.Select(attrs={
             'class': 'form-control select2 select2-hidden-accessible',
             'style': 'width: 100%;'}))

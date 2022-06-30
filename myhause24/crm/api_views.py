@@ -1,9 +1,10 @@
+from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from .task import send_invite_user
 from .models import (
-    Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services, PriceTariffServices
+    Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services, PriceTariffServices, CashBox, MeterData
 )
 
 User = get_user_model()
@@ -173,3 +174,16 @@ def loading_services_for_tariff(request):
         }
         return JsonResponse(response, status=200)
 
+
+def meter_data_for_receipt(request):
+    if request.is_ajax():
+        service_id = request.GET.get('service_id')
+        apartment_id = request.GET.get('apartment_id')
+        meter_data = MeterData.objects.filter(apartment_id=apartment_id, counter_id=service_id, status='new')
+        indications = 0
+        if meter_data.exists():
+            indications += meter_data.last().indications
+        response = {
+            'indications': indications
+        }
+        return JsonResponse(response, status=200)

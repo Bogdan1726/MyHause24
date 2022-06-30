@@ -113,13 +113,13 @@
                     </tr>
                     <tr>
                         <td>Остаток, грн.</td>
-                        {% if accounts.sum > 0 %}
+                        {% if balance > 0 %}
                         <td>
-                            <span class="text-green">{{ accounts.sum|floatformat:"2g"|formatted_float }}</span>
+                            <span class="text-green">{{ balance|floatformat:"2g"|formatted_float }}</span>
                         </td>
-                        {% elif accounts.sum < 0 %}
+                        {% elif balance < 0 %}
                         <td>
-                            <span class="text-red">-{{ accounts.sum|floatformat:"2g"|formatted_float }}</span>
+                            <span class="text-red">{{ balance|floatformat:"2g"|formatted_float }}</span>
                         </td>
                         {% else %}
                         <td>

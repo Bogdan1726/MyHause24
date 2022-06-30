@@ -1,11 +1,13 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
+{% load floattags %}
+
 {% block title %}
 Новая квитанция
 {% endblock %}
 
 {% block style %}
-
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
 {% endblock %}
 
 
@@ -199,10 +201,10 @@
                                 {% with formset_for_services.empty_form as form %}
                                 <tbody id="empty_form-services" style="display: none;">
                                 <tr id="{{ form.prefix }}" class="form-services">
-                                    <td>
+                                    <td class="services">
                                         {{ form.services }}
                                     </td>
-                                    <td>
+                                    <td class="quantity">
                                         {{ form.quantity }}
                                     </td>
                                     <td>
@@ -254,8 +256,6 @@
                         </div>
                     </div>
                 </div>
-
-
                 <div class="row">
                     <div class="col-xs-12 text-right">
                         <div class="form-group">
@@ -267,13 +267,134 @@
             </div>
         </div>
     </form>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Показания счетчиков</h3>
+                </div>
+                <div id="counters">
+                    <div id="meter_data_list" class="grid-view">
+                        <div class="box-body table-responsive no-padding">
+                            <table id="meter_table" class="table table-bordered table-hover table-striped table-nowrap">
+                                <thead>
+                                <tr>
+                                    <th style="width: 125px; min-width: 125px">№</th>
+                                    <th>Статус</th>
+                                    <th style="width: 125px; min-width: 125px">Дата</th>
+                                    <th style="width: 125px; min-width: 125px">Месяц</th>
+                                    <th style="min-width: 200px">Дом</th>
+                                    <th style="min-width: 160px">Секция</th>
+                                    <th style="width: 110px; min-width: 110px">№ квартиры</th>
+                                    <th>Счетчик</th>
+                                    <th style="width: 90px; min-width: 90px">Показания</th>
+                                    <th style="width: 90px; min-width: 90px">Ед. изм.</th>
+                                </tr>
+                                </thead>
+                                <tfoot style="display: table-header-group">
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <th></th>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                </tfoot>
+                                <tbody>
+                                {% for meter in meter_data %}
+                                <tr>
+                                    <td>{{ meter.number }}</td>
+                                    {% if meter.status == 'new' %}
+                                    <td><small class="label label-warning">Новое</small></td>
+                                    {% elif meter.status == 'accounted' %}
+                                    <td><small class="label label-success">Учтено</small></td>
+                                    {% elif meter.status == 'accounted_for_paid' %}
+                                    <td><small class="label label-success">Учтено и оплачено</small></td>
+                                    {% else %}
+                                    <td><small class="label label-primary">Нулевое</small></td>
+                                    {% endif %}
+                                    <td>{{ meter.date|date:"d.m.Y" }}</td>
+                                    <td>{{ meter.date|date:"F Y"}}</td>
+                                    <td>{{ meter.apartment.house.title }}</td>
+                                    <td>{{ meter.apartment.section.title }}</td>
+                                    <td>{{ meter.apartment.number }}</td>
+                                    <td>{{ meter.counter }}</td>
+                                    <td>{{ meter.indications|floatformat:"1g"|formatted_float }}</td>
+                                    <td>{{ meter.counter.u_measurement }}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="box-footer clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 <script>
+
+
+    // DataTable for meter data
+
+    $('#meter_table tfoot th').each(function () {
+        $(this).html('<input type="text" name="custom_search" id="apartment_number" style="display: none;"/>');
+    });
+
+    var table = $('#meter_table').DataTable({
+        "responsive": false,
+        'paging': false,
+        'lengthChange': false,
+        'searching': true,
+        'ordering': false,
+        'info': false,
+        'autoWidth': true,
+        "language": {
+            "infoFiltered": "(Отфильтровано _MAX_ записей)",
+            "zeroRecords": "Записей не найдено",
+            "info": "Количество счетчиков: <strong>_TOTAL_</stong>",
+            "infoEmpty": "Нет записей.",
+            "paginate": {
+                "previous": '<i class="fa fa-angle-left" style="color: #337AB7"></i>',
+                "last": "Последняя",
+                "next": '<i class="fa fa-angle-right" style="color: #337AB7"></i>',
+            }
+        },
+        initComplete: function () {
+            // Apply the search
+            this.api()
+                .columns([6])
+                .every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            var key = this.value
+                            var regExp = "."
+                            if (key)
+                                regExp = "^\\s*" + key + "\\s*$";
+
+                            that.search(regExp, true).draw();
+                        }
+                    });
+                });
+            //
+        }
+    });
+    $("#meter_table_filter").css('display', 'none')
+    //
 
     // Options Formset according Tariff
     var select_tariff = $("select[name='tariff']")
@@ -318,6 +439,38 @@
     }
 
     //
+
+
+    $(".add-counters").on('click', function () {
+        var apartment_id = $('select[name="apartment"]').val();
+        var list_select_services = $('#form-services-rows td.services select')
+        for (let i = 0; i < list_select_services.length; i++) {
+            var service_id = $('#id_services-' + i + '-services').val()
+            if (service_id && apartment_id) {
+                $.ajax({
+                    type: 'GET',
+                    url: '{% url "meter_data_for_receipt" %}',
+                    data: {
+                        'service_id': service_id,
+                        'apartment_id': apartment_id
+                    },
+                    success: function (response) {
+                        console.log(response.indications)
+                        if (response.indications.length) {
+                            $('#id_services-' + i + '-quantity').val(response.indications)
+                            calcСost($('#id_services-' + i + '-quantity')[0])
+
+                        }
+
+                    },
+                    error: function (response) {
+                        console.log(response.error)
+                    }
+                })
+            }
+
+        }
+    })
 
     // Formset for Services
     total_cost()
@@ -379,6 +532,7 @@
     }
 
     function calcСost(element) {
+        console.log(element)
         var cost_id = element.id.split("-").slice(0, 2).join("-") + "-cost"
         var quantity_id = element.id.split("-").slice(0, 2).join("-") + "-quantity"
         var price_id = element.id.split("-").slice(0, 2).join("-") + "-price"
@@ -466,6 +620,7 @@
 
         //
 
+
         // if house
         if (select_section.val()) {
             select_apartment.find('option:not([selected])').slice(1).remove();
@@ -512,7 +667,9 @@
         select_apartment.on('change', function () {
             if (this.value) {
                 send_ajax_for_owner(this.value, false);
+                $("#apartment_number").val($(this).find('option:selected').text()).trigger('change');
             } else {
+                $("#apartment_number").val('').trigger('change');
             }
         })
 
@@ -520,6 +677,7 @@
             if (this.value) {
                 send_ajax_for_personal_account(this.value);
             } else {
+                $("#apartment_number").val('').trigger('change');
                 select_tariff.find('option[value=""]').prop('selected', true);
                 select_house.find('option[value=""]').prop('selected', true);
                 select_section.find('option').slice(1).remove();
@@ -582,6 +740,9 @@
                         select_apartment.append(
                             '<option selected value ="' + apartment_id + '">' + apartment_number + '</option>'
                         )
+                        $("#apartment_number").val($(select_apartment).find('option:selected').text()).trigger('change');
+                    } else {
+                        $("#apartment_number").val('').trigger('change');
                     }
                     if (tariff_id) {
                         select_tariff.find('option[value="' + tariff_id + '"]').prop('selected', true)
@@ -670,7 +831,6 @@
             } else {
                 select_apartment.find('option').slice(1).remove();
             }
-            console.log(data, flag)
             for (apartment in data) {
                 if (!select_apartment.find('option[value="' + data[apartment].id + '"]').length) {
                     select_apartment.append(
@@ -772,7 +932,14 @@
         //
 
         //  jQuery Validations Form
-        $('#receipt-form').validate({
+        $.validator.addMethod("required_accounts", function (value) {
+            if (!value) {
+                return false
+            }
+            return true;
+        });
+
+        var validator = $('#receipt-form').validate({
             rules: {
                 date: {
                     required: true,
@@ -787,6 +954,9 @@
                 tariff: {
                     required: true,
                 },
+                personal_accounts: {
+                    required_accounts: true,
+                }
 
             },
             messages: {
@@ -808,6 +978,10 @@
                 },
                 tariff: {
                     required: "Обязательное поле",
+                },
+                personal_accounts: {
+                    required: "Обязательное поле",
+                    required_accounts: "Обязательное поле",
                 }
             },
 
@@ -822,6 +996,11 @@
                 $(element).closest('.form-group').removeClass('has-error');
             },
         });
+
+        personal_accounts.on('change', function () {
+            validator.element($(this))
+        })
+
         //
     })
 

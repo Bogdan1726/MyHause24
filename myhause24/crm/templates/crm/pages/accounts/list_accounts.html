@@ -1,6 +1,9 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
+
 {% load floattags %}
+{% load balance_tags %}
+
 
 {% block title %}
 Лицевые счета
@@ -62,7 +65,7 @@
             <div class="col-xs-12 col-md-4">
                 <div class="small-box bg-green overflow-hidden">
                     <div class="inner">
-                        <h3>0</h3>
+                        <h3>{{ cash_balance|floatformat:"2g"|formatted_float }} грн</h3>
                         <p>Состояние кассы</p>
                     </div>
                     <div class="icon">
@@ -73,7 +76,7 @@
             <div class="col-xs-12 col-md-4">
                 <div class="small-box bg-blue overflow-hidden">
                     <div class="inner">
-                        <h3>0</h3>
+                        <h3>0 грн</h3>
                         <p>Баланс по счетам</p>
                     </div>
                     <div class="icon">
@@ -84,7 +87,7 @@
             <div class="col-xs-12 col-md-4">
                 <div class="small-box bg-red overflow-hidden">
                     <div class="inner">
-                        <h3>0</h3>
+                        <h3>0 грн</h3>
                         <p>Задолженность по счетам</p>
                     </div>
                     <div class="icon">
@@ -167,14 +170,14 @@
                             <td>(не задано)</td>
                             <td>(не задано)</td>
                             {% endif %}
-                            <td>{{ account.sum }}-{{ account.sum2 }}</td>
-<!--                            {% if account.balance > 0 %}-->
+                            <td>{{ account.balance }}</td>
+<!--                            {% if balance > 0 %}-->
 <!--                            <td>-->
-<!--                                <span class="text-green">{{ account.balance|floatformat:"2g"|formatted_float }}</span>-->
+<!--                                <span class="text-green">{{ balance|floatformat:"2g"|formatted_float }}</span>-->
 <!--                            </td>-->
-<!--                            {% elif account.sum < 0 %}-->
+<!--                            {% elif balance < 0 %}-->
 <!--                            <td>-->
-<!--                                <span class="text-red">-{{ account.balance|floatformat:"2g"|formatted_float }}</span>-->
+<!--                                <span class="text-red">{{ balance|floatformat:"2g"|formatted_float }}</span>-->
 <!--                            </td>-->
 <!--                            {% else %}-->
 <!--                            <td>-->

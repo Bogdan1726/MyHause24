@@ -109,6 +109,8 @@ class UnitOfMeasure(models.Model):
 
 
 class MeterData(models.Model):
+    objects = None
+
     class MeterStatus(models.TextChoices):
         NEW = 'new', _("Новое")
         ACCOUNTED = 'accounted', _("Учтено")
@@ -143,8 +145,10 @@ class Receipt(models.Model):
     date_end = models.DateField(default=datetime.date.today)
     status = models.BooleanField(default=True)
     status_pay = models.CharField(max_length=15, choices=PayStatus.choices, default=PayStatus.NOT_PAID)
-    tariff = models.ForeignKey('Tariff', null=True, on_delete=models.SET_NULL)
-    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.SET_NULL,
+    personal_account = models.ForeignKey('PersonalAccount', blank=True, null=True,
+                                         on_delete=models.CASCADE, related_name='receipt_account')
+    tariff = models.ForeignKey('Tariff', null=True, on_delete=models.CASCADE)
+    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.CASCADE,
                                   related_name='receipt_apartment')
 
 
@@ -177,7 +181,8 @@ class PersonalAccount(models.Model):
 
     number = models.CharField(max_length=11, unique=True)
     status = models.CharField(max_length=8, choices=AccountStatus.choices, default=AccountStatus.ACTIVE)
-    apartment = models.OneToOneField('Apartment', null=True, blank=True, on_delete=models.SET_NULL)
+    apartment = models.OneToOneField('Apartment', null=True, blank=True, on_delete=models.SET_NULL,
+                                     related_name='account_apartment')
 
     def __str__(self):
         return f'{self.number}'

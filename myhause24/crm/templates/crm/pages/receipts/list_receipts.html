@@ -14,6 +14,10 @@
         cursor: pointer;
     }
 
+    .delete-many {
+        cursor: pointer;
+    }
+
     input[name="custom_search"] {
         width: 100%;
         font-weight: normal;
@@ -103,7 +107,7 @@
             </button>
             <ul class="dropdown-menu">
                 <li><a href="{% url 'create_receipt' %}">Создать общую квитанцию</a></li>
-                <li><a href="#!" class="delete-many">Удалить</a></li>
+                <li><a class="delete-many">Удалить</a></li>
             </ul>
         </div>
     </div>
@@ -349,6 +353,7 @@
             minViewMode: "months",
             language: 'ru'
         })
+        //
 
 
         // Setup - add a text input to each footer cell
@@ -431,14 +436,76 @@
         $("#check-all").on("click", function (e) {
             if ($(this).is(":checked")) {
                 table.column(0).nodes().to$().each(function (d, j) {
-                    $(j).find('input').attr('checked', true)
+                    $(j).find('input').prop('checked', 'checked')
                 })
             } else {
                 table.column(0).nodes().to$().each(function (d, j) {
-                    $(j).find('input').attr('checked', false)
+                    $(j).find('input').prop('checked', '')
                 })
             }
         });
+        //
+
+        // Delete all
+        $(".delete-many").on("click", function () {
+            var receipts = table.rows(function (idx, data, node) {
+                return $(node).find('input[type="checkbox"]').prop('checked');
+            })
+                .data().pluck(1).toArray();
+
+
+            if (receipts.length > 0) {
+                const result = confirm('Удалить?');
+                if (result) {
+                    let format_data = new FormData()
+                    format_data.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+                    format_data.append('receipts', receipts)
+                    console.log(format_data.get('receipts'))
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url "delete_is_checked_receipts" %}',
+                        data: format_data,
+                        success: function (response) {
+                            if (response) {
+                                var result = 'success'
+                                var message = 'Успешно удалено!'
+                                result_ajax(result, message)
+                            }
+                        },
+                        error: function (response) {
+                            console.log(response.error)
+                            var result = 'error'
+                            var message = 'Ошибка при удалении!'
+                            result_ajax(result, message)
+                        },
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                    })
+                }
+            }
+
+            function result_ajax(type, message) {
+                $(function () {
+                    var Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000,
+                    });
+                    Toast.fire({
+                        icon: type,
+                        title: '<h5>' + message + '</h5>'
+                    })
+                });
+                $("#check-all").prop('checked', '');
+                table.column(0).nodes().to$().each(function (d, j) {
+                    $(j).find('input').prop('checked', '')
+                })
+                table.columns().search("").draw();
+            }
+
+        })
         //
 
 
@@ -457,6 +524,10 @@
             minDate = ''
             maxDate = ''
             table.columns().search("").draw();
+            $("#check-all").prop('checked', '');
+            table.column(0).nodes().to$().each(function (d, j) {
+                $(j).find('input').prop('checked', '')
+            })
         })
         //
 

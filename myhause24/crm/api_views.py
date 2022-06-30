@@ -1,10 +1,13 @@
+from time import sleep
+
 from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from .task import send_invite_user
 from .models import (
-    Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services, PriceTariffServices, CashBox, MeterData
+    Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services, PriceTariffServices, CashBox, MeterData,
+    Receipt
 )
 
 User = get_user_model()
@@ -185,5 +188,15 @@ def meter_data_for_receipt(request):
             indications += meter_data.last().indications
         response = {
             'indications': indications
+        }
+        return JsonResponse(response, status=200)
+
+
+def delete_is_checked_receipts(request):
+    if request.is_ajax():
+        receipts_number = request.POST.get('receipts').split(',')
+        Receipt.objects.filter(number__in=receipts_number).delete()
+        sleep(1)
+        response = {
         }
         return JsonResponse(response, status=200)

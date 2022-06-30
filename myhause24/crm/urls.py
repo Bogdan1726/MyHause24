@@ -22,7 +22,7 @@ from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
     send_invite, new_users, loading_apartment_of_owner, loading_master_of_type_master,
-    loading_personal_account_of_owner, loading_services_for_tariff, meter_data_for_receipt
+    loading_personal_account_of_owner, loading_services_for_tariff, meter_data_for_receipt, delete_is_checked_receipts
 )
 
 User = get_user_model()
@@ -158,5 +158,6 @@ urlpatterns = [
     path('check_units/', check_units, name='check_units'),
     path('send_invite/', send_invite, name='send_invite'),
     path('loading_unit_for_services/', loading_unit_for_services, name="loading_unit_for_services"),
-    path('meter_data_for_receipt/', meter_data_for_receipt, name='meter_data_for_receipt')
+    path('meter_data_for_receipt/', meter_data_for_receipt, name='meter_data_for_receipt'),
+    path('delete_is_checked_receipts/', delete_is_checked_receipts, name='delete_is_checked_receipts')
 ]

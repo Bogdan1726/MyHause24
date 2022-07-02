@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block style %}
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
 {% endblock %}
 
 
@@ -30,11 +31,11 @@
         <div class="box">
             <div id="w0" class="grid-view">
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-bordered table-hover table-striped linkedRow">
+                    <table id="list_pay" class="table table-bordered table-hover table-striped linkedRow">
                         <thead>
                         <tr>
-                            <th>Название</th>
-                            <th>Приход/расход</th>
+                            <th style="min-width: 250px;">Название</th>
+                            <th style="min-width: 200px; color: #3c8dbc">Приход/расход</th>
                             <th style="width: 80px; min-width: 80px">&nbsp;</th>
                         </tr>
                         </thead>
@@ -100,5 +101,30 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script>
 
+        // DataTable
+        $('#list_pay').DataTable({
+            "responsive": false,
+            'paging': false,
+            'lengthChange': false,
+            'searching': false,
+            'ordering': true,
+            'info': false,
+            'autoWidth': true,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [0, 2]
+                }
+            ],
+            order: [],
+            "language": {
+                "zeroRecords": "Записей не найдено",
+                "infoEmpty": "Нет записей.",
+            },
+        });
+</script>
 {% endblock %}

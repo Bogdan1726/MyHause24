@@ -46,7 +46,12 @@
                 </a>
             </li>
             {% endif %}
-            <li><a href="/admin/message/index"><i class="fa fa-envelope-o"></i> <span>Сообщения</span></a></li>
+            <li class="{% if url in '[list_message, send_message, detail_message]' %}active{% endif %}">
+                <a href="{% url 'list_message' %}">
+                    <i class="fa fa-envelope-o"></i>
+                    <span>Сообщения</span>
+                </a>
+            </li>
             <li class="{% if url in '[master_calls, detail_master_call, create_master_call, update_master_call]' %}active{% endif %}">
                 <a href="{% url 'master_calls' %}">
                     <i class="fa fa-wrench"></i>

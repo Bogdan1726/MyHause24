@@ -6,7 +6,7 @@ from django.core.files.images import get_image_dimensions
 from django.shortcuts import get_object_or_404
 from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMeasure, Services, \
     Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt, \
-    CalculateReceiptService, ReceiptTemplate
+    CalculateReceiptService, ReceiptTemplate, Message
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
@@ -78,7 +78,6 @@ class ReceiptForm(forms.ModelForm):
 
 
 class CalculateReceiptServiceForm(forms.ModelForm):
-
     unit = forms.CharField(required=False,
                            initial='Выберите услугу',
                            widget=forms.TextInput(attrs={'class': 'form-control',
@@ -86,7 +85,7 @@ class CalculateReceiptServiceForm(forms.ModelForm):
 
     class Meta:
         model = CalculateReceiptService
-        exclude = ('receipt', )
+        exclude = ('receipt',)
 
         widgets = {
             'services': forms.Select(attrs={'class': 'form-control',
@@ -107,7 +106,6 @@ class CalculateReceiptServiceForm(forms.ModelForm):
         self.fields['cost'].error_messages = {'required': _('Стоимость обязательное поле.')}
 
 
-
 class SettingsTemplatesForm(forms.ModelForm):
     class Meta:
         model = ReceiptTemplate
@@ -116,6 +114,7 @@ class SettingsTemplatesForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'})
         }
+
 
 # endregion Receipts Form
 
@@ -186,6 +185,36 @@ class UserFormSet(forms.Form):
 
 
 # endregion House Forms
+
+# region Message Form
+
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        exclude = ('datetime', 'is_all',)
+
+        widgets = {
+            'topics': forms.TextInput(attrs={'class': 'form-control',
+                                             'placeholder': 'Тема сообщения:'}),
+            'text': forms.Textarea(attrs={'class': 'form-control',
+                                          'placeholder': 'Текст сообщения:'}),
+            'is_dept': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'house': forms.Select(attrs={'class': 'form-control'}),
+            'section': forms.Select(attrs={'class': 'form-control'}),
+            'floor': forms.Select(attrs={'class': 'form-control'}),
+            'apartment': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['house'].empty_label = 'Всем...'
+        self.fields['section'].empty_label = 'Всем...'
+        self.fields['floor'].empty_label = 'Всем...'
+        self.fields['apartment'].empty_label = 'Всем...'
+
+
+# endregion Message Form
+
 
 # region Owner Form
 class OwnerForm(UserCreationForm):
@@ -484,6 +513,7 @@ class PriceTariffServicesForm(forms.ModelForm):
             self.fields['unit'].initial = kwargs.get('instance').services.u_measurement
         self.fields['services'].empty_label = 'Выберите...'
         self.fields['price'].error_messages = {'required': 'Поле цена в форме услуги является обязательным полем'}
+
 
 # endregion Tariff Form
 

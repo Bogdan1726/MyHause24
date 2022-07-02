@@ -1,11 +1,7 @@
-import os
 from decimal import Decimal
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.core.files import File
-from django.core.files.storage import FileSystemStorage
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField, FloatField
 from django.db.models.functions import Coalesce, Cast, Greatest
 from django.forms import modelformset_factory, formset_factory
@@ -30,13 +26,15 @@ from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateVie
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
     Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest,
-    CashBox, Receipt, CalculateReceiptService, ReceiptTemplate, Requisites)
+    CashBox, Receipt, CalculateReceiptService, ReceiptTemplate, Requisites,
+    Message
+)
 from .forms import (
     HouseForm, SectionForm, FloorForm, UserFormSet, OwnerForm, OwnerUpdateForm,
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
     UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
-    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm
+    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm, MessageForm
 )
 
 User = get_user_model()
@@ -634,6 +632,57 @@ class HouseDelete(DeleteView):
 
 
 # endregion Houses
+
+# region Messages
+
+class MessageListView(ListView):
+    model = Message
+    template_name = 'crm/pages/messages/list_message.html'
+    context_object_name = 'message'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'house', 'section', 'floor', 'apartment', 'apartment__owner'
+        ).order_by('-datetime')
+
+
+class MessageDetailView(DetailView):
+    model = Message
+    template_name = 'crm/pages/messages/detail_message.html'
+    context_object_name = 'message'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'house', 'section', 'floor', 'apartment', 'apartment__owner'
+        )
+
+
+class MessageCreateAndSend(CreateView):
+    model = Message
+    form_class = MessageForm
+    template_name = 'crm/pages/messages/send_message.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Сообщение отправлено!')
+        return reverse_lazy('list_message')
+
+    def form_valid(self, form):
+        message = form.save(commit=False)
+        message.sender = self.request.user
+        message.save()
+        return super().form_valid(form)
+
+
+class MessageDelete(DeleteView):
+    model = Message
+
+    def get_success_url(self):
+        messages.success(self.request, f'Сообщение  удаленно!')
+        return reverse_lazy('list_message')
+
+
+# endregion Messages
+
 
 # region Owners
 

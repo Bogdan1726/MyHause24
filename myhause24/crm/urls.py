@@ -15,14 +15,16 @@ from .views import (
     MasterCallCreateView, MasterCallUpdateView, MasterCallDelete, CashBoxListView, CashBoxDetailView, CashBoxCreateView,
     CashBoxDelete, CashBoxUpdateView, ReceiptListView, ReceiptCreateView, ReceiptUpdateView, ReceiptDelete,
     ReceiptDetailView, ReceiptTemplateListView, receipt_template, SettingsTemplate, ReceiptTemplateDelete,
-    receipt_templates_edit, receipt_templates_upload
+    receipt_templates_edit, receipt_templates_upload, MessageCreateAndSend, MessageDetailView,
+    MessageDelete, MessageListView
 )
 
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
     send_invite, new_users, loading_apartment_of_owner, loading_master_of_type_master,
-    loading_personal_account_of_owner, loading_services_for_tariff, meter_data_for_receipt, delete_is_checked_receipts
+    loading_personal_account_of_owner, loading_services_for_tariff, meter_data_for_receipt, delete_is_checked_receipts,
+    loading_apartment_for_message, delete_is_checked_messages,
 )
 
 User = get_user_model()
@@ -60,6 +62,15 @@ urlpatterns = [
     path('house/update/<int:pk>/', HouseUpdateView.as_view(), name='update_house'),
     path('house/delete/<int:pk>/', HouseDelete.as_view(), name='delete_house'),
     # houses end
+
+
+    # region messages
+    path('message/', MessageListView.as_view(), name='list_message'),
+    path('message/send/', MessageCreateAndSend.as_view(), name='send_message'),
+    path('message/<int:pk>/', MessageDetailView.as_view(), name='detail_message'),
+    path('message/delete/<int:pk>/', MessageDelete.as_view(), name='delete_message'),
+
+    # endregion messages
 
     # owners
     path('owner/invite/', invite_owner, name='invite_owner'),
@@ -154,10 +165,13 @@ urlpatterns = [
     path('loading_personal_account/', loading_personal_account, name='loading_personal_account'),
     path('loading_section_for_house/', loading_section_for_house, name='loading_section_for_house'),
     path('loading_apartment_for_section/', loading_apartment_for_section, name='loading_apartment_for_section'),
+    path('loading_apartment_for_message/', loading_apartment_for_message, name='loading_apartment_for_message'),
     path('loading_apartment_owner/', loading_apartment_owner, name='loading_apartment_owner'),
     path('check_units/', check_units, name='check_units'),
     path('send_invite/', send_invite, name='send_invite'),
     path('loading_unit_for_services/', loading_unit_for_services, name="loading_unit_for_services"),
     path('meter_data_for_receipt/', meter_data_for_receipt, name='meter_data_for_receipt'),
-    path('delete_is_checked_receipts/', delete_is_checked_receipts, name='delete_is_checked_receipts')
+    path('delete_is_checked_receipts/', delete_is_checked_receipts, name='delete_is_checked_receipts'),
+    path('delete_is_checked_messages/', delete_is_checked_messages, name='delete_is_checked_messages')
+
 ]

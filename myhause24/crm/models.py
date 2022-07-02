@@ -248,15 +248,16 @@ class CallRequest(models.Model):
 
 
 class Message(models.Model):
+    objects = None
     datetime = models.DateTimeField(auto_now_add=True)
     topics = models.CharField(max_length=64)
-    text = models.TextField()
+    text = models.TextField(blank=True)
     is_dept = models.BooleanField(default=False)
     is_all = models.BooleanField(default=False)
-    apartment = models.ForeignKey('Apartment', blank=True, null=True, on_delete=models.SET_NULL)
+    apartment = models.ForeignKey('Apartment', blank=True, null=True, on_delete=models.CASCADE)
     house = models.ForeignKey('House', blank=True, null=True, on_delete=models.SET_NULL)
     section = models.ForeignKey('Section', blank=True, null=True, on_delete=models.SET_NULL)
     floor = models.ForeignKey('Floor', blank=True, null=True, on_delete=models.SET_NULL)
-    sender = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    sender = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
 
 # endregion CallRequest and Messages

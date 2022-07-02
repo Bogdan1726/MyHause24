@@ -455,7 +455,7 @@
 
 
             if (receipts.length > 0) {
-                const result = confirm('Удалить?');
+                const result = confirm('Данные будут удалены. Продолжить?');
                 if (result) {
                     let format_data = new FormData()
                     format_data.append('csrfmiddlewaretoken', '{{ csrf_token }}')
@@ -467,16 +467,11 @@
                         data: format_data,
                         success: function (response) {
                             if (response) {
-                                var result = 'success'
-                                var message = 'Успешно удалено!'
-                                result_ajax(result, message)
+                                location.reload();
                             }
                         },
                         error: function (response) {
                             console.log(response.error)
-                            var result = 'error'
-                            var message = 'Ошибка при удалении!'
-                            result_ajax(result, message)
                         },
                         cache: false,
                         contentType: false,
@@ -484,27 +479,6 @@
                     })
                 }
             }
-
-            function result_ajax(type, message) {
-                $(function () {
-                    var Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 4000,
-                    });
-                    Toast.fire({
-                        icon: type,
-                        title: '<h5>' + message + '</h5>'
-                    })
-                });
-                $("#check-all").prop('checked', '');
-                table.column(0).nodes().to$().each(function (d, j) {
-                    $(j).find('input').prop('checked', '')
-                })
-                table.columns().search("").draw();
-            }
-
         })
         //
 

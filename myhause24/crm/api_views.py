@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from .task import send_invite_user
 from .models import (
     Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services, PriceTariffServices, CashBox, MeterData,
-    Receipt
+    Receipt, Message
 )
 
 User = get_user_model()
@@ -73,6 +73,23 @@ def loading_apartment_for_section(request):
         section_id = request.GET.get('section_id')
         apartment = Apartment.objects.filter(section=section_id).values(
             'id', 'number')
+        response = {
+            'apartment': list(apartment)
+        }
+        return JsonResponse(response, status=200)
+
+
+def loading_apartment_for_message(request):
+    if request.is_ajax():
+        house_id = request.GET.get('house_id') or None
+        section_id = request.GET.get('section_id') or None
+        floor_id = request.GET.get('floor_id') or None
+        apartment = Apartment.objects.filter(house=house_id).values(
+            'id', 'number')
+        if section_id:
+            apartment = apartment.filter(section_id=section_id)
+        if floor_id:
+            apartment = apartment.filter(floor=floor_id)
         response = {
             'apartment': list(apartment)
         }
@@ -196,7 +213,15 @@ def delete_is_checked_receipts(request):
     if request.is_ajax():
         receipts_number = request.POST.get('receipts').split(',')
         Receipt.objects.filter(number__in=receipts_number).delete()
-        sleep(1)
+        response = {
+        }
+        return JsonResponse(response, status=200)
+
+
+def delete_is_checked_messages(request):
+    if request.is_ajax():
+        messages_id = request.POST.get('list_messages_id').split(',')
+        Message.objects.filter(id__in=messages_id).delete()
         response = {
         }
         return JsonResponse(response, status=200)

@@ -30,12 +30,6 @@ def get_balance(value):
     return balance
 
 
-# def is_account(value):
-#     is_accounts = False
-#     if PersonalAccount.objects.filter(apartment_id=value).exists():
-#         is_accounts = True
-#     return is_accounts
-
-
 register.filter('get_balance', get_balance)
-# register.filter('is_account', is_account)
+
+

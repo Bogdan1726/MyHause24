@@ -3,6 +3,20 @@ from myhause24.celery import app
 from django.template.loader import render_to_string
 
 @app.task
+def send_receipt_for_owner(email):
+    print('task send')
+    print(email)
+    # send_mail(
+    #     'CRM 24 Administrations',
+    #     f'Ваш новый пароль - {password}',
+    #     None,
+    #     [email],
+    #     fail_silently=False
+    # )
+    print('Task completed')
+
+
+@app.task
 def send_email(email):
     print('task send')
     text = 'Вас приглашают подключиться к системе CRM 24.\n' \

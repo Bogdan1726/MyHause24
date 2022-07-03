@@ -8,19 +8,13 @@ from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
-from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
-
-from .services.xlsx_services import write_to_file, serializers_queryset
-from .task import send_email
+from .services.xlsx_services import write_to_file
+from .task import send_email, send_receipt_for_owner
 import random
 from user.models import Role
-from openpyxl import load_workbook
-
-from django.http import FileResponse
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import (
@@ -61,23 +55,47 @@ def set_statistic_data():
     if expense is not None:
         cash_balance -= expense
 
+    queryset = PersonalAccount.objects.select_related(
+        'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+    ).filter(
+        receipt_account__status=True
+    ).annotate(
+        balance=
+        Greatest(
+            Sum('cash_account__sum'), Decimal(0)
+        )
+        -
+        Greatest(
+            Sum('receipt_account__calculate_receipt__cost'), Decimal(0)
+        )
+    )
+
     balance = 0
 
-    # receipts = Receipt.objects.prefetch_related(
+    for obj in queryset:
+        balance += obj.balance
+
+    print(balance)
+
+    # balance_income = CashBox.objects.select_related(
+    #     'personal_account'
+    # ).annotate(
+    #     income=Sum('sum')
+    # ).filter(status=True, type=True)
+    #
+    # balance_expense = Receipt.objects.prefetch_related(
     #     'calculate_receipt'
     # ).annotate(
-    #     sum=Sum('calculate_receipt__cost')
+    #     expense=Sum('calculate_receipt__cost')
     # ).filter(status=True)
     #
-    # cash_box = cash.filter(status=True, type=True)
-    #
-    # # for cash in cash_box:
-    # #     if cash.sum:
-    # #         balance += cash.sum
-    #
-    # for receipt in receipts:
-    #     if receipt.sum:
-    #         balance -= receipt.sum
+    # for obj in balance_income:
+    #     if obj.income:
+    #         balance += obj.income
+    # for obj in balance_expense:
+    #     if obj.expense:
+    #         balance -= obj.expense
+
     return [cash_balance, balance]
 
 
@@ -423,13 +441,26 @@ def receipt_template(request, pk):
         receipt = Receipt.objects.filter(id=pk).first()
         account = PersonalAccount.objects.filter(apartment=receipt.apartment_id).first()
         requisites = Requisites.objects.all().first().description
-        serializers_queryset(receipt, account, requisites, file)
-        # write_to_file(file, serializers_queryset)
+        services = CalculateReceiptService.objects.filter(receipt=receipt.id)
+        account_balance = PersonalAccount.objects.filter(
+            id=account.id, cash_account__status=True, apartment__receipt_apartment__status=True
+        ).annotate(
+            balance=
+            Greatest(Sum('cash_account__sum'), Decimal(0))
+            -
+            Greatest(Sum('apartment__receipt_apartment__calculate_receipt__cost', distinct='id'), Decimal(0))
+        ).first()
+        write = write_to_file(receipt, account, requisites, file, services, account_balance)
 
-        response = HttpResponse(file.template, content_type='application/vnd.ms-excel')
-        response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
-        return response
-    return HttpResponseRedirect('/admin/receipt/templates/36/')
+        if 'action_send_email' in request.POST:
+            if receipt.apartment.owner:
+                print(write)
+                send_receipt_for_owner.delay(str(receipt.apartment.owner.email))
+        else:
+            response = HttpResponse(write, content_type='application/vnd.ms-excel')
+            response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
+            return response
+    return HttpResponseRedirect('/admin/receipt/templates/' + str(pk) + '/')
 
 
 class SettingsTemplate(CreateView):
@@ -910,10 +941,18 @@ class AccountsListView(ListView):
     def get_queryset(self):
         queryset = PersonalAccount.objects.select_related(
             'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+        ).filter(
+            cash_account__status=True
         ).annotate(
             balance=
-            Greatest(Sum('receipt_account__calculate_receipt__cost', distinct=True), Decimal(0))
-        ).order_by('-id')
+            Greatest(
+                Sum('cash_account__sum', distinct=True), Decimal(0)
+            )
+            -
+            Greatest(
+                Sum('receipt_account__calculate_receipt__cost', distinct=True), Decimal(0)
+            )
+        )
         return queryset
 
     def get_context_data(self, **kwargs):

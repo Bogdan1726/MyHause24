@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,6 +12,8 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import get_user_model
+from openpyxl.writer.excel import save_virtual_workbook
+
 from .services.xlsx_services import write_to_file
 from .task import send_email, send_receipt_for_owner
 import random
@@ -437,27 +440,34 @@ class ReceiptTemplateListView(ListView):
 
 def receipt_template(request, pk):
     if request.method == 'POST':
-        file = get_object_or_404(ReceiptTemplate, id=request.POST.get('template'))
         receipt = Receipt.objects.filter(id=pk).first()
-        account = PersonalAccount.objects.filter(apartment=receipt.apartment_id).first()
-        requisites = Requisites.objects.all().first().description
-        services = CalculateReceiptService.objects.filter(receipt=receipt.id)
-        account_balance = PersonalAccount.objects.filter(
-            id=account.id, cash_account__status=True, apartment__receipt_apartment__status=True
-        ).annotate(
-            balance=
-            Greatest(Sum('cash_account__sum'), Decimal(0))
-            -
-            Greatest(Sum('apartment__receipt_apartment__calculate_receipt__cost', distinct='id'), Decimal(0))
-        ).first()
-        write = write_to_file(receipt, account, requisites, file, services, account_balance)
-
         if 'action_send_email' in request.POST:
             if receipt.apartment.owner:
-                print(write)
-                send_receipt_for_owner.delay(str(receipt.apartment.owner.email))
+                id = request.POST.get('template')
+                send_receipt_for_owner.delay(pk, id)
+                messages.success(request, f'Квитанция №{receipt.number} отправлена владельцу')
+            else:
+                messages.error(request, f'Квитанция №{receipt.number} не имеет конечного получателя')
         else:
-            response = HttpResponse(write, content_type='application/vnd.ms-excel')
+            file = get_object_or_404(ReceiptTemplate, id=request.POST.get('template'))
+            requisites = Requisites.objects.all().first()
+            services = CalculateReceiptService.objects.filter(receipt=receipt.id).select_related(
+                'services', 'receipt'
+            )
+            account_balance = PersonalAccount.objects.filter(
+                id=receipt.personal_account_id, cash_account__status=True, apartment__receipt_apartment__status=True
+            ).annotate(
+                balance=
+                Greatest(Sum('cash_account__sum'), Decimal(0))
+                -
+                Greatest(Sum('apartment__receipt_apartment__calculate_receipt__cost', distinct='id'), Decimal(0))
+            ).first()
+
+            write = write_to_file(
+                receipt, receipt.personal_account, requisites.description, file, services, account_balance
+            )
+
+            response = HttpResponse(save_virtual_workbook(write), content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
             return response
     return HttpResponseRedirect('/admin/receipt/templates/' + str(pk) + '/')

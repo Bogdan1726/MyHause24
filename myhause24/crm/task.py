@@ -1,18 +1,53 @@
-from django.core.mail import send_mail
+from decimal import Decimal
+from io import BytesIO, StringIO
+
+from django.core.mail import send_mail, EmailMessage
+from django.db.models import Sum
+from django.db.models.functions import Greatest
+from django.shortcuts import get_object_or_404
 from myhause24.celery import app
 from django.template.loader import render_to_string
+from openpyxl.writer.excel import save_virtual_workbook
+
+from .models import (
+    Receipt, Requisites, CalculateReceiptService, PersonalAccount, ReceiptTemplate
+)
+from .services.xlsx_services import write_to_file
+
 
 @app.task
-def send_receipt_for_owner(email):
+def send_receipt_for_owner(pk, id):
     print('task send')
-    print(email)
-    # send_mail(
-    #     'CRM 24 Administrations',
-    #     f'Ваш новый пароль - {password}',
-    #     None,
-    #     [email],
-    #     fail_silently=False
-    # )
+    file = get_object_or_404(ReceiptTemplate, id=id)
+    receipt = Receipt.objects.filter(id=pk).first()
+    requisites = Requisites.objects.all().first()
+    services = CalculateReceiptService.objects.filter(receipt=receipt.id).select_related(
+        'services', 'receipt'
+    )
+    account_balance = PersonalAccount.objects.filter(
+        id=receipt.personal_account_id, cash_account__status=True, apartment__receipt_apartment__status=True
+    ).annotate(
+        balance=
+        Greatest(Sum('cash_account__sum'), Decimal(0))
+        -
+        Greatest(Sum('apartment__receipt_apartment__calculate_receipt__cost', distinct='id'), Decimal(0))
+    ).first()
+
+    write = write_to_file(
+        receipt, receipt.personal_account, requisites.description, file, services, account_balance
+    )
+
+    email = EmailMessage(
+        'CRM 24 Administrations',
+        f'Квитанция',
+        None,
+        ['bogdan24ro@gmail.com'],
+    )
+
+    email.attach(f'Квитанция №{receipt.number}.xlsx', save_virtual_workbook(write),
+                 'application/vnd.ms-excel')
+    email.send()
+
     print('Task completed')
 
 

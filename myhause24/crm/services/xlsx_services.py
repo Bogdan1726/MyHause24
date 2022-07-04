@@ -77,5 +77,5 @@ def write_to_file(receipt, account, requisites, file, services, account_balance)
     sheet.merge_cells(f'G{start_service}:H{start_service}')
     sheet.merge_cells(f'I{start_service}:K{start_service}')
 
-    return save_virtual_workbook(template)
+    return template
 

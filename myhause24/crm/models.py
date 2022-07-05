@@ -146,10 +146,9 @@ class Receipt(models.Model):
     status = models.BooleanField(default=True)
     status_pay = models.CharField(max_length=15, choices=PayStatus.choices, default=PayStatus.NOT_PAID)
     personal_account = models.ForeignKey('PersonalAccount', blank=True, null=True,
-                                         on_delete=models.CASCADE, related_name='receipt_account')
+                                         on_delete=models.CASCADE)
     tariff = models.ForeignKey('Tariff', null=True, on_delete=models.CASCADE)
-    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.CASCADE,
-                                  related_name='receipt_apartment')
+    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.CASCADE)
 
 
 class CalculateReceiptService(models.Model):

@@ -50,6 +50,7 @@ def set_statistic_data():
     cash_income = cash.filter(status=True, type=True).aggregate(sum=Sum('sum'))
     cash_expense = cash.filter(status=True, type=False).aggregate(sum=Sum('sum'))
     cash_balance = 0
+    account_balance = 0
 
     income = cash_income['sum']
     expense = cash_expense['sum']
@@ -58,48 +59,29 @@ def set_statistic_data():
     if expense is not None:
         cash_balance -= expense
 
-    queryset = PersonalAccount.objects.select_related(
-        'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
-    ).filter(
-        receipt_account__status=True
-    ).annotate(
-        balance=
-        Greatest(
-            Sum('cash_account__sum'), Decimal(0)
-        )
-        -
-        Greatest(
-            Sum('receipt_account__calculate_receipt__cost'), Decimal(0)
-        )
-    )
+    return [cash_balance, account_balance]
 
-    balance = 0
 
-    for obj in queryset:
-        balance += obj.balance
+def get_balance_account():
+    account_balance = 0
+    account_debit = 0
+    accounts = PersonalAccount.objects.all()
 
-    print(balance)
+    for obj in accounts:
+        account_bal = obj.cash_account.select_related('cash_account', 'personal_account_id').aggregate(
+            sum=Greatest(Sum('sum'), Decimal(0)
+                         ))
+        account_debt = obj.receipt_account.aggregate(sum=Greatest(
+            Sum('calculate_receipt__cost'), Decimal(0)))
 
-    # balance_income = CashBox.objects.select_related(
-    #     'personal_account'
-    # ).annotate(
-    #     income=Sum('sum')
-    # ).filter(status=True, type=True)
-    #
-    # balance_expense = Receipt.objects.prefetch_related(
-    #     'calculate_receipt'
-    # ).annotate(
-    #     expense=Sum('calculate_receipt__cost')
-    # ).filter(status=True)
-    #
-    # for obj in balance_income:
-    #     if obj.income:
-    #         balance += obj.income
-    # for obj in balance_expense:
-    #     if obj.expense:
-    #         balance -= obj.expense
+        a = account_bal['sum'] - account_debt['sum']
 
-    return [cash_balance, balance]
+        if a < 0:
+            account_debit += a
+        else:
+            account_balance += a
+
+    return account_debit
 
 
 # endregion Statistics
@@ -119,6 +101,7 @@ class CashBoxListView(ListView):
         context = super().get_context_data(**kwargs)
         context['cash_balance'] = set_statistic_data()[0]
         context['account_balance'] = set_statistic_data()[1]
+        context['account_debit'] = get_balance_account
 
         return context
 
@@ -951,16 +934,14 @@ class AccountsListView(ListView):
     def get_queryset(self):
         queryset = PersonalAccount.objects.select_related(
             'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
-        ).filter(
-            cash_account__status=True
         ).annotate(
             balance=
+            # Greatest(
+            #     Sum('cash_account__sum', distinct=True), Decimal(0)
+            # )
+            # -
             Greatest(
-                Sum('cash_account__sum', distinct=True), Decimal(0)
-            )
-            -
-            Greatest(
-                Sum('receipt_account__calculate_receipt__cost', distinct=True), Decimal(0)
+                Sum('apartment__receipt__calculate_receipt__cost', distinct=True), Decimal(0)
             )
         )
         return queryset

@@ -23,12 +23,26 @@
     <div class="box-header with-border">
         <h3 class="box-title">Просмотр квартиры</h3>
         <div class="box-tools">
-            <button class="btn btn-default btn-sm disabled" data-confirm="Лицевой счет неактивен"><span
-                    class="hidden-xs"><i class="fa fa-dollar"></i> Принять платеж</span><i
-                    class="fa fa-pencil visible-xs" aria-hidden="true"></i></button>
-            <button class="btn btn-default btn-sm disabled" data-confirm="Лицевой счет неактивен"><span
-                    class="hidden-xs"><i class="fa fa-files-o"></i> Оформить квитанцию</span><i
-                    class="fa fa-pencil visible-xs" aria-hidden="true"></i></button>
+            {% if personal_account and personal_account.status == 'active' %}
+            <a href="{% url 'create_cash_box' %}?type_pay=income&account={{ personal_account.id }}"
+               class="btn btn-default btn-sm">
+                <span class="hidden-xs"><i class="fa fa-dollar"></i> Принять платеж</span><i
+                    class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+            <a href="{% url 'create_receipt' %}?account={{ personal_account.id }}" class="btn btn-default btn-sm">
+                <span class="hidden-xs"><i class="fa fa-files-o"></i> Оформить квитанцию</span><i
+                    class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+            {% else %}
+            <button class="btn btn-default btn-sm disabled"
+                    data-confirm="Лицевой счет неактивен или не привязан к квартире"><span class="hidden-xs"><i
+                    class="fa fa-dollar"></i> Принять платеж</span><i class="fa fa-pencil visible-xs"
+                                                                      aria-hidden="true"></i></button>
+            <button class="btn btn-default btn-sm disabled"
+                    data-confirm="Лицевой счет неактивен или не привязан к квартире"><span class="hidden-xs"><i
+                    class="fa fa-files-o"></i> Оформить квитанцию</span><i class="fa fa-pencil visible-xs"
+                                                                           aria-hidden="true"></i></button>
+            {% endif %}
             <a href="{% url 'update_apartment' apartment.id %}" class="btn btn-primary btn-sm">
                 <span class="hidden-xs">Редактировать квартиру</span><i class="fa fa-pencil visible-xs"
                                                                         aria-hidden="true"></i>
@@ -102,14 +116,21 @@
                 </table>
                 <div>
                     <p>
-                        <a href="#">Посмотреть показания счетчиков</a>
+                        <a href="{% url 'meter_data_for_apartment' apartment.id %}">Посмотреть показания
+                            счетчиков
+                        </a>
+                    </p>
+                    {% if personal_account %}
+                    <p>
+                        <a href="{% url 'cash_box' %}?account={{ personal_account.id }}">Посмотреть
+                            приходы
+                        </a>
                     </p>
                     <p>
-                        <a href="#">Посмотреть приходы</a>
+                        <a href="{% url 'receipts' %}?account={{ personal_account.id }}">Посмотреть квитанции
+                        </a>
                     </p>
-                    <p>
-                        <a href="#">Посмотреть квитанции</a>
-                    </p>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -1,5 +1,8 @@
 {% extends 'crm/elements/layout.html'%}
+
 {% load static %}
+{% load floattags %}
+
 {% block title %}
 Владельцы квартир
 {% endblock %}
@@ -59,7 +62,7 @@
             </button>
             <ul class="dropdown-menu">
                 <li><a href="{% url 'create_owner' %}">Добавить владельца квартиры</a></li>
-                <li><a href="#">Отправить сообщение должникам</a></li>
+                <li><a href="{% url 'send_message' %}?debt=true">Отправить сообщение должникам</a></li>
                 <li><a href="{% url 'invite_owner' %}">Отправить приглашение</a></li>
             </ul>
         </div>
@@ -152,8 +155,13 @@
                             {% else %}
                             <td><small class="label label-warning">Новый</small></td>
                             {% endif %}
-
+                            {% if owner.balance > 0 %}
                             <td>нет</td>
+                            {% elif owner.balance < 0 %}
+                            <td>да</td>
+                            {% else %}
+                            <td>нет</td>
+                            {% endif %}
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"

@@ -105,20 +105,19 @@
                             <td>{{ apartment.section }}</td>
                             <td>{{ apartment.floor }}</td>
                             <td>{{ apartment.owner }}</td>
-                            <td>{{ apartment.balance }}</td>
-<!--                            {% if balance > 0 %}-->
-<!--                            <td>-->
-<!--                                <span class="text-green">{{ balance|floatformat:"2g"|formatted_float }}</span>-->
-<!--                            </td>-->
-<!--                            {% elif balance < 0 %}-->
-<!--                            <td>-->
-<!--                                <span class="text-red">{{ balance|floatformat:"2g"|formatted_float }}</span>-->
-<!--                            </td>-->
-<!--                            {% else %}-->
-<!--                            <td>-->
-<!--                                <span class="text-default">0.00</span>-->
-<!--                            </td>-->
-<!--                            {% endif %}-->
+                            {% if apartment.balance > 0 %}
+                            <td>
+                                <span class="text-green">{{ apartment.balance|floatformat:"2g"|formatted_float }}</span>
+                            </td>
+                            {% elif apartment.balance < 0 %}
+                            <td>
+                                <span class="text-red">{{ apartment.balance|floatformat:"2g"|formatted_float }}</span>
+                            </td>
+                            {% else %}
+                            <td>
+                                <span class="text-default">0.00</span>
+                            </td>
+                            {% endif %}
                             <td>
                                 <div class="btn-group pull-right">
                                     <a class="btn btn-default btn-sm"

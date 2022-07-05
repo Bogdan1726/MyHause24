@@ -40,14 +40,25 @@
     <div class="box-header with-border">
         <h3 class="box-title">Просмотр лицевого счета</h3>
         <div class="box-tools">
-            <a href="#" class="btn btn-default btn-sm">
+            {% if accounts.apartment and accounts.status == 'active' %}
+            <a href="{% url 'create_cash_box' %}?type_pay=income&account={{ accounts.id }}" class="btn btn-default btn-sm">
                 <span class="hidden-xs"><i class="fa fa-dollar"></i> Принять платеж</span><i
                     class="fa fa-pencil visible-xs" aria-hidden="true"></i>
             </a>
-            <a href="#" class="btn btn-default btn-sm">
+            <a href="{% url 'create_receipt' %}?account={{ accounts.id }}" class="btn btn-default btn-sm">
                 <span class="hidden-xs"><i class="fa fa-files-o"></i> Оформить квитанцию</span><i
                     class="fa fa-pencil visible-xs" aria-hidden="true"></i>
             </a>
+            {% else %}
+            <button class="btn btn-default btn-sm disabled"
+                    data-confirm="Лицевой счет неактивен или не привязан к квартире"><span class="hidden-xs"><i
+                    class="fa fa-dollar"></i> Принять платеж</span><i class="fa fa-pencil visible-xs"
+                                                                      aria-hidden="true"></i></button>
+            <button class="btn btn-default btn-sm disabled"
+                    data-confirm="Лицевой счет неактивен или не привязан к квартире"><span class="hidden-xs"><i
+                    class="fa fa-files-o"></i> Оформить квитанцию</span><i class="fa fa-pencil visible-xs"
+                                                                           aria-hidden="true"></i></button>
+            {% endif %}
             <a href="{% url 'update_accounts' accounts.id %}" class="btn btn-primary btn-sm">
                 <span class="hidden-xs">Редактировать счет</span>
                 <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>
@@ -113,13 +124,13 @@
                     </tr>
                     <tr>
                         <td>Остаток, грн.</td>
-                        {% if balance > 0 %}
+                        {% if accounts.balance > 0 %}
                         <td>
-                            <span class="text-green">{{ balance|floatformat:"2g"|formatted_float }}</span>
+                            <span class="text-green">{{ accounts.balance|floatformat:"2g"|formatted_float }}</span>
                         </td>
                         {% elif balance < 0 %}
                         <td>
-                            <span class="text-red">{{ balance|floatformat:"2g"|formatted_float }}</span>
+                            <span class="text-red">{{ accounts.balance|floatformat:"2g"|formatted_float }}</span>
                         </td>
                         {% else %}
                         <td>
@@ -130,12 +141,23 @@
                     </tbody>
                 </table>
                 <div>
-                    <p><a href="#">Посмотреть показания
-                        счетчиков</a></p>
+
                     <p>
-                        <a href="#">Посмотреть
-                            приходы</a></p>
-                    <p><a href="#">Посмотреть квитанции</a></p>
+                        {% if accounts.apartment %}
+                        <a href="{% url 'meter_data_for_apartment' accounts.apartment.id %}">Посмотреть показания
+                            счетчиков
+                        </a>
+                        {% endif %}
+                    </p>
+                    <p>
+                        <a href="{% url 'cash_box' %}?account={{ accounts.id }}">Посмотреть
+                            приходы
+                        </a>
+                    </p>
+                    <p>
+                        <a href="{% url 'receipts' %}?account={{ accounts.id }}">Посмотреть квитанции
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

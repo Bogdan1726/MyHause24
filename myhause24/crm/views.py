@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db.models import Sum, F, ExpressionWrapper, DecimalField, FloatField
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField, FloatField, Q
 from django.db.models.functions import Coalesce, Cast, Greatest
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render
@@ -45,43 +45,43 @@ def index(request):
     return render(request, 'crm/pages/index.html')
 
 
-def set_statistic_data():
-    cash = CashBox.objects.all()
-    cash_income = cash.filter(status=True, type=True).aggregate(sum=Sum('sum'))
-    cash_expense = cash.filter(status=True, type=False).aggregate(sum=Sum('sum'))
-    cash_balance = 0
-    account_balance = 0
-
-    income = cash_income['sum']
-    expense = cash_expense['sum']
-    if income is not None:
-        cash_balance += income
-    if expense is not None:
-        cash_balance -= expense
-
-    return [cash_balance, account_balance]
-
-
-def get_balance_account():
-    account_balance = 0
-    account_debit = 0
-    accounts = PersonalAccount.objects.all()
-
-    for obj in accounts:
-        account_bal = obj.cash_account.select_related('cash_account', 'personal_account_id').aggregate(
-            sum=Greatest(Sum('sum'), Decimal(0)
-                         ))
-        account_debt = obj.receipt_account.aggregate(sum=Greatest(
-            Sum('calculate_receipt__cost'), Decimal(0)))
-
-        a = account_bal['sum'] - account_debt['sum']
-
-        if a < 0:
-            account_debit += a
-        else:
-            account_balance += a
-
-    return account_debit
+# def set_statistic_data():
+#     cash = CashBox.objects.all()
+#     cash_income = cash.filter(status=True, type=True).aggregate(sum=Sum('sum'))
+#     cash_expense = cash.filter(status=True, type=False).aggregate(sum=Sum('sum'))
+#     cash_balance = 0
+#     account_balance = 0
+#
+#     income = cash_income['sum']
+#     expense = cash_expense['sum']
+#     if income is not None:
+#         cash_balance += income
+#     if expense is not None:
+#         cash_balance -= expense
+#
+#     return [cash_balance, account_balance]
+#
+#
+# def get_balance_account():
+#     account_balance = 0
+#     account_debit = 0
+#     accounts = PersonalAccount.objects.all()
+#
+#     for obj in accounts:
+#         account_bal = obj.cash_account.select_related('cash_account', 'personal_account_id').aggregate(
+#             sum=Greatest(Sum('sum'), Decimal(0)
+#                          ))
+#         account_debt = obj.receipt_account.aggregate(sum=Greatest(
+#             Sum('calculate_receipt__cost'), Decimal(0)))
+#
+#         a = account_bal['sum'] - account_debt['sum']
+#
+#         if a < 0:
+#             account_debit += a
+#         else:
+#             account_balance += a
+#
+#     return account_debit
 
 
 # endregion Statistics
@@ -94,14 +94,18 @@ class CashBoxListView(ListView):
     context_object_name = 'cash_box'
 
     def get_queryset(self):
+        account_id = self.request.GET.get('account', None)
+        if account_id:
+            return self.model.objects.filter(personal_account=account_id).select_related(
+                'owner', 'manager', 'payment_items', 'personal_account', 'receipt').order_by('-date', '-id')
         return self.model.objects.all().select_related(
             'owner', 'manager', 'payment_items', 'personal_account', 'receipt').order_by('-date', '-id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['cash_balance'] = set_statistic_data()[0]
-        context['account_balance'] = set_statistic_data()[1]
-        context['account_debit'] = get_balance_account
+        # context['cash_balance'] = set_statistic_data()[0]
+        # context['account_balance'] = set_statistic_data()[1]
+        # context['account_debit'] = get_balance_account
 
         return context
 
@@ -142,6 +146,7 @@ class CashBoxCreateView(CreateView):
     def get_form(self, form_class=None, **kwargs):
         if form_class is None:
             cash_id = self.request.GET.get('cash', None)
+            account_id = self.request.GET.get('account', None)
             if cash_id:
                 obj = get_object_or_404(CashBox, id=cash_id)
                 return CashBoxForm(self.request.POST or None,
@@ -154,6 +159,13 @@ class CashBoxCreateView(CreateView):
                                             'payment_items': obj.payment_items_id,
                                             'personal_account': obj.personal_account_id,
                                             'type_pay': self.request.GET.get('type_pay')})
+            if account_id:
+                obj = get_object_or_404(PersonalAccount, id=account_id)
+                return CashBoxForm(self.request.POST or None,
+                                   initial={'number': self.generate_number(),
+                                            'owner': obj.apartment.owner_id,
+                                            'personal_account': obj.id,
+                                            'type_pay': 'income'})
             return CashBoxForm(self.request.POST or None,
                                initial={'number': self.generate_number(),
                                         'manager': self.request.user.id,
@@ -205,15 +217,18 @@ class ReceiptListView(ListView):
     context_object_name = 'receipts'
 
     def get_queryset(self):
+        account_id = self.request.GET.get('account', None)
+        if account_id:
+            return self.model.objects.filter(personal_account_id=account_id).select_related(
+                'tariff', 'apartment', 'apartment__owner', 'apartment__house'
+            ).order_by('-date', '-id')
         return self.model.objects.all().select_related(
             'tariff', 'apartment', 'apartment__owner', 'apartment__house'
-        ).annotate(
-            sum=Sum('calculate_receipt__cost')
         ).order_by('-date', '-id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['cash_balance'] = set_statistic_data()[0]
+        # context['cash_balance'] = set_statistic_data()[0]
         return context
 
 
@@ -263,6 +278,7 @@ class ReceiptCreateView(CreateView):
     def get_form(self, form_class=None):
         if form_class is None:
             receipt_id = self.request.GET.get('receipt_id', None)
+            account_id = self.request.GET.get('account', None)
             if receipt_id:
                 obj = Receipt.objects.filter(id=receipt_id).select_related(
                     'apartment', 'tariff').first()
@@ -280,17 +296,28 @@ class ReceiptCreateView(CreateView):
                                             'section': obj.apartment.section_id,
                                             'apartment': obj.apartment_id,
                                             'personal_accounts': personal_account.id if personal_account else None})
-
+            if account_id:
+                obj = get_object_or_404(PersonalAccount, id=account_id)
+                return ReceiptForm(self.request.POST or None,
+                                   initial={'number': self.generate_number(),
+                                            'tariff': obj.apartment.tariff_id,
+                                            'house': obj.apartment.house_id,
+                                            'section': obj.apartment.section_id,
+                                            'apartment': obj.apartment_id,
+                                            'personal_accounts': obj.id})
             return ReceiptForm(self.request.POST or None,
                                initial={'number': self.generate_number()})
 
     def get_context_data(self, **kwargs):
         obj = False
         receipt_id = self.request.GET.get('receipt_id', None)
+        account_id = self.request.GET.get('account', None)
+
         calculate_receipt_service = CalculateReceiptService.objects.all().select_related(
             'services', 'receipt', 'services__u_measurement'
         )
         context = super(ReceiptCreateView, self).get_context_data()
+
         if receipt_id:
             obj = get_object_or_404(Receipt, id=receipt_id)
             count_form = calculate_receipt_service.filter(receipt=obj).count()
@@ -315,6 +342,12 @@ class ReceiptCreateView(CreateView):
         context['meter_data'] = MeterData.objects.select_related(
             'apartment', 'apartment__house', 'apartment__section', 'counter', 'counter__u_measurement'
         ).order_by('-id')
+
+        if account_id:
+            obj = get_object_or_404(PersonalAccount, id=account_id)
+            context['owner_data'] = Apartment.objects.filter(id=obj.apartment_id).select_related(
+                'owner'
+            ).first()
         return context
 
     def form_valid(self, form):
@@ -324,6 +357,7 @@ class ReceiptCreateView(CreateView):
         self.object = form.save(commit=False)
         self.object.personal_account = personal_account
         self.object.save()
+        sum = 0
         if formset_for_services.is_valid():
             for forms in formset_for_services:
                 if forms.cleaned_data and forms.cleaned_data['DELETE'] is False:
@@ -331,9 +365,13 @@ class ReceiptCreateView(CreateView):
                         services = forms.save(commit=False)
                         services.receipt = self.object
                         services.save()
+                        sum += services.cost
                     else:
                         Receipt.objects.get(id=self.object.id).delete()
             formset_for_services.save()
+            sum_save = form.save(commit=False)
+            sum_save.sum = sum
+            sum_save.save()
             return super().form_valid(form)
         Receipt.objects.get(id=self.object.id).delete()
         messages.error(self.request, formset_for_services.errors)
@@ -381,6 +419,7 @@ class ReceiptUpdateView(UpdateView):
         self.object = form.save(commit=False)
         self.object.personal_account = personal_account
         self.object.save()
+        sum = 0
         if formset_for_services.is_valid():
             for forms in formset_for_services:
                 if forms.cleaned_data and forms.cleaned_data['DELETE'] is False:
@@ -389,6 +428,9 @@ class ReceiptUpdateView(UpdateView):
                         services.receipt = self.object
                         services.save()
             formset_for_services.save()
+            sum_save = form.save(commit=False)
+            sum_save.sum = sum
+            sum_save.save()
             return super().form_valid(form)
         messages.error(self.request, formset_for_services.errors)
         return self.form_invalid(form)
@@ -683,12 +725,22 @@ class MessageDetailView(DetailView):
 
 class MessageCreateAndSend(CreateView):
     model = Message
-    form_class = MessageForm
     template_name = 'crm/pages/messages/send_message.html'
 
     def get_success_url(self):
         messages.success(self.request, f'Сообщение отправлено!')
         return reverse_lazy('list_message')
+
+    def get_form(self, form_class=None):
+        is_debt = self.request.GET.get('debt') or None
+        if form_class is None:
+            if is_debt:
+                return MessageForm(self.request.POST or None,
+                                   initial={'is_dept': True,
+                                            'topics': 'Владельцам с задолженностями',
+                                            'text': '<h3>Администрация CRM24</h3>'
+                                                    '<p>Просим Вас погасить задолженность</p>'})
+            return MessageForm(self.request.POST or None)
 
     def form_valid(self, form):
         message = form.save(commit=False)
@@ -717,7 +769,18 @@ class OwnerListView(ListView):
     context_object_name = 'owners'
 
     def get_queryset(self):
-        return self.model.objects.filter(is_staff=False).order_by('-id')
+        return self.model.objects.filter(
+            is_staff=False
+        ).annotate(
+            balance=
+            Greatest(Sum('apartment_owner__account_apartment__cash_account__sum',
+                         filter=Q(apartment_owner__account_apartment__cash_account__status=True),
+                         distinct=True), Decimal(0))
+            -
+            Greatest(Sum('apartment_owner__account_apartment__receipt_account__sum',
+                         filter=Q(apartment_owner__account_apartment__receipt_account__status=True),
+                         distinct=True), Decimal(0))
+        ).order_by('-id')
 
     def get_context_data(self, **kwargs):
         context = super(OwnerListView, self).get_context_data()
@@ -794,12 +857,16 @@ class ApartmentListView(ListView):
     context_object_name = 'apartments'
 
     def get_queryset(self):
-        return self.model.objects.order_by('-id').select_related(
+        return self.model.objects.select_related(
             'section', 'floor', 'house', 'owner', 'tariff'
         ).annotate(
             balance=
-            Greatest(Sum('receipt_apartment__calculate_receipt__cost', distinct=True), Decimal(0))
-        )
+            Greatest(Sum('account_apartment__cash_account__sum',
+                         filter=Q(account_apartment__cash_account__status=True), distinct=True), Decimal(0))
+            -
+            Greatest(Sum('account_apartment__receipt_account__sum',
+                         filter=Q(account_apartment__receipt_account__status=True), distinct=True), Decimal(0))
+        ).order_by('-id')
 
 
 class ApartmentDetailView(DetailView):
@@ -932,23 +999,19 @@ class AccountsListView(ListView):
     context_object_name = 'accounts'
 
     def get_queryset(self):
-        queryset = PersonalAccount.objects.select_related(
+        queryset = self.model.objects.select_related(
             'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
         ).annotate(
             balance=
-            # Greatest(
-            #     Sum('cash_account__sum', distinct=True), Decimal(0)
-            # )
-            # -
-            Greatest(
-                Sum('apartment__receipt__calculate_receipt__cost', distinct=True), Decimal(0)
-            )
-        )
+            Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
+            -
+            Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
+        ).order_by('-id')
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['cash_balance'] = set_statistic_data()[0]
+        # context['cash_balance'] = set_statistic_data()[0]
         return context
 
 
@@ -962,6 +1025,11 @@ class AccountsDetailView(DetailView):
             'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
         ).prefetch_related(
             'cash_account', 'receipt_account'
+        ).annotate(
+            balance=
+            Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
+            -
+            Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
         )
 
     def get_context_data(self, **kwargs):

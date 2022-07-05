@@ -33,7 +33,8 @@ class Apartment(models.Model):
     objects = None
     number = models.PositiveIntegerField()
     area = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
-    owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+    owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL,
+                              related_name='apartment_owner')
     house = models.ForeignKey('House', null=True, on_delete=models.CASCADE)
     floor = models.ForeignKey('Floor', blank=True, null=True, on_delete=models.SET_NULL)
     section = models.ForeignKey('Section', blank=True, null=True, on_delete=models.SET_NULL)
@@ -145,8 +146,9 @@ class Receipt(models.Model):
     date_end = models.DateField(default=datetime.date.today)
     status = models.BooleanField(default=True)
     status_pay = models.CharField(max_length=15, choices=PayStatus.choices, default=PayStatus.NOT_PAID)
+    sum = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=True)
     personal_account = models.ForeignKey('PersonalAccount', blank=True, null=True,
-                                         on_delete=models.CASCADE)
+                                         on_delete=models.CASCADE, related_name='receipt_account')
     tariff = models.ForeignKey('Tariff', null=True, on_delete=models.CASCADE)
     apartment = models.ForeignKey('Apartment', null=True, on_delete=models.CASCADE)
 
@@ -156,7 +158,7 @@ class CalculateReceiptService(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     cost = models.DecimalField(max_digits=10, decimal_places=2)
-    services = models.ForeignKey('Services', on_delete=models.CASCADE)
+    services = models.ForeignKey('Services', on_delete=models.CASCADE, null=True)
     receipt = models.ForeignKey('Receipt', on_delete=models.CASCADE, related_name='calculate_receipt')
 
 

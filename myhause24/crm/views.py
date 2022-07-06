@@ -45,43 +45,41 @@ def index(request):
     return render(request, 'crm/pages/index.html')
 
 
-# def set_statistic_data():
-#     cash = CashBox.objects.all()
-#     cash_income = cash.filter(status=True, type=True).aggregate(sum=Sum('sum'))
-#     cash_expense = cash.filter(status=True, type=False).aggregate(sum=Sum('sum'))
-#     cash_balance = 0
-#     account_balance = 0
-#
-#     income = cash_income['sum']
-#     expense = cash_expense['sum']
-#     if income is not None:
-#         cash_balance += income
-#     if expense is not None:
-#         cash_balance -= expense
-#
-#     return [cash_balance, account_balance]
-#
-#
-# def get_balance_account():
-#     account_balance = 0
-#     account_debit = 0
-#     accounts = PersonalAccount.objects.all()
-#
-#     for obj in accounts:
-#         account_bal = obj.cash_account.select_related('cash_account', 'personal_account_id').aggregate(
-#             sum=Greatest(Sum('sum'), Decimal(0)
-#                          ))
-#         account_debt = obj.receipt_account.aggregate(sum=Greatest(
-#             Sum('calculate_receipt__cost'), Decimal(0)))
-#
-#         a = account_bal['sum'] - account_debt['sum']
-#
-#         if a < 0:
-#             account_debit += a
-#         else:
-#             account_balance += a
-#
-#     return account_debit
+def get_balance_cash():
+    cash = CashBox.objects.all()
+    cash_income = cash.filter(status=True, type=True).aggregate(sum=Sum('sum'))
+    cash_expense = cash.filter(status=True, type=False).aggregate(sum=Sum('sum'))
+    cash_balance = 0
+
+    income = cash_income['sum']
+    expense = cash_expense['sum']
+    if income is not None:
+        cash_balance += income
+    if expense is not None:
+        cash_balance -= expense
+
+    return cash_balance
+
+
+def get_balance_account():
+    account_balance = 0
+    account_debit = 0
+
+    queryset = PersonalAccount.objects.select_related(
+        'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+    ).annotate(
+        balance=
+        Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
+        -
+        Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
+    ).order_by('-id')
+
+    for obj in queryset:
+        if obj.balance < 0:
+            account_debit += obj.balance
+        elif obj.balance > 0:
+            account_balance += obj.balance
+    return [str(account_debit).replace('-', ''), account_balance]
 
 
 # endregion Statistics
@@ -103,10 +101,9 @@ class CashBoxListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context['cash_balance'] = set_statistic_data()[0]
-        # context['account_balance'] = set_statistic_data()[1]
-        # context['account_debit'] = get_balance_account
-
+        context['cash_balance'] = get_balance_cash()
+        context['account_balance'] = get_balance_account()[1]
+        context['account_debit'] = get_balance_account()[0]
         return context
 
 
@@ -228,7 +225,9 @@ class ReceiptListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context['cash_balance'] = set_statistic_data()[0]
+        context['cash_balance'] = get_balance_cash()
+        context['account_balance'] = get_balance_account()[1]
+        context['account_debit'] = get_balance_account()[0]
         return context
 
 
@@ -551,6 +550,122 @@ def receipt_templates_upload(request, pk):
 
 
 # endregion Receipt Template
+
+
+# region Accounts
+
+class AccountsListView(ListView):
+    model = PersonalAccount
+    template_name = 'crm/pages/accounts/list_accounts.html'
+    context_object_name = 'accounts'
+
+    def get_queryset(self):
+        queryset = self.model.objects.select_related(
+            'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+        ).annotate(
+            balance=
+            Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
+            -
+            Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
+        ).order_by('-id')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['cash_balance'] = get_balance_cash()
+        context['account_balance'] = get_balance_account()[1]
+        context['account_debit'] = get_balance_account()[0]
+        return context
+
+
+class AccountsDetailView(DetailView):
+    model = PersonalAccount
+    template_name = 'crm/pages/accounts/detail_accounts.html'
+    context_object_name = 'accounts'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+        ).prefetch_related(
+            'cash_account', 'receipt_account'
+        ).annotate(
+            balance=
+            Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
+            -
+            Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super(AccountsDetailView, self).get_context_data()
+        receipt = [obj.id for obj in Receipt.objects.filter(personal_account=self.object)]
+        context['income'] = CashBox.objects.filter(personal_account=self.object).aggregate(sum=Sum('sum'))
+        context['expense'] = CalculateReceiptService.objects.filter(receipt__in=receipt).aggregate(sum=Sum('cost'))
+        balance = 0
+        income = context['income']['sum']
+        expense = context['expense']['sum']
+        if income is not None:
+            balance += income
+        if expense is not None:
+            balance -= expense
+        context['balance'] = balance
+        return context
+
+
+class AccountsCreateView(CreateView):
+    model = PersonalAccount
+    template_name = 'crm/pages/accounts/create_accounts.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Лицевой счет №{self.object.number} создан!')
+        return reverse_lazy('detail_accounts', kwargs={'pk': self.object.id})
+
+    def generate_number(self):
+        while True:
+            random_number = f"{random.randint(10000, 99999)}-{random.randint(10000, 99999)}"
+            if not self.model.objects.filter(number=random_number).exists():
+                return random_number
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return AccountsForm(self.request.POST or None,
+                                initial={'number': self.generate_number()})
+
+
+class AccountsUpdateView(UpdateView):
+    model = PersonalAccount
+    template_name = 'crm/pages/accounts/update_accounts.html'
+
+    def get_success_url(self):
+        messages.success(self.request, f'Лицевой счет №{self.object.number} обновлён!')
+        return reverse_lazy('detail_accounts', kwargs={'pk': self.object.id})
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            if self.object.apartment:
+                return AccountsForm(self.request.POST or None,
+                                    instance=self.object,
+                                    initial={'house': self.object.apartment.house_id,
+                                             'section': self.object.apartment.section_id})
+            return AccountsForm(self.request.POST or None, instance=self.object)
+
+
+class AccountsDelete(DeleteView):
+    model = PersonalAccount
+
+    def get_success_url(self):
+        messages.success(self.request, f'Лицевой счет №{self.object} удалён!')
+        return reverse_lazy('accounts')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.apartment:
+            messages.error(request, 'К данному Лицевому счету закреплена квартира')
+            return HttpResponseRedirect(reverse_lazy('accounts'))
+        self.object.delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+# endregion Accounts
 
 
 # region Houses
@@ -991,118 +1106,6 @@ class ApartmentDelete(DeleteView):
 
 # endregion Apartment
 
-# region Accounts
-
-class AccountsListView(ListView):
-    model = PersonalAccount
-    template_name = 'crm/pages/accounts/list_accounts.html'
-    context_object_name = 'accounts'
-
-    def get_queryset(self):
-        queryset = self.model.objects.select_related(
-            'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
-        ).annotate(
-            balance=
-            Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
-            -
-            Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
-        ).order_by('-id')
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # context['cash_balance'] = set_statistic_data()[0]
-        return context
-
-
-class AccountsDetailView(DetailView):
-    model = PersonalAccount
-    template_name = 'crm/pages/accounts/detail_accounts.html'
-    context_object_name = 'accounts'
-
-    def get_queryset(self):
-        return self.model.objects.select_related(
-            'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
-        ).prefetch_related(
-            'cash_account', 'receipt_account'
-        ).annotate(
-            balance=
-            Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
-            -
-            Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
-        )
-
-    def get_context_data(self, **kwargs):
-        context = super(AccountsDetailView, self).get_context_data()
-        receipt = [obj.id for obj in Receipt.objects.filter(personal_account=self.object)]
-        context['income'] = CashBox.objects.filter(personal_account=self.object).aggregate(sum=Sum('sum'))
-        context['expense'] = CalculateReceiptService.objects.filter(receipt__in=receipt).aggregate(sum=Sum('cost'))
-        balance = 0
-        income = context['income']['sum']
-        expense = context['expense']['sum']
-        if income is not None:
-            balance += income
-        if expense is not None:
-            balance -= expense
-        context['balance'] = balance
-        return context
-
-
-class AccountsCreateView(CreateView):
-    model = PersonalAccount
-    template_name = 'crm/pages/accounts/create_accounts.html'
-
-    def get_success_url(self):
-        messages.success(self.request, f'Лицевой счет №{self.object.number} создан!')
-        return reverse_lazy('detail_accounts', kwargs={'pk': self.object.id})
-
-    def generate_number(self):
-        while True:
-            random_number = f"{random.randint(10000, 99999)}-{random.randint(10000, 99999)}"
-            if not self.model.objects.filter(number=random_number).exists():
-                return random_number
-
-    def get_form(self, form_class=None):
-        if form_class is None:
-            return AccountsForm(self.request.POST or None,
-                                initial={'number': self.generate_number()})
-
-
-class AccountsUpdateView(UpdateView):
-    model = PersonalAccount
-    template_name = 'crm/pages/accounts/update_accounts.html'
-
-    def get_success_url(self):
-        messages.success(self.request, f'Лицевой счет №{self.object.number} обновлён!')
-        return reverse_lazy('detail_accounts', kwargs={'pk': self.object.id})
-
-    def get_form(self, form_class=None):
-        if form_class is None:
-            if self.object.apartment:
-                return AccountsForm(self.request.POST or None,
-                                    instance=self.object,
-                                    initial={'house': self.object.apartment.house_id,
-                                             'section': self.object.apartment.section_id})
-            return AccountsForm(self.request.POST or None, instance=self.object)
-
-
-class AccountsDelete(DeleteView):
-    model = PersonalAccount
-
-    def get_success_url(self):
-        messages.success(self.request, f'Лицевой счет №{self.object} удалён!')
-        return reverse_lazy('accounts')
-
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.apartment:
-            messages.error(request, 'К данному Лицевому счету закреплена квартира')
-            return HttpResponseRedirect(reverse_lazy('accounts'))
-        self.object.delete()
-        return HttpResponseRedirect(self.get_success_url())
-
-
-# endregion Accounts
 
 # region Services
 

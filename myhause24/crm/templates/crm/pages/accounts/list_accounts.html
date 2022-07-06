@@ -76,7 +76,7 @@
             <div class="col-xs-12 col-md-4">
                 <div class="small-box bg-blue overflow-hidden">
                     <div class="inner">
-                        <h3>0 грн</h3>
+                        <h3>{{ account_balance|floatformat:"2g"|formatted_float }} грн</h3>
                         <p>Баланс по счетам</p>
                     </div>
                     <div class="icon">
@@ -87,7 +87,7 @@
             <div class="col-xs-12 col-md-4">
                 <div class="small-box bg-red overflow-hidden">
                     <div class="inner">
-                        <h3>0 грн</h3>
+                        <h3>{{ account_debit|floatformat:"2g"|formatted_float }} грн</h3>
                         <p>Задолженность по счетам</p>
                     </div>
                     <div class="icon">

@@ -8,7 +8,7 @@ def write_to_file(receipt, account, requisites, file, services, account_balance)
 
     data = {
         'total': services.aggregate(Sum('cost'))['cost__sum'],
-        'totalDebt': account_balance.balance,
+        'totalDebt': float(str(account_balance.balance).replace('-', '')),
         'accountBalance': account_balance.balance,
         'invoiceNumber': receipt.number,
         'invoiceDate': receipt.date.strftime("%d.%m.%Y"),
@@ -27,7 +27,6 @@ def write_to_file(receipt, account, requisites, file, services, account_balance)
         for cell in row:
             if cell.value in data.keys():
                 sheet[cell.coordinate] = data[cell.value]
-                print(cell.value)
 
     start_service = 19
 

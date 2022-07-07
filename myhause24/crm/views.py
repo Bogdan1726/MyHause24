@@ -1,14 +1,16 @@
 import json
+from datetime import datetime
 from decimal import Decimal
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import AccessMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField, FloatField, Q
-from django.db.models.functions import Coalesce, Cast, Greatest
+from django.db.models.functions import Coalesce, Cast, Greatest, TruncMonth
 from django.forms import modelformset_factory, formset_factory
-from django.shortcuts import render
-from django.urls import reverse_lazy
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy, reverse
 from django.shortcuts import get_object_or_404
+from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import get_user_model
@@ -40,10 +42,6 @@ User = get_user_model()
 # Create your views here.
 
 # region Statistics
-@login_required(login_url='login')
-def index(request):
-    return render(request, 'crm/pages/index.html')
-
 
 def get_balance_cash():
     cash = CashBox.objects.all()
@@ -66,13 +64,15 @@ def get_balance_account():
     account_debit = 0
 
     queryset = PersonalAccount.objects.select_related(
-        'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+        'apartment', 'apartment__house', 'apartment__section', 'apartment__owner',
     ).annotate(
         balance=
         Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
         -
         Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
+
     ).order_by('-id')
+
 
     for obj in queryset:
         if obj.balance < 0:
@@ -82,9 +82,166 @@ def get_balance_account():
     return [str(account_debit).replace('-', ''), account_balance]
 
 
+class BaseCrmView(View, AccessMixin):
+    """Check user is staff."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_anonymous:
+            return redirect('login')
+        else:
+            if not request.user.is_staff:
+                messages.error(request, f'Вы вошли в систему как {request.user.email}, '
+                                        f'однако у вас недостаточно прав для просмотра данной страницы')
+                return redirect('login')
+            if not request.user.role.statistics:
+                messages.error(request, f'Вы вошли в систему как {request.user.email}, '
+                                        f'однако у вас недостаточно прав для просмотра данной страницы')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class StatisticsView(BaseCrmView):
+    @staticmethod
+    def get(request):
+        house_id = [obj.id for obj in House.objects.filter(user=request.user)]
+        apartment_id = [obj.id for obj in Apartment.objects.filter(house_id__in=house_id)]
+        owner_id = [obj.owner_id for obj in Apartment.objects.filter(id__in=apartment_id)]
+        list_month = [month for month in range(1, 13)]
+
+        cash_income = CashBox.objects.select_related(
+            'receipt', 'personal_account', 'payment_items'
+        ).annotate(
+            total=Sum('sum')
+        ).filter(
+            status=True, type=True, date__year=datetime.now().year
+        ).values('date__month', 'total')
+
+        cash_expense = CashBox.objects.select_related(
+            'receipt', 'personal_account', 'payment_items'
+        ).annotate(
+            total=Sum('sum')
+        ).filter(
+            status=True, type=False, date__year=datetime.now().year
+        ).values('date__month', 'total')
+
+        receipt_paid = Receipt.objects.select_related(
+            'apartment', 'tariff', 'personal_account',
+        ).annotate(
+            total=Sum('sum')
+        ).filter(
+            status=True, status_pay='paid', date__year=datetime.now().year
+        ).values('date__month', 'total')
+
+        receipt_not_paid = Receipt.objects.select_related(
+            'apartment', 'tariff', 'personal_account',
+        ).annotate(
+            total=Sum('sum')
+        ).filter(
+            status=True, date__year=datetime.now().year
+        ).exclude(
+            status_pay='paid'
+        ).values('date__month', 'total')
+
+        translation_data = []
+        receipt_data = []
+
+        for month in list_month:
+            income_sum, expense_sum = 0, 0
+            paid_sum, not_paid_sum = 0, 0
+
+            for income in cash_income:
+                if income['date__month'] == month:
+                    income_sum += income['total']
+
+            for expense in cash_expense:
+                if expense['date__month'] == month:
+                    expense_sum += expense['total']
+
+            for receipt in receipt_paid:
+                if receipt['date__month'] == month:
+                    paid_sum += receipt['total']
+
+            for receipt in receipt_not_paid:
+                if receipt['date__month'] == month:
+                    not_paid_sum += receipt['total']
+
+            translation_data.append({'month': month, 'income': str(income_sum), 'expense': str(expense_sum)})
+            receipt_data.append({'month': month, 'paid_sum': str(paid_sum), 'not_paid_sum': str(not_paid_sum)})
+
+        context = {
+            'cash_balance': get_balance_cash(),
+            'account_balance': get_balance_account()[1],
+            'account_debit': get_balance_account()[0],
+            'houses':
+                House.objects.prefetch_related('user')
+                if request.user.is_superuser
+                else House.objects.filter(user=request.user),
+            'apartment':
+                Apartment.objects.select_related(
+                    'tariff', 'section', 'floor', 'house', 'owner'
+                ) if request.user.is_superuser
+                else Apartment.objects.select_related(
+                    'tariff', 'section', 'floor', 'house', 'owner'
+                ).filter(house_id__in=house_id),
+            'owner':
+                User.objects.filter(status='active', is_staff=False)
+                if request.user.is_superuser
+                else User.objects.filter(id__in=owner_id, status='active', is_staff=False),
+            'personal_account':
+                PersonalAccount.objects.filter(status='active')
+                if request.user.is_superuser
+                else PersonalAccount.objects.filter(status='active', apartment_id__in=apartment_id),
+            'master_call_in_work':
+                CallRequest.objects.filter(status='in_work')
+                if request.user.is_superuser
+                else CallRequest.objects.filter(apartment_id__in=apartment_id, status='done'),
+            'master_call':
+                CallRequest.objects.all()
+                if request.user.is_superuser
+                else CallRequest.objects.filter(apartment_id__in=apartment_id),
+            'cash': json.dumps(translation_data),
+            'receipt': json.dumps(receipt_data)
+        }
+
+        return render(request, 'crm/pages/index.html', context)
+
+
+def statistics_get_coming(request):
+    currentYear = datetime.now().year
+    coming_arr = []
+
+    for i in range(1, 13):
+        comingInvoice = CashBox.objects.filter(type=True, date__year=currentYear, date__month=i)
+        coming = 0
+        for obj in comingInvoice:
+            coming += obj.sum
+        coming_arr.append(float(coming))
+    comings = str(coming_arr).replace('[', '')
+    comings = comings.replace(']', '')
+    print(coming_arr)
+
+    return HttpResponse(comings)
+
+
+def statistics_get_exp(request):
+    currentYear = datetime.now().year
+    exp_arr = []
+
+    for i in range(1, 13):
+        expInvoice = CashBox.objects.filter(type=False, date__year=currentYear, date__month=i)
+        exp = 0
+        for obj in expInvoice:
+            exp += obj.sum * (-1)
+        exp_arr.append(float(exp))
+    exps = str(exp_arr).replace('[', '')
+    exps = exps.replace(']', '')
+
+    return HttpResponse(exps)
+
+
 # endregion Statistics
 
 # region CashBox
+
 
 class CashBoxListView(ListView):
     model = CashBox
@@ -426,6 +583,7 @@ class ReceiptUpdateView(UpdateView):
                         services = forms.save(commit=False)
                         services.receipt = self.object
                         services.save()
+                        sum += services.cost
             formset_for_services.save()
             sum_save = form.save(commit=False)
             sum_save.sum = sum
@@ -479,12 +637,12 @@ def receipt_template(request, pk):
                 'services', 'receipt'
             )
             account_balance = PersonalAccount.objects.filter(
-                id=receipt.personal_account_id, cash_account__status=True, apartment__receipt_apartment__status=True
+                id=receipt.personal_account_id
             ).annotate(
                 balance=
-                Greatest(Sum('cash_account__sum'), Decimal(0))
+                Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
                 -
-                Greatest(Sum('apartment__receipt_apartment__calculate_receipt__cost', distinct='id'), Decimal(0))
+                Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
             ).first()
 
             write = write_to_file(
@@ -676,6 +834,8 @@ class HouseListView(ListView):
     context_object_name = 'houses'
 
     def get_queryset(self):
+        if not self.request.user.is_superuser:
+            return self.model.objects.order_by('-id').filter(user=self.request.user)
         return self.model.objects.order_by('-id')
 
 

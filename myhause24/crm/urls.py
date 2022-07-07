@@ -2,7 +2,7 @@ from django.urls import path
 from django.contrib.auth import get_user_model
 
 from .views import (
-    HouseListView, index, HouseCreateView, HouseUpdateView, HouseDetailView,
+    HouseListView, HouseCreateView, HouseUpdateView, HouseDetailView,
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView,
     ApartmentCreateView, ApartmentUpdateView, ApartmentDetailView, ApartmentDelete,
     invite_owner, OwnerDelete, HouseDelete, AccountsListView, AccountsDetailView,
@@ -16,7 +16,7 @@ from .views import (
     CashBoxDelete, CashBoxUpdateView, ReceiptListView, ReceiptCreateView, ReceiptUpdateView, ReceiptDelete,
     ReceiptDetailView, ReceiptTemplateListView, receipt_template, SettingsTemplate, ReceiptTemplateDelete,
     receipt_templates_edit, receipt_templates_upload, MessageCreateAndSend, MessageDetailView,
-    MessageDelete, MessageListView
+    MessageDelete, MessageListView, StatisticsView, statistics_get_coming, statistics_get_exp
 )
 
 from .api_views import (
@@ -30,7 +30,10 @@ from .api_views import (
 User = get_user_model()
 
 urlpatterns = [
-    path('', index, name='admin'),
+    # region statistics
+    path('', StatisticsView.as_view(), name='admin'),
+
+    # endregion
 
     # region cash_box urls
     path('cashbox/', CashBoxListView.as_view(), name='cash_box'),

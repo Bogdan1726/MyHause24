@@ -641,6 +641,12 @@
         }
         //
 
+        // if apartment
+        if (select_apartment.val()) {
+            $("#apartment_number").val($(select_apartment).find('option:selected').text()).trigger('change');
+        }
+        //
+
 
         // changes select
         select_house.on("change", function () {

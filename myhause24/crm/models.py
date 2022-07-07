@@ -150,7 +150,8 @@ class Receipt(models.Model):
     personal_account = models.ForeignKey('PersonalAccount', blank=True, null=True,
                                          on_delete=models.CASCADE, related_name='receipt_account')
     tariff = models.ForeignKey('Tariff', null=True, on_delete=models.CASCADE)
-    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.CASCADE)
+    apartment = models.ForeignKey('Apartment', null=True, on_delete=models.CASCADE,
+                                  related_name='receipt_apartment')
 
 
 class CalculateReceiptService(models.Model):

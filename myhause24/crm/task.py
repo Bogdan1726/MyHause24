@@ -2,7 +2,7 @@ from decimal import Decimal
 from io import BytesIO, StringIO
 
 from django.core.mail import send_mail, EmailMessage
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models.functions import Greatest
 from django.shortcuts import get_object_or_404
 from myhause24.celery import app
@@ -25,12 +25,12 @@ def send_receipt_for_owner(pk, id):
         'services', 'receipt'
     )
     account_balance = PersonalAccount.objects.filter(
-        id=receipt.personal_account_id, cash_account__status=True, apartment__receipt_apartment__status=True
+        id=receipt.personal_account_id
     ).annotate(
         balance=
-        Greatest(Sum('cash_account__sum'), Decimal(0))
+        Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
         -
-        Greatest(Sum('apartment__receipt_apartment__calculate_receipt__cost', distinct='id'), Decimal(0))
+        Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
     ).first()
 
     write = write_to_file(

@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure, Tariff, \
     PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt, ReceiptTemplate, \
     CalculateReceiptService, Message
-
+from main.models import HomePage, ContentBlock, SeoBlock
 
 # Register your models here.
 
@@ -35,6 +35,7 @@ class PersonalAccountAdmin(admin.ModelAdmin):
 @admin.register(Services)
 class ServicesAdmin(admin.ModelAdmin):
     pass
+
 
 @admin.register(UnitOfMeasure)
 class UnitOfMeasureAdmin(admin.ModelAdmin):
@@ -93,5 +94,20 @@ class CalculateReceiptServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(HomePage)
+class HomePageAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(SeoBlock)
+class SeoBlockAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(ContentBlock)
+class ContentBlockAdmin(admin.ModelAdmin):
     pass
 

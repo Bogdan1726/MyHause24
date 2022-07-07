@@ -33,13 +33,56 @@ from .forms import (
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
     UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
-    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm, MessageForm
+    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm, MessageForm, HomePageForm,
+    SeoBlockForm, ContentBlockForm
 )
+from main.models import HomePage, ContentBlock
 
 User = get_user_model()
 
 
 # Create your views here.
+
+class SiteHomePage(UpdateView):
+    model = HomePage
+    form_class = HomePageForm
+    template_name = 'crm/pages/site/home_page.html'
+    formset = modelformset_factory(ContentBlock, form=ContentBlockForm, extra=0)
+
+    def get_success_url(self):
+        messages.success(self.request, 'Данные обновлены!')
+        return reverse_lazy('home_page_card')
+
+    def get_object(self, queryset=None):
+        HomePage.objects.get_or_create(id=1)
+        obj = HomePage.objects.get(id=1)
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
+                                                 instance=self.object.seo_block,
+                                                 prefix='seo_form')
+        context['content_block_form'] = self.formset(self.request.POST or None,
+                                                     self.request.FILES or None,
+                                                     queryset=ContentBlock.objects.all(),
+                                                     prefix='content_form')
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        seo_block = context['seo_block_form']
+        content_block = context['content_block_form']
+        if seo_block.is_valid() and content_block.is_valid():
+            seo_block.save()
+            content_block.save()
+        return super().form_valid(form)
+
+
+# region SiteManagement
+
+
+# endregion SiteManagement
 
 # region Statistics
 
@@ -72,7 +115,6 @@ def get_balance_account():
         Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
 
     ).order_by('-id')
-
 
     for obj in queryset:
         if obj.balance < 0:
@@ -203,39 +245,6 @@ class StatisticsView(BaseCrmView):
         }
 
         return render(request, 'crm/pages/index.html', context)
-
-
-def statistics_get_coming(request):
-    currentYear = datetime.now().year
-    coming_arr = []
-
-    for i in range(1, 13):
-        comingInvoice = CashBox.objects.filter(type=True, date__year=currentYear, date__month=i)
-        coming = 0
-        for obj in comingInvoice:
-            coming += obj.sum
-        coming_arr.append(float(coming))
-    comings = str(coming_arr).replace('[', '')
-    comings = comings.replace(']', '')
-    print(coming_arr)
-
-    return HttpResponse(comings)
-
-
-def statistics_get_exp(request):
-    currentYear = datetime.now().year
-    exp_arr = []
-
-    for i in range(1, 13):
-        expInvoice = CashBox.objects.filter(type=False, date__year=currentYear, date__month=i)
-        exp = 0
-        for obj in expInvoice:
-            exp += obj.sum * (-1)
-        exp_arr.append(float(exp))
-    exps = str(exp_arr).replace('[', '')
-    exps = exps.replace(']', '')
-
-    return HttpResponse(exps)
 
 
 # endregion Statistics

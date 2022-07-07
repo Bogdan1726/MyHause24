@@ -64,11 +64,20 @@
                     <span>Показания счетчиков</span>
                 </a>
             </li>
-            <li class="treeview"><a href="#!"><i class="fa fa-desktop"></i> <span>Управление сайтом</span> <span
-                    class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+            <li class="treeview {% if url in '[home_page_card]' %}active{% endif %}">
+                <a href="#"><i class="fa fa-desktop"></i>
+                    <span>Управление сайтом</span>
+                    <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+                </a>
                 <ul class="treeview-menu">
-                    <li><a href="/admin/website/home"><i class="fa fa-circle-o"></i>
-                        <span>Главная страница</span></a></li>
+                    <li class="{% if url in '[home_page_card]' %}active{% endif %}">
+                        <a href="{% url 'home_page_card' %}">
+                            <i class="fa fa-circle-o"></i>
+                            <span>Главная страница</span>
+                        </a>
+                    </li>
                     <li><a href="/admin/website/about"><i class="fa fa-circle-o"></i> <span>О нас</span></a>
                     </li>
                     <li><a href="/admin/website/services"><i class="fa fa-circle-o"></i> <span>Услуги</span></a>

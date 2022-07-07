@@ -10,6 +10,7 @@ from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMea
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
+from main.models import HomePage, SeoBlock, ContentBlock
 
 from .task import send_new_password_owner
 
@@ -879,4 +880,79 @@ class CashBoxForm(forms.ModelForm):
             cash.save()
         return cash
 
+
 # endregion CashBox Forms
+
+
+# region SiteForms
+
+class ContentBlockForm(forms.ModelForm):
+    error_messages = {
+        'error_image': 'Размер изображений не соответствует параметрам',
+    }
+
+    class Meta:
+        model = ContentBlock
+        fields = "__all__"
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control content_des'}),
+            'image': forms.FileInput(attrs={'type': 'file'})
+        }
+
+    def clean_image(self):
+        image = self.cleaned_data['image']
+        width, height = get_image_dimensions(image)
+        if width != 1000 or height != 600:
+            raise forms.ValidationError(
+                self.error_messages['error_image']
+            )
+        return image
+
+
+class SeoBlockForm(forms.ModelForm):
+    class Meta:
+        model = SeoBlock
+        fields = "__all__"
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control',
+                                                 'rows': 6}),
+            'keywords': forms.Textarea(attrs={'class': 'form-control',
+                                              'rows': 6})
+        }
+
+
+class HomePageForm(forms.ModelForm):
+    error_messages = {
+        'error_image': 'Размер изображений не соответствует параметрам',
+    }
+
+    class Meta:
+        model = HomePage
+        exclude = ('content_block', 'seo_block')
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'is_show_link': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'slide1': forms.FileInput(attrs={'type': 'file'}),
+            'slide2': forms.FileInput(attrs={'type': 'file'}),
+            'slide3': forms.FileInput(attrs={'type': 'file'}),
+
+        }
+
+    def clean(self):
+        images = ['slide1', 'slide2', 'slide3']
+        for image in images:
+            if self.cleaned_data[image]:
+                width, height = get_image_dimensions(self.cleaned_data[image])
+                if width != 1920 or height != 800:
+                    raise forms.ValidationError(
+                        self.error_messages['error_image']
+                    )
+        return self.cleaned_data
+
+# endregion SiteForms

@@ -16,7 +16,7 @@ from .views import (
     CashBoxDelete, CashBoxUpdateView, ReceiptListView, ReceiptCreateView, ReceiptUpdateView, ReceiptDelete,
     ReceiptDetailView, ReceiptTemplateListView, receipt_template, SettingsTemplate, ReceiptTemplateDelete,
     receipt_templates_edit, receipt_templates_upload, MessageCreateAndSend, MessageDetailView,
-    MessageDelete, MessageListView, StatisticsView, statistics_get_coming, statistics_get_exp
+    MessageDelete, MessageListView, StatisticsView, SiteHomePage
 )
 
 from .api_views import (
@@ -118,6 +118,11 @@ urlpatterns = [
     path('meter-data/update/<int:pk>/', MeterDataUpdateView.as_view(), name='update_meter_data'),
     path('meter-data/delete/<int:pk>/', MeterDataDelete.as_view(), name='delete_meter_data'),
     # meter_data end
+
+    # region site_management
+    path('site/home_page/', SiteHomePage.as_view(), name='home_page_card'),
+
+    # endregion site_management
 
     # services
     path('services/', ServicesListView.as_view(), name='services'),

@@ -1,0 +1,124 @@
+{% extends 'main/elements/layout.html'%}
+{% load static %}
+
+{% block seo %}
+<meta name="description" content="{{ home_page.seo_block.description }}">
+<meta name="keywords" content="{{ home_page.seo_block.keywords }}">
+{% endblock %}
+
+{% block title %}
+{{ home_page.seo_block.title }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+<div class="slider">
+    <div>
+        <div class="slideTitle hidden-xs">{{ home_page.title }}</div>
+        {% if home_page.slide1 %}
+        <img src="{{ home_page.slide1.url }}" alt="slide1">
+        {% else %}
+        <img src="{% static 'main/img/def_image.jpeg' %}" alt="image_not_found">
+        {% endif %}
+    </div>
+    <div>
+        <div class="slideTitle hidden-xs">{{ home_page.title }}</div>
+        {% if home_page.slide2 %}
+        <img src="{{ home_page.slide2.url }}" alt="slide2">
+        {% else %}
+        <img src="{% static 'main/img/def_image.jpeg' %}" alt="image_not_found">
+        {% endif %}
+    </div>
+    <div>
+        <div class="slideTitle hidden-xs">{{ home_page.title }}</div>
+        {% if home_page.slide3 %}
+        <img src="{{ home_page.slide3.url }}" alt="slide3">
+        {% else %}
+        <img src="{% static 'main/img/def_image.jpeg' %}" alt="image_not_found">
+        {% endif %}
+    </div>
+</div>
+<div class="info">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-sm-7 col-md-8">
+                <div class="page-header">
+                    <h1>{{ home_page.title }}</h1>
+                </div>
+                <div class="box">
+                    {{ home_page.description|safe }}
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <a href="" class="btn btn-primary">Подробнее</a>
+                        </div>
+                        {% if home_page.is_show_link %}
+                        <div class="col-xs-8">
+                            <a href="https://itunes.apple.com/us/app/%D0%BC%D0%BE%D0%B9%D0%B4%D0%BE%D0%BC24/id1308075440?l=ru&amp;ls=1&amp;mt=8">
+                                <img src="{% static 'main/img/appstore.png' %}" class="img-responsive imgStore" alt="">
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=com.avadamedia.program.myhouse24&amp;hl=uk">
+                                <img src="{% static 'main/img/googleplay.png' %}" class="img-responsive imgStore"
+                                     alt="">
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-5 col-md-4">
+                <div class="page-header">
+                    <h3>Контакты</h3>
+                </div>
+                <div class="box">
+                    <p><i class="fas fa-user-circle"></i> {{ contact.initials }}</p>
+                    <p><i class="fas fa-compass"></i> {{ contact.location }}</p>
+                    <p><i class="fas fa-map-marker"></i> {{ contact.address }}</p>
+                    <p><i class="fas fa-phone"></i> <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+                    <p><i class="fas fa-envelope"></i>
+                        <a href="mailto:{{ contact.email }}">
+                            {{ contact.email }}
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="advantages">
+    <div class="container">
+        <div class="row row-eq-height">
+            <div class="col-xs-12">
+                <div class="page-header">
+                    <h3>Рядом с нами</h3>
+                </div>
+            </div>
+            {% for content_block in home_page.content_block.all|dictsort:"id" %}
+            <div class="col-xs-12 col-sm-6 col-md-4 advantage-item">
+                <div class="thumbnail">
+                    {% if content_block.image %}
+                    <img src="{{ content_block.image.url }}" class="img-responsive" alt="image">
+                    {% else %}
+                    <img src="{% static 'main/img/def_image.jpeg' %}" alt="image_not_found">
+                    {% endif %}
+                    <div class="caption">
+                        <h3>{{ content_block.title }}</h3>
+                        <p></p>
+                        <p>
+                            {{ content_block.description }}
+                            <br>
+                        </p>
+                        <p></p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+{% endblock %}

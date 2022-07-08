@@ -4,6 +4,7 @@ from django.db import models
 
 
 class HomePage(models.Model):
+    objects = None
     title = models.CharField(max_length=255)
     description = models.TextField()
     is_show_link = models.BooleanField(default=True)
@@ -47,6 +48,7 @@ class Document(models.Model):
 
 
 class Contact(models.Model):
+    objects = None
     title = models.CharField(max_length=255)
     description = models.TextField()
     link = models.URLField(max_length=125)

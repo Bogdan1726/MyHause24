@@ -10,7 +10,7 @@ from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMea
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
-from main.models import HomePage, SeoBlock, ContentBlock
+from main.models import HomePage, SeoBlock, ContentBlock, Contact
 
 from .task import send_new_password_owner
 
@@ -954,5 +954,25 @@ class HomePageForm(forms.ModelForm):
                         self.error_messages['error_image']
                     )
         return self.cleaned_data
+
+
+class ContactPageForm(forms.ModelForm):
+    class Meta:
+        model = Contact
+        exclude = ('seo_block',)
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'link': forms.URLInput(attrs={'class': 'form-control'}),
+            'initials': forms.TextInput(attrs={'class': 'form-control'}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'maps': forms.Textarea(attrs={'class': 'form-control',
+                                          'rows': 6})
+
+        }
 
 # endregion SiteForms

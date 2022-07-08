@@ -34,9 +34,9 @@ from .forms import (
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
     UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
     CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm, MessageForm, HomePageForm,
-    SeoBlockForm, ContentBlockForm
+    SeoBlockForm, ContentBlockForm, ContactPageForm
 )
-from main.models import HomePage, ContentBlock
+from main.models import HomePage, ContentBlock, Contact
 
 User = get_user_model()
 
@@ -78,6 +78,37 @@ class SiteHomePage(UpdateView):
             content_block.save()
         return super().form_valid(form)
 
+
+class SiteContactPage(UpdateView):
+    model = Contact
+    form_class = ContactPageForm
+    template_name = 'crm/pages/site/contact_page.html'
+
+    def get_success_url(self):
+        messages.success(self.request, 'Данные обновлены!')
+        return reverse_lazy('contact_page_card')
+
+    def get_object(self, queryset=None):
+        Contact.objects.get_or_create(id=1)
+        obj = Contact.objects.get(id=1)
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
+                                                 instance=self.object.seo_block,
+                                                 prefix='seo_form')
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        seo_block = context['seo_block_form']
+        if seo_block.is_valid():
+            seo = seo_block.save()
+            self.object = form.save(commit=False)
+            self.object.seo_block = seo
+            self.object.save()
+        return super().form_valid(form)
 
 # region SiteManagement
 

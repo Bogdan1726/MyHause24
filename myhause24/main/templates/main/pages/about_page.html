@@ -2,82 +2,140 @@
 {% load static %}
 
 {% block seo %}
+<meta name="description" content="{{ about.seo_block.description }}">
+<meta name="keywords" content="{{ about.seo_block.keywords }}">
 {% endblock %}
 
 {% block title %}
-{{ contact.seo_block.title }}
+{{ about.seo_block.title }}
 {% endblock %}
 
 {% block style %}
-<style>
-    #start-test {
-        margin: 20px 0 20px 0;
-    }
-</style>
 {% endblock %}
 
 
 {% block content %}
-<div id=cont class="container">
-    <button id="start-test" class="btn btn-primary">Начать тест</button>
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            <th scope="col">Вопрос</th>
-            <th scope="col">Баллы</th>
-        </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+<div class="breadcrumbs">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'main' %}">Главная</a></li>
+                    <li class="active">О нас</li>
+                </ol>
+            </div>
+        </div>
+    </div>
 </div>
-
+<div class="about">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box clearfix">
+                    <div class="page-header">
+                        <h1>{{ about.title }}</h1>
+                    </div>
+                    {% if about.image %}
+                    <img src="{{ about.image.url }}"
+                         class="img-responsive imgFloatRight" alt="image">
+                    {% else %}
+                    <img src="{% static 'main/img/def_image.jpeg' %}"
+                         class="img-responsive imgFloatRight" alt="image">
+                    {% endif %}
+                    {{ about.description|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="gallery g1">
+    <div class="container">
+        <div class="row">
+            {% for gallery in about.gallery.all %}
+            {% if gallery.image %}
+            <div class="col-xs-12 col-sm-6 col-md-3 item"
+                 data-src="{{ gallery.image.url }}">
+                <a href="{{ gallery.image.url }}" class="big">
+                    <img src="{{ gallery.image.url }}"
+                         alt="" class="img-responsive img-thumbnail">
+                </a>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div class="about">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box clearfix">
+                    <div class="page-header">
+                        <h3>{{ about.title2 }}</h3>
+                    </div>
+                    {{ about.description2|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="gallery g2">
+    <div class="container">
+        <div class="row">
+            {% for gallery in about.gallery2.all %}
+            {% if gallery.image %}
+            <div class="col-xs-12 col-sm-6 col-md-3 item"
+                 data-src="{{ gallery.image.url }}">
+                <a href="{{ gallery.image.url }}" class="big">
+                    <img src="{{ gallery.image.url }}"
+                         alt="" class="img-responsive img-thumbnail">
+                </a>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div class="documents">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="page-header">
+                        <h3>Документы</h3>
+                    </div>
+                    {% for file in files %}
+                    <div class="media">
+                        <div class="media-left">
+                            <div class="media-object">
+                                <i class="far fa-file-pdf fa-3x"></i>
+                            </div>
+                        </div>
+                        <div class="media-body">
+                            <h4 class="media-heading">{{ file.name }}</h4>
+                            <a href="{{ file.file.url }}" download="">
+                                <i class="fa fa-download" aria-hidden="true"></i>
+                                Скачать
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 
 {% block script %}
 <script>
+    jQuery(function ($) {
 
-    $("#start-test").on('click', function () {
+        var lightbox = $('.g1 .item a').simpleLightbox({
+            captionsData: 'alt',
+        });
 
-
-        let question = new Map()
-        let response = new Map()
-        let counter = 0
-        let table = $('table')
-
-        question.set(0, 'Ты человек?')
-        question.set(1, 'Ты компьютер?')
-        response.set(0, true)
-        response.set(1, false)
-
-        $(table).find('tbody').empty()
-
-        for (var i = 0; i < question.size; i++) {
-            var result = confirm(question.get(i))
-            if (result === response.get(i)) {
-                counter += 10
-                table.append(
-                    '<tr>\n' +
-                    '<td>' + question.get(i) + '</td>\n' +
-                    '<td>' + 10 + '</td>\n' +
-                    '</tr>'
-                )
-            } else {
-                table.append(
-                    '<tr>\n' +
-                    '<td>' + question.get(i) + '</td>\n' +
-                    '<td>' + 0 + '</td>\n' +
-                    '</tr>'
-                )
-            }
-        }
-        table.append(
-            '<tr>\n' +
-            '<td>' + 'Итого' + '</td>\n' +
-            '<td>' + counter + '</td>\n' +
-            '</tr>'
-        )
-    })
+    });
 </script>
 {% endblock %}

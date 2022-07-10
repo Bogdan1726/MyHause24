@@ -1,14 +1,13 @@
-from django.shortcuts import render
-from django.views.generic import ListView, DetailView
+from django.views.generic import DetailView
+from .models import HomePage, Contact, AboutUs, Document
+
 
 # Create your views here.
 
 # region HomePage
-from .models import HomePage, Contact
 
 
 class HomePageListView(DetailView):
-
     model = HomePage
     template_name = 'main/pages/home_page.html'
     context_object_name = 'home_page'
@@ -25,7 +24,6 @@ class HomePageListView(DetailView):
 
 
 class ContactPageListView(DetailView):
-
     model = Contact
     template_name = 'main/pages/contact_page.html'
     context_object_name = 'contact'
@@ -36,8 +34,21 @@ class ContactPageListView(DetailView):
         return obj
 
 
-def index(request):
-    return render(request, 'main/pages/about_page.html')
+class AboutUsListView(DetailView):
+    model = AboutUs
+    template_name = 'main/pages/about_page.html'
+    context_object_name = 'about'
+
+    def get_object(self, queryset=None):
+        AboutUs.objects.get_or_create(id=1)
+        obj = AboutUs.objects.filter(id=1).first()
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['files'] = Document.objects.filter(page=self.object).select_related('page')
+        return context
+
 
 # endregion HomePage
 

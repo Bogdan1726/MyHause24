@@ -28,6 +28,7 @@ class ContentBlock(models.Model):
 
 
 class AboutUs(models.Model):
+    objects = None
     title = models.CharField(max_length=255)
     title2 = models.CharField(max_length=255)
     description = models.TextField()
@@ -42,6 +43,7 @@ class AboutUs(models.Model):
 
 
 class Document(models.Model):
+    objects = None
     name = models.CharField(max_length=255)
     file = models.FileField(upload_to='main/files/')
     page = models.ForeignKey('AboutUs', blank=True, null=True, on_delete=models.SET_NULL)

@@ -32,7 +32,7 @@ class AboutUs(models.Model):
     title2 = models.CharField(max_length=255)
     description = models.TextField()
     description2 = models.TextField()
-    phone = models.ImageField(upload_to='main/')
+    image = models.ImageField(upload_to='main/')
     gallery = models.ManyToManyField('Gallery', related_name='gallery')
     gallery2 = models.ManyToManyField('Gallery', related_name='gallery2')
     seo_block = models.ForeignKey('SeoBlock', blank=True, null=True, on_delete=models.SET_NULL)
@@ -84,7 +84,7 @@ class SeoBlock(models.Model):
 
 
 class Gallery(models.Model):
-    image = models.ImageField(upload_to='main/gallery/')
+    image = models.ImageField(upload_to='main/gallery/', blank=True)
 
 
 

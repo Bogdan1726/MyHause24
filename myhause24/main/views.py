@@ -35,5 +35,9 @@ class ContactPageListView(DetailView):
         obj = Contact.objects.filter(id=1).first()
         return obj
 
+
+def index(request):
+    return render(request, 'main/pages/about_page.html')
+
 # endregion HomePage
 

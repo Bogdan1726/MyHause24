@@ -5,6 +5,7 @@ from .models import House, Section, Floor, Apartment, PersonalAccount, Services,
 from main.models import HomePage, ContentBlock, SeoBlock
 
 # Register your models here.
+from main.models import Gallery, Document, AboutUs
 
 
 @admin.register(House)
@@ -110,4 +111,21 @@ class SeoBlockAdmin(admin.ModelAdmin):
 @admin.register(ContentBlock)
 class ContentBlockAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(AboutUs)
+class AboutUsAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Gallery)
+class GalleryAdmin(admin.ModelAdmin):
+    pass
+
+
 

@@ -1,0 +1,83 @@
+{% extends 'main/elements/layout.html'%}
+{% load static %}
+
+{% block seo %}
+{% endblock %}
+
+{% block title %}
+{{ contact.seo_block.title }}
+{% endblock %}
+
+{% block style %}
+<style>
+    #start-test {
+        margin: 20px 0 20px 0;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div id=cont class="container">
+    <button id="start-test" class="btn btn-primary">Начать тест</button>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th scope="col">Вопрос</th>
+            <th scope="col">Баллы</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+<script>
+
+    $("#start-test").on('click', function () {
+
+
+        let question = new Map()
+        let response = new Map()
+        let counter = 0
+        let table = $('table')
+
+        question.set(0, 'Ты человек?')
+        question.set(1, 'Ты компьютер?')
+        response.set(0, true)
+        response.set(1, false)
+
+        $(table).find('tbody').empty()
+
+        for (var i = 0; i < question.size; i++) {
+            var result = confirm(question.get(i))
+            if (result === response.get(i)) {
+                counter += 10
+                table.append(
+                    '<tr>\n' +
+                    '<td>' + question.get(i) + '</td>\n' +
+                    '<td>' + 10 + '</td>\n' +
+                    '</tr>'
+                )
+            } else {
+                table.append(
+                    '<tr>\n' +
+                    '<td>' + question.get(i) + '</td>\n' +
+                    '<td>' + 0 + '</td>\n' +
+                    '</tr>'
+                )
+            }
+        }
+        table.append(
+            '<tr>\n' +
+            '<td>' + 'Итого' + '</td>\n' +
+            '<td>' + counter + '</td>\n' +
+            '</tr>'
+        )
+    })
+</script>
+{% endblock %}

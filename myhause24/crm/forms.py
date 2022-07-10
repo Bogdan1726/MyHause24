@@ -1,3 +1,4 @@
+import os
 import uuid
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
@@ -10,7 +11,7 @@ from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMea
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
-from main.models import HomePage, SeoBlock, ContentBlock, Contact
+from main.models import HomePage, SeoBlock, ContentBlock, Contact, AboutUs, Gallery, SiteService, Document
 
 from .task import send_new_password_owner
 
@@ -974,5 +975,97 @@ class ContactPageForm(forms.ModelForm):
                                           'rows': 6})
 
         }
+
+
+class AboutPageForm(forms.ModelForm):
+    error_messages = {
+        'error_image': 'Размер изображений не соответствует параметрам',
+    }
+
+    gallery_image = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={'type': 'file'})
+    )
+
+    gallery2_image = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={'type': 'file'})
+    )
+
+    class Meta:
+        model = AboutUs
+        exclude = ('seo_block', 'gallery', 'gallery2')
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control description'}),
+            'title2': forms.TextInput(attrs={'class': 'form-control'}),
+            'description2': forms.Textarea(attrs={'class': 'form-control description'}),
+            'image': forms.FileInput(attrs={'type': 'file'}),
+        }
+
+    def clean_image(self):
+        image = self.cleaned_data['image']
+        width, height = get_image_dimensions(image)
+        if width != 250 or height != 310:
+            raise forms.ValidationError(
+                self.error_messages['error_image']
+            )
+        return image
+
+
+class GalleryForm(forms.ModelForm):
+    error_messages = {
+        'error_image': 'Размер изображений не соответствует параметрам',
+    }
+
+    class Meta:
+        model = Gallery
+        fields = '__all__'
+
+        widgets = {
+            'image': forms.FileInput(attrs={'type': 'file'})
+        }
+
+    def clean_image(self):
+        image = self.cleaned_data['image']
+        if image:
+            width, height = get_image_dimensions(image)
+            if width != 1200 or height != 1200:
+                raise forms.ValidationError(
+                    self.error_messages['error_image']
+                )
+        return image
+
+
+class DocumentForm(forms.ModelForm):
+    ALLOWED_TYPES = ['pdf', 'jpg']
+
+    error_messages = {
+        'size': 'Превышен максимально допустимый размер файла',
+        'type': 'Тип загружаемого файла не разрешен'
+    }
+
+    class Meta:
+        model = Document
+        exclude = ('page',)
+
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'file': forms.FileInput(attrs={'type': 'file'})
+        }
+
+    def clean_file(self):
+        file = self.cleaned_data['file']
+        extension = os.path.splitext(file.name)[1][1:].lower()
+        if file.size > 20971520:
+            raise ValidationError(
+                self.error_messages['size']
+            )
+        if extension not in self.ALLOWED_TYPES:
+            raise ValidationError(
+                self.error_messages['type']
+            )
+        return file
 
 # endregion SiteForms

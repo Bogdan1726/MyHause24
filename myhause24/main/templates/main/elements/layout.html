@@ -64,8 +64,8 @@
                     <span class="sr-only">(current)</span>
                 </a>
                 </li>
-                <li class="">
-                    <a href="">О нас</a>
+                <li class="{% if url in '[about]' %}active{% endif %}">
+                    <a href="{% url 'about' %}">О нас</a>
                 </li>
                 <li class="">
                     <a href="">Услуги</a>

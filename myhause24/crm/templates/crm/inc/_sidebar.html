@@ -64,7 +64,7 @@
                     <span>Показания счетчиков</span>
                 </a>
             </li>
-            <li class="treeview {% if url in '[home_page_card, contact_page_card]' %}active{% endif %}">
+            <li class="treeview {% if url in '[home_page_card, contact_page_card, about_page_card]' %}active{% endif %}">
                 <a href="#"><i class="fa fa-desktop"></i>
                     <span>Управление сайтом</span>
                     <span class="pull-right-container">
@@ -78,11 +78,17 @@
                             <span>Главная страница</span>
                         </a>
                     </li>
-                    <li><a href="/admin/website/about"><i class="fa fa-circle-o"></i> <span>О нас</span></a>
+                    <li class="{% if url in '[about_page_card]' %}active{% endif %}">
+                        <a href="{% url 'about_page_card' %}">
+                            <i class="fa fa-circle-o"></i>
+                            <span>О нас</span>
+                        </a>
                     </li>
-                    <li><a href="/admin/website/services"><i class="fa fa-circle-o"></i> <span>Услуги</span></a>
-                    </li>
-                    <li><a href="/admin/website/tariffs"><i class="fa fa-circle-o"></i> <span>Тарифы</span></a>
+                    <li>
+                        <a href="/admin/website/services">
+                            <i class="fa fa-circle-o"></i>
+                            <span>Услуги</span>
+                        </a>
                     </li>
                     <li class="{% if url in '[contact_page_card]' %}active{% endif %}">
                         <a href="{% url 'contact_page_card' %}">

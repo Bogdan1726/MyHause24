@@ -34,9 +34,9 @@ from .forms import (
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
     UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
     CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm, MessageForm, HomePageForm,
-    SeoBlockForm, ContentBlockForm, ContactPageForm
+    SeoBlockForm, ContentBlockForm, ContactPageForm, AboutPageForm, GalleryForm, DocumentForm
 )
-from main.models import HomePage, ContentBlock, Contact
+from main.models import HomePage, ContentBlock, Contact, AboutUs, Gallery, Document
 
 User = get_user_model()
 
@@ -110,6 +110,82 @@ class SiteContactPage(UpdateView):
             self.object.save()
         return super().form_valid(form)
 
+
+class SiteAboutPage(UpdateView):
+    model = AboutUs
+    form_class = AboutPageForm
+    template_name = 'crm/pages/site/about_page.html'
+    document = modelformset_factory(Document, form=DocumentForm, can_delete=True, extra=0)
+
+    def get_object(self, queryset=None):
+        AboutUs.objects.get_or_create(id=1)
+        obj = AboutUs.objects.filter(id=1).first()
+        return obj
+
+    def get_success_url(self):
+        messages.success(self.request, 'Данные обновлены!')
+        return reverse_lazy('about_page_card')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['document_form'] = self.document(self.request.POST or None,
+                                                 self.request.FILES or None,
+                                                 queryset=Document.objects.filter(page=self.object),
+                                                 prefix='document_form')
+        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
+                                                 instance=self.object.seo_block,
+                                                 prefix='seo_form')
+        context['gallery'] = GalleryForm(self.request.POST or None,
+                                         self.request.FILES or None,
+                                         prefix='gallery1')
+        context['gallery2'] = GalleryForm(self.request.POST or None,
+                                          self.request.FILES or None,
+                                          prefix='gallery2')
+
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        seo_block = context['seo_block_form']
+        document = context['document_form']
+        gallery = context['gallery']
+        gallery2 = context['gallery2']
+        self.object = form.save(commit=False)
+        if seo_block.is_valid():
+            seo = seo_block.save()
+            self.object.seo_block = seo
+        self.object.save()
+        if gallery.is_valid():
+            if gallery.cleaned_data['image']:
+                image = gallery.save()
+                self.object.gallery.add(image)
+        if gallery2.is_valid():
+            if gallery2.cleaned_data['image']:
+                image = gallery2.save()
+                self.object.gallery2.add(image)
+        if document.is_valid():
+            for forms in document:
+                if forms.cleaned_data:
+                    if forms.is_valid():
+                        file = forms.save(commit=False)
+                        file.page = self.object
+                        file.save()
+            document.save()
+        return super().form_valid(form)
+
+
+class DeleteDocument(DeleteView):
+    model = Document
+
+    def get_success_url(self):
+        return reverse_lazy('about_page_card')
+
+
+class DeleteGalleryImage(DeleteView):
+    model = Gallery
+
+    def get_success_url(self):
+        return reverse_lazy('about_page_card')
 # region SiteManagement
 
 

@@ -17,7 +17,7 @@ from .views import (
     ReceiptDetailView, ReceiptTemplateListView, receipt_template, SettingsTemplate, ReceiptTemplateDelete,
     receipt_templates_edit, receipt_templates_upload, MessageCreateAndSend, MessageDetailView,
     MessageDelete, MessageListView, StatisticsView, SiteHomePage, SiteContactPage, SiteAboutPage, DeleteDocument,
-    DeleteGalleryImage
+    DeleteGalleryImage, SiteServicesPage, DeleteSiteServices
 )
 
 from .api_views import (
@@ -124,7 +124,8 @@ urlpatterns = [
     path('site/home_page/', SiteHomePage.as_view(), name='home_page_card'),
     path('site/contact_page/', SiteContactPage.as_view(), name='contact_page_card'),
     path('site/about_page/', SiteAboutPage.as_view(), name='about_page_card'),
-
+    path('site/services_page/', SiteServicesPage.as_view(), name='services_page_card'),
+    path('site/services_page/delete/<int:pk>/', DeleteSiteServices.as_view(), name='delete_site_services'),
     path('site/about_page/delte_document/<int:pk>/', DeleteDocument.as_view(), name='delete_document'),
     path('site/about_page/delete_image/<int:pk>/', DeleteGalleryImage.as_view(), name='delete_gallery_image'),
 

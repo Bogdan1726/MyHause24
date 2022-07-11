@@ -2,10 +2,9 @@ from django.contrib import admin
 from .models import House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure, Tariff, \
     PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest, CashBox, Receipt, ReceiptTemplate, \
     CalculateReceiptService, Message
-from main.models import HomePage, ContentBlock, SeoBlock
+from main.models import HomePage, ContentBlock, SeoBlock,  Gallery, Document, SiteService, AboutUs
 
 # Register your models here.
-from main.models import Gallery, Document, AboutUs
 
 
 @admin.register(House)
@@ -127,5 +126,8 @@ class AboutUsAdmin(admin.ModelAdmin):
 class GalleryAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(SiteService)
+class AboutUsAdmin(admin.ModelAdmin):
+    pass
 
 

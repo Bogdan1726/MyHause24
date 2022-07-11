@@ -24,7 +24,7 @@ from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
-    Tariff, PriceTariffServices, Requisites, PaymentItems, MeterData, CallRequest,
+    Tariff, PriceTariffServices, PaymentItems, MeterData, CallRequest,
     CashBox, Receipt, CalculateReceiptService, ReceiptTemplate, Requisites,
     Message
 )
@@ -33,15 +33,18 @@ from .forms import (
     ApartmentForm, PersonalAccountForm, InviteOwnerForm, AccountsForm, UnitOfMeasureForm,
     ServicesForm, TariffForm, PriceTariffServicesForm, RolesForm, RequisitesForm,
     UserAdminForm, UserAdminChangeForm, PaymentItemsForm, MeterDataForm, MasterCallForm,
-    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm, MessageForm, HomePageForm,
-    SeoBlockForm, ContentBlockForm, ContactPageForm, AboutPageForm, GalleryForm, DocumentForm
+    CashBoxForm, ReceiptForm, CalculateReceiptServiceForm, SettingsTemplatesForm, MessageForm,
+    HomePageForm, SeoBlockForm, ContentBlockForm, ContactPageForm, AboutPageForm, GalleryForm,
+    DocumentForm, SiteServiceForm
 )
-from main.models import HomePage, ContentBlock, Contact, AboutUs, Gallery, Document
+from main.models import HomePage, ContentBlock, Contact, AboutUs, Gallery, SiteService, Document
 
 User = get_user_model()
 
-
 # Create your views here.
+
+# region SiteManagement
+
 
 class SiteHomePage(UpdateView):
     model = HomePage
@@ -186,8 +189,54 @@ class DeleteGalleryImage(DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('about_page_card')
-# region SiteManagement
 
+
+class SiteServicesPage(UpdateView):
+    model = SiteService
+    template_name = 'crm/pages/site/services_page.html'
+    services = modelformset_factory(SiteService, form=SiteServiceForm, can_delete=True, extra=0)
+
+    def get_object(self, queryset=None):
+        SiteService.objects.get_or_create(id=1)
+        obj = SiteService.objects.filter(id=1).first()
+        return obj
+
+    def get_success_url(self):
+        messages.success(self.request, 'Данные обновлены!')
+        return reverse_lazy('services_page_card')
+
+    def get_form(self, form_class=None):
+        return self.services(self.request.POST or None,
+                             self.request.FILES or None,
+                             prefix='services')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
+                                                 instance=self.object.seo_block,
+                                                 prefix='seo_form')
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        seo_block = context['seo_block_form']
+        if seo_block.is_valid():
+            seo = seo_block.save()
+            for service in form:
+                if service.cleaned_data:
+                    if service.is_valid():
+                        service = service.save(commit=False)
+                        service.seo_block = seo
+                        service.save()
+            form.save()
+        return super().form_valid(form)
+
+
+class DeleteSiteServices(DeleteView):
+    model = SiteService
+
+    def get_success_url(self):
+        return reverse_lazy('services_page_card')
 
 # endregion SiteManagement
 

@@ -64,7 +64,7 @@
                     <span>Показания счетчиков</span>
                 </a>
             </li>
-            <li class="treeview {% if url in '[home_page_card, contact_page_card, about_page_card]' %}active{% endif %}">
+            <li class="treeview {% if url in '[home_page_card, contact_page_card, about_page_card, services_page_card]' %}active{% endif %}">
                 <a href="#"><i class="fa fa-desktop"></i>
                     <span>Управление сайтом</span>
                     <span class="pull-right-container">
@@ -84,8 +84,8 @@
                             <span>О нас</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="/admin/website/services">
+                    <li class="{% if url in '[services_page_card]' %}active{% endif %}">
+                        <a href="{% url 'services_page_card' %}">
                             <i class="fa fa-circle-o"></i>
                             <span>Услуги</span>
                         </a>

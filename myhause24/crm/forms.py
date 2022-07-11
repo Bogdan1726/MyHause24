@@ -11,7 +11,10 @@ from .models import House, Section, Floor, Apartment, PersonalAccount, UnitOfMea
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from user.models import Role
-from main.models import HomePage, SeoBlock, ContentBlock, Contact, AboutUs, Gallery, SiteService, Document
+from main.models import (
+    HomePage, SeoBlock, ContentBlock, Contact, AboutUs,
+    Gallery, SiteService, Document, SiteService
+)
 
 from .task import send_new_password_owner
 
@@ -1067,5 +1070,18 @@ class DocumentForm(forms.ModelForm):
                 self.error_messages['type']
             )
         return file
+
+
+class SiteServiceForm(forms.ModelForm):
+    class Meta:
+        model = SiteService
+        exclude = ('seo_block',)
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control description'}),
+            'image': forms.FileInput(attrs={'type': 'file'}),
+        }
+
 
 # endregion SiteForms

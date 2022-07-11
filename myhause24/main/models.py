@@ -67,6 +67,7 @@ class Contact(models.Model):
 
 
 class SiteService(models.Model):
+    objects = None
     image = models.ImageField(upload_to='main/')
     title = models.CharField(max_length=255)
     description = models.TextField()

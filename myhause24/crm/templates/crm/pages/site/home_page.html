@@ -26,7 +26,7 @@
             <div class="box-header with-border">
                 <h3 class="box-title">Редактирование страницы "Главная"</h3>
                 <div class="box-tools">
-                    <a href="/admin/website/update-seo-files"
+                    <a href="#"
                        class="btn btn-default btn-sm updateSeoFiles">
                         <span class="hidden-xs">Обновить robots и sitemap</span>
                         <i class="fa fa-refresh visible-xs" aria-hidden="true"></i>
@@ -155,6 +155,15 @@
 {% block scripts %}
 <script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js' %}"></script>
 <script>
+    $('.updateSeoFiles').on('click', function (e) {
+        if (confirm('Обновить robots.txt и sitemap.xml?')) {
+            $.get($(this).attr('href'), function (data) {
+                console.log(data);
+                alert('robots.txt и sitemap.xml обновлены.');
+            });
+        }
+    });
+
     // WYSIHTML5
 
     !function ($) {

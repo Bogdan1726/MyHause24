@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.mixins import AccessMixin
+from django.contrib.sitemaps import ping_google
 from django.core.exceptions import ValidationError
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField, FloatField, Q
 from django.db.models.functions import Coalesce, Cast, Greatest, TruncMonth
@@ -237,6 +238,12 @@ class DeleteSiteServices(DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('services_page_card')
+
+
+def update_robots_and_sitemap(request):
+    ping_google(sitemap_url="/sitemap.xml")
+    messages.success(request, 'Succes')
+    return reverse_lazy('home_page_card')
 
 # endregion SiteManagement
 

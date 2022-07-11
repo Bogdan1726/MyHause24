@@ -17,7 +17,7 @@ from .views import (
     ReceiptDetailView, ReceiptTemplateListView, receipt_template, SettingsTemplate, ReceiptTemplateDelete,
     receipt_templates_edit, receipt_templates_upload, MessageCreateAndSend, MessageDetailView,
     MessageDelete, MessageListView, StatisticsView, SiteHomePage, SiteContactPage, SiteAboutPage, DeleteDocument,
-    DeleteGalleryImage, SiteServicesPage, DeleteSiteServices
+    DeleteGalleryImage, SiteServicesPage, DeleteSiteServices, update_robots_and_sitemap
 )
 
 from .api_views import (
@@ -122,6 +122,7 @@ urlpatterns = [
 
     # region site_management
     path('site/home_page/', SiteHomePage.as_view(), name='home_page_card'),
+    path('site/update_robots_and_sitemap/', update_robots_and_sitemap, name='update_robots_and_sitemap'),
     path('site/contact_page/', SiteContactPage.as_view(), name='contact_page_card'),
     path('site/about_page/', SiteAboutPage.as_view(), name='about_page_card'),
     path('site/services_page/', SiteServicesPage.as_view(), name='services_page_card'),

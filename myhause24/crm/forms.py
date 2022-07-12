@@ -940,7 +940,7 @@ class HomePageForm(forms.ModelForm):
 
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'required': True}),
             'is_show_link': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'slide1': forms.FileInput(attrs={'type': 'file'}),
             'slide2': forms.FileInput(attrs={'type': 'file'}),
@@ -961,6 +961,10 @@ class HomePageForm(forms.ModelForm):
 
 
 class ContactPageForm(forms.ModelForm):
+    error_messages = {
+        'error_phone': 'Номер телефона не коректный',
+    }
+
     class Meta:
         model = Contact
         exclude = ('seo_block',)
@@ -972,12 +976,22 @@ class ContactPageForm(forms.ModelForm):
             'initials': forms.TextInput(attrs={'class': 'form-control'}),
             'location': forms.TextInput(attrs={'class': 'form-control'}),
             'address': forms.TextInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control',
+                                            'data-mask': "+38(000) 000-00-00"}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'maps': forms.Textarea(attrs={'class': 'form-control',
                                           'rows': 6})
 
         }
+
+    def clean_phone(self):
+        phone = self.cleaned_data['phone']
+        print(len(phone))
+        if len(phone) < 18:
+            raise forms.ValidationError(
+                self.error_messages['error_phone']
+            )
+        return phone
 
 
 class AboutPageForm(forms.ModelForm):
@@ -1073,6 +1087,10 @@ class DocumentForm(forms.ModelForm):
 
 
 class SiteServiceForm(forms.ModelForm):
+    error_messages = {
+        'error_image': 'Размер изображений не соответствует параметрам',
+    }
+
     class Meta:
         model = SiteService
         exclude = ('seo_block',)
@@ -1083,5 +1101,14 @@ class SiteServiceForm(forms.ModelForm):
             'image': forms.FileInput(attrs={'type': 'file'}),
         }
 
+    def clean_image(self):
+        image = self.cleaned_data['image']
+        if image:
+            width, height = get_image_dimensions(image)
+            if width != 650 or height != 300:
+                raise forms.ValidationError(
+                    self.error_messages['error_image']
+                )
+        return image
 
 # endregion SiteForms

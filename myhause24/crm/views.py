@@ -5,18 +5,17 @@ from django.contrib import messages
 from django.contrib.auth.mixins import AccessMixin
 from django.contrib.sitemaps import ping_google
 from django.core.exceptions import ValidationError
-from django.db.models import Sum, F, ExpressionWrapper, DecimalField, FloatField, Q
-from django.db.models.functions import Coalesce, Cast, Greatest, TruncMonth
+from django.db.models import Sum, Q
+from django.db.models.functions import Greatest
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import get_user_model
 from openpyxl.writer.excel import save_virtual_workbook
-
 from .services.xlsx_services import write_to_file
 from .task import send_email, send_receipt_for_owner
 import random
@@ -38,222 +37,22 @@ from .forms import (
     HomePageForm, SeoBlockForm, ContentBlockForm, ContactPageForm, AboutPageForm, GalleryForm,
     DocumentForm, SiteServiceForm
 )
-from main.models import HomePage, ContentBlock, Contact, AboutUs, Gallery, SiteService, Document
+from main.models import (
+    HomePage, ContentBlock, Contact, AboutUs, Gallery, SiteService, Document
+)
 
 User = get_user_model()
 
+
 # Create your views here.
-
-# region SiteManagement
-
-
-class SiteHomePage(UpdateView):
-    model = HomePage
-    form_class = HomePageForm
-    template_name = 'crm/pages/site/home_page.html'
-    formset = modelformset_factory(ContentBlock, form=ContentBlockForm, extra=0)
-
-    def get_success_url(self):
-        messages.success(self.request, 'Данные обновлены!')
-        return reverse_lazy('home_page_card')
-
-    def get_object(self, queryset=None):
-        HomePage.objects.get_or_create(id=1)
-        obj = HomePage.objects.get(id=1)
-        return obj
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
-                                                 instance=self.object.seo_block,
-                                                 prefix='seo_form')
-        context['content_block_form'] = self.formset(self.request.POST or None,
-                                                     self.request.FILES or None,
-                                                     queryset=ContentBlock.objects.all(),
-                                                     prefix='content_form')
-        return context
-
-    def form_valid(self, form):
-        context = self.get_context_data()
-        seo_block = context['seo_block_form']
-        content_block = context['content_block_form']
-        if seo_block.is_valid() and content_block.is_valid():
-            seo_block.save()
-            content_block.save()
-        return super().form_valid(form)
-
-
-class SiteContactPage(UpdateView):
-    model = Contact
-    form_class = ContactPageForm
-    template_name = 'crm/pages/site/contact_page.html'
-
-    def get_success_url(self):
-        messages.success(self.request, 'Данные обновлены!')
-        return reverse_lazy('contact_page_card')
-
-    def get_object(self, queryset=None):
-        Contact.objects.get_or_create(id=1)
-        obj = Contact.objects.get(id=1)
-        return obj
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
-                                                 instance=self.object.seo_block,
-                                                 prefix='seo_form')
-        return context
-
-    def form_valid(self, form):
-        context = self.get_context_data()
-        seo_block = context['seo_block_form']
-        if seo_block.is_valid():
-            seo = seo_block.save()
-            self.object = form.save(commit=False)
-            self.object.seo_block = seo
-            self.object.save()
-        return super().form_valid(form)
-
-
-class SiteAboutPage(UpdateView):
-    model = AboutUs
-    form_class = AboutPageForm
-    template_name = 'crm/pages/site/about_page.html'
-    document = modelformset_factory(Document, form=DocumentForm, can_delete=True, extra=0)
-
-    def get_object(self, queryset=None):
-        AboutUs.objects.get_or_create(id=1)
-        obj = AboutUs.objects.filter(id=1).first()
-        return obj
-
-    def get_success_url(self):
-        messages.success(self.request, 'Данные обновлены!')
-        return reverse_lazy('about_page_card')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['document_form'] = self.document(self.request.POST or None,
-                                                 self.request.FILES or None,
-                                                 queryset=Document.objects.filter(page=self.object),
-                                                 prefix='document_form')
-        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
-                                                 instance=self.object.seo_block,
-                                                 prefix='seo_form')
-        context['gallery'] = GalleryForm(self.request.POST or None,
-                                         self.request.FILES or None,
-                                         prefix='gallery1')
-        context['gallery2'] = GalleryForm(self.request.POST or None,
-                                          self.request.FILES or None,
-                                          prefix='gallery2')
-
-        return context
-
-    def form_valid(self, form):
-        context = self.get_context_data()
-        seo_block = context['seo_block_form']
-        document = context['document_form']
-        gallery = context['gallery']
-        gallery2 = context['gallery2']
-        self.object = form.save(commit=False)
-        if seo_block.is_valid():
-            seo = seo_block.save()
-            self.object.seo_block = seo
-        self.object.save()
-        if gallery.is_valid():
-            if gallery.cleaned_data['image']:
-                image = gallery.save()
-                self.object.gallery.add(image)
-        if gallery2.is_valid():
-            if gallery2.cleaned_data['image']:
-                image = gallery2.save()
-                self.object.gallery2.add(image)
-        if document.is_valid():
-            for forms in document:
-                if forms.cleaned_data:
-                    if forms.is_valid():
-                        file = forms.save(commit=False)
-                        file.page = self.object
-                        file.save()
-            document.save()
-        return super().form_valid(form)
-
-
-class DeleteDocument(DeleteView):
-    model = Document
-
-    def get_success_url(self):
-        return reverse_lazy('about_page_card')
-
-
-class DeleteGalleryImage(DeleteView):
-    model = Gallery
-
-    def get_success_url(self):
-        return reverse_lazy('about_page_card')
-
-
-class SiteServicesPage(UpdateView):
-    model = SiteService
-    template_name = 'crm/pages/site/services_page.html'
-    services = modelformset_factory(SiteService, form=SiteServiceForm, can_delete=True, extra=0)
-
-    def get_object(self, queryset=None):
-        SiteService.objects.get_or_create(id=1)
-        obj = SiteService.objects.filter(id=1).first()
-        return obj
-
-    def get_success_url(self):
-        messages.success(self.request, 'Данные обновлены!')
-        return reverse_lazy('services_page_card')
-
-    def get_form(self, form_class=None):
-        return self.services(self.request.POST or None,
-                             self.request.FILES or None,
-                             prefix='services')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
-                                                 instance=self.object.seo_block,
-                                                 prefix='seo_form')
-        return context
-
-    def form_valid(self, form):
-        context = self.get_context_data()
-        seo_block = context['seo_block_form']
-        if seo_block.is_valid():
-            seo = seo_block.save()
-            for service in form:
-                if service.cleaned_data:
-                    if service.is_valid():
-                        service = service.save(commit=False)
-                        service.seo_block = seo
-                        service.save()
-            form.save()
-        return super().form_valid(form)
-
-
-class DeleteSiteServices(DeleteView):
-    model = SiteService
-
-    def get_success_url(self):
-        return reverse_lazy('services_page_card')
-
-
-def update_robots_and_sitemap(request):
-    ping_google(sitemap_url="/sitemap.xml")
-    messages.success(request, 'Succes')
-    return reverse_lazy('home_page_card')
-
-# endregion SiteManagement
 
 # region Statistics
 
 def get_balance_cash():
     cash = CashBox.objects.all()
+    cash_balance = 0
     cash_income = cash.filter(status=True, type=True).aggregate(sum=Sum('sum'))
     cash_expense = cash.filter(status=True, type=False).aggregate(sum=Sum('sum'))
-    cash_balance = 0
 
     income = cash_income['sum']
     expense = cash_expense['sum']
@@ -268,15 +67,19 @@ def get_balance_cash():
 def get_balance_account():
     account_balance = 0
     account_debit = 0
-
     queryset = PersonalAccount.objects.select_related(
         'apartment', 'apartment__house', 'apartment__section', 'apartment__owner',
     ).annotate(
         balance=
-        Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
+        Greatest(Sum('cash_account__sum',
+                     filter=Q(cash_account__status=True),
+                     distinct=True),
+                 Decimal(0))
         -
-        Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
-
+        Greatest(Sum('receipt_account__sum',
+                     filter=Q(receipt_account__status=True),
+                     distinct=True),
+                 Decimal(0))
     ).order_by('-id')
 
     for obj in queryset:
@@ -309,9 +112,7 @@ class StatisticsView(BaseCrmView):
     def get(request):
         house_id = [obj.id for obj in House.objects.filter(user=request.user)]
         apartment_id = [obj.id for obj in Apartment.objects.filter(house_id__in=house_id)]
-        owner_id = [obj.owner_id for obj in Apartment.objects.filter(id__in=apartment_id)]
         list_month = [month for month in range(1, 13)]
-
         cash_income = CashBox.objects.select_related(
             'receipt', 'personal_account', 'payment_items'
         ).annotate(
@@ -376,33 +177,15 @@ class StatisticsView(BaseCrmView):
             'cash_balance': get_balance_cash(),
             'account_balance': get_balance_account()[1],
             'account_debit': get_balance_account()[0],
-            'houses':
-                House.objects.prefetch_related('user')
-                if request.user.is_superuser
-                else House.objects.filter(user=request.user),
+            'houses': House.objects.prefetch_related('user'),
             'apartment':
                 Apartment.objects.select_related(
                     'tariff', 'section', 'floor', 'house', 'owner'
-                ) if request.user.is_superuser
-                else Apartment.objects.select_related(
-                    'tariff', 'section', 'floor', 'house', 'owner'
-                ).filter(house_id__in=house_id),
-            'owner':
-                User.objects.filter(status='active', is_staff=False)
-                if request.user.is_superuser
-                else User.objects.filter(id__in=owner_id, status='active', is_staff=False),
-            'personal_account':
-                PersonalAccount.objects.filter(status='active')
-                if request.user.is_superuser
-                else PersonalAccount.objects.filter(status='active', apartment_id__in=apartment_id),
-            'master_call_in_work':
-                CallRequest.objects.filter(status='in_work')
-                if request.user.is_superuser
-                else CallRequest.objects.filter(apartment_id__in=apartment_id, status='done'),
-            'master_call':
-                CallRequest.objects.all()
-                if request.user.is_superuser
-                else CallRequest.objects.filter(apartment_id__in=apartment_id),
+                ),
+            'owner': User.objects.filter(status='active', is_staff=False),
+            'personal_account': PersonalAccount.objects.filter(status='active'),
+            'master_call_in_work': CallRequest.objects.filter(status='in_work'),
+            'master_call': CallRequest.objects.all(),
             'cash': json.dumps(translation_data),
             'receipt': json.dumps(receipt_data)
         }
@@ -1006,8 +789,6 @@ class HouseListView(ListView):
     context_object_name = 'houses'
 
     def get_queryset(self):
-        if not self.request.user.is_superuser:
-            return self.model.objects.order_by('-id').filter(user=self.request.user)
         return self.model.objects.order_by('-id')
 
 
@@ -1968,4 +1749,207 @@ class MeterDataDelete(DeleteView):
         messages.success(self.request, f'Показания счетчика №{self.object.number} удалены!')
         return reverse_lazy('meter_data_for_apartment', kwargs={'pk': self.object.apartment.id})
 
+
 # endregion MeterData
+
+# region SiteManagement
+
+class SiteHomePage(UpdateView):
+    model = HomePage
+    form_class = HomePageForm
+    template_name = 'crm/pages/site/home_page.html'
+    formset = modelformset_factory(ContentBlock, form=ContentBlockForm, extra=0)
+
+    def get_success_url(self):
+        messages.success(self.request, 'Данные обновлены!')
+        return reverse_lazy('home_page_card')
+
+    def get_object(self, queryset=None):
+        HomePage.objects.get_or_create(id=1)
+        obj = HomePage.objects.get(id=1)
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
+                                                 instance=self.object.seo_block,
+                                                 prefix='seo_form')
+        context['content_block_form'] = self.formset(self.request.POST or None,
+                                                     self.request.FILES or None,
+                                                     queryset=ContentBlock.objects.all(),
+                                                     prefix='content_form')
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        seo_block = context['seo_block_form']
+        content_block = context['content_block_form']
+        if seo_block.is_valid() and content_block.is_valid():
+            seo_block.save()
+            content_block.save()
+        return super().form_valid(form)
+
+
+class SiteContactPage(UpdateView):
+    model = Contact
+    form_class = ContactPageForm
+    template_name = 'crm/pages/site/contact_page.html'
+
+    def get_success_url(self):
+        messages.success(self.request, 'Данные обновлены!')
+        return reverse_lazy('contact_page_card')
+
+    def get_object(self, queryset=None):
+        Contact.objects.get_or_create(id=1)
+        obj = Contact.objects.get(id=1)
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
+                                                 instance=self.object.seo_block,
+                                                 prefix='seo_form')
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        seo_block = context['seo_block_form']
+        if seo_block.is_valid():
+            seo = seo_block.save()
+            self.object = form.save(commit=False)
+            self.object.seo_block = seo
+            self.object.save()
+        return super().form_valid(form)
+
+
+class SiteAboutPage(UpdateView):
+    model = AboutUs
+    form_class = AboutPageForm
+    template_name = 'crm/pages/site/about_page.html'
+    document = modelformset_factory(Document, form=DocumentForm, can_delete=True, extra=0)
+
+    def get_object(self, queryset=None):
+        AboutUs.objects.get_or_create(id=1)
+        obj = AboutUs.objects.filter(id=1).first()
+        return obj
+
+    def get_success_url(self):
+        messages.success(self.request, 'Данные обновлены!')
+        return reverse_lazy('about_page_card')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['document_form'] = self.document(self.request.POST or None,
+                                                 self.request.FILES or None,
+                                                 queryset=Document.objects.filter(page=self.object),
+                                                 prefix='document_form')
+        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
+                                                 instance=self.object.seo_block,
+                                                 prefix='seo_form')
+        context['gallery'] = GalleryForm(self.request.POST or None,
+                                         self.request.FILES or None,
+                                         prefix='gallery1')
+        context['gallery2'] = GalleryForm(self.request.POST or None,
+                                          self.request.FILES or None,
+                                          prefix='gallery2')
+
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        seo_block = context['seo_block_form']
+        document = context['document_form']
+        gallery = context['gallery']
+        gallery2 = context['gallery2']
+        self.object = form.save(commit=False)
+        if seo_block.is_valid():
+            seo = seo_block.save()
+            self.object.seo_block = seo
+        self.object.save()
+        if gallery.is_valid():
+            if gallery.cleaned_data['image']:
+                image = gallery.save()
+                self.object.gallery.add(image)
+        if gallery2.is_valid():
+            if gallery2.cleaned_data['image']:
+                image = gallery2.save()
+                self.object.gallery2.add(image)
+        if document.is_valid():
+            for forms in document:
+                if forms.cleaned_data:
+                    if forms.is_valid():
+                        file = forms.save(commit=False)
+                        file.page = self.object
+                        file.save()
+            document.save()
+        return super().form_valid(form)
+
+
+class DeleteDocument(DeleteView):
+    model = Document
+
+    def get_success_url(self):
+        return reverse_lazy('about_page_card')
+
+
+class DeleteGalleryImage(DeleteView):
+    model = Gallery
+
+    def get_success_url(self):
+        return reverse_lazy('about_page_card')
+
+
+class SiteServicesPage(UpdateView):
+    model = SiteService
+    template_name = 'crm/pages/site/services_page.html'
+    services = modelformset_factory(SiteService, form=SiteServiceForm, can_delete=True, extra=0)
+
+    def get_object(self, queryset=None):
+        SiteService.objects.get_or_create(id=1)
+        obj = SiteService.objects.filter(id=1).first()
+        return obj
+
+    def get_success_url(self):
+        messages.success(self.request, 'Данные обновлены!')
+        return reverse_lazy('service_page_card')
+
+    def get_form(self, form_class=None):
+        return self.services(self.request.POST or None,
+                             self.request.FILES or None,
+                             prefix='services')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['seo_block_form'] = SeoBlockForm(self.request.POST or None,
+                                                 instance=self.object.seo_block,
+                                                 prefix='seo_form')
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        seo_block = context['seo_block_form']
+        if seo_block.is_valid():
+            seo = seo_block.save()
+            for service in form:
+                if service.cleaned_data:
+                    if service.is_valid():
+                        service = service.save(commit=False)
+                        service.seo_block = seo
+                        service.save()
+            form.save()
+        return super().form_valid(form)
+
+
+class DeleteSiteServices(DeleteView):
+    model = SiteService
+
+    def get_success_url(self):
+        return reverse_lazy('service_page_card')
+
+
+def update_robots_and_sitemap(request):
+    ping_google(sitemap_url="/sitemap.xml")
+    messages.success(request, 'Succes')
+    return reverse_lazy('home_page_card')
+
+# endregion SiteManagement

@@ -1,5 +1,6 @@
 {% extends 'crm/elements/layout.html'%}
 {% load static %}
+
 {% block title %}
 Редактирование страницы
 {% endblock %}
@@ -114,6 +115,7 @@
 
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
 <script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js' %}"></script>
 <script>
     // WYSIHTML5

@@ -23,7 +23,7 @@ class UserLoginView(LoginView):
         """Security check complete. Log the user in."""
         auth_login(self.request, form.get_user())
         messages.success(self.request, f'Добро пожаловать {self.request.user}')
-        if self.request.user.is_staff and not self.request.user.role.statistics:
+        if self.request.user.is_staff and self.request.user.role.statistics is False:
             return redirect(reverse('user_profile', kwargs={'pk': self.request.user.id}))
         return HttpResponseRedirect(self.get_success_url())
 

@@ -76,7 +76,6 @@ def get_balance_account():
         Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
     ).order_by('-id')
 
-
     for obj in queryset:
         if obj.balance < 0:
             account_debit += obj.balance
@@ -1540,6 +1539,13 @@ class UserUpdateView(UpdateView, RoleRequiredMixin):
 
     def get_queryset(self):
         return self.model.objects.select_related('role')
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.is_superuser and not request.user.is_superuser:
+            messages.error(request, f'{self.object} является супер пользователем его нельзя редактировать')
+            return HttpResponseRedirect(reverse_lazy('users'))
+        return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
         messages.success(self.request, f"{self.object} успешно обновлён!")

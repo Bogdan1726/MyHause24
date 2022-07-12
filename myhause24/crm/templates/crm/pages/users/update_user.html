@@ -39,7 +39,16 @@
                         <label class="control-label">Телефон</label>
                         {{ form.phone }}
                     </div>
-                    {% if not form.instance.is_superuser %}
+                    {% if form.instance == request.user or not request.user.is_superuser %}
+                    <div class="form-group" style="display: none;">
+                        <label class="control-label">Роль</label>
+                        {{ form.role }}
+                    </div>
+                    <div class="form-group" style="display: none;">
+                        <label class="control-label">Статус</label>
+                        {{ form.status }}
+                    </div>
+                    {% else %}
                     <div class="form-group">
                         <label class="control-label">Роль</label>
                         {{ form.role }}

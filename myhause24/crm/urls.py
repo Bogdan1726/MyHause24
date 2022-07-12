@@ -67,7 +67,6 @@ urlpatterns = [
     path('house/delete/<int:pk>/', HouseDelete.as_view(), name='delete_house'),
     # houses end
 
-
     # region messages
     path('message/', MessageListView.as_view(), name='list_message'),
     path('message/send/', MessageCreateAndSend.as_view(), name='send_message'),
@@ -132,7 +131,6 @@ urlpatterns = [
 
     # endregion site_management
 
-
     # services
     path('services/', ServicesListView.as_view(), name='services'),
     # services end
@@ -160,6 +158,7 @@ urlpatterns = [
     path('user/create/', UserCreateView.as_view(), name='create_user'),
     path('user/update/<int:pk>/', UserUpdateView.as_view(), name='update_user'),
     path('user/delete/<int:pk>/', UserDelete.as_view(), name='delete_user'),
+    path('user/profile/<int:pk>/', UserUpdateView.as_view(), name='user_profile'),
     # users
 
     # payment_items

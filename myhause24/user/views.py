@@ -2,7 +2,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.views import LoginView, LogoutView
 from django.http import HttpResponseRedirect
-from django.shortcuts import resolve_url
+from django.shortcuts import resolve_url, redirect
+from django.urls import reverse
+
 from .forms import UserLoginForm
 from django.contrib.auth import login as auth_login
 
@@ -21,8 +23,9 @@ class UserLoginView(LoginView):
         """Security check complete. Log the user in."""
         auth_login(self.request, form.get_user())
         messages.success(self.request, f'Добро пожаловать {self.request.user}')
-
-        return HttpResponseRedirect(self.get_success_url())
+        if self.request.user.role.statistics:
+            return HttpResponseRedirect(self.get_success_url())
+        return redirect(reverse('user_profile', kwargs={'pk': self.request.user.id}))
 
 
 class UserLogout(LogoutView):

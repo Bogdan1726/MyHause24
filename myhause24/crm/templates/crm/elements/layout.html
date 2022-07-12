@@ -50,7 +50,8 @@
 <div class="wrapper" style="height: auto; min-height: 100%;">
     <header class="main-header">
         <!-- Logo -->
-        <a href="{% url 'admin' %}" class="logo">
+
+        <a href="{% if request.user.role.statistics %}{% url 'admin' %}{% endif %}" class="logo">
         <span class="logo-mini">
             <img src="{% static 'crm/media/logo-mini.svg' %}" class="img-responsive" alt="">
         </span>
@@ -111,7 +112,7 @@
                             <!-- Menu Footer-->
                             <li class="user-footer">
                                 <div class="pull-left">
-                                    <a class="btn btn-default btn-flat" href="{% url 'update_user' request.user.id %}">Профиль</a>
+                                    <a class="btn btn-default btn-flat" href="{% url 'user_profile' request.user.id %}">Профиль</a>
                                 </div>
                                 <div class="pull-right">
                                     <a class="btn btn-default btn-flat" href="{% url 'logout' %}">Выход</a>

@@ -9,7 +9,7 @@ from django.db.models import Sum, Q
 from django.db.models.functions import Greatest
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.shortcuts import get_object_or_404
 from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
@@ -90,24 +90,31 @@ def get_balance_account():
     return [str(account_debit).replace('-', ''), account_balance]
 
 
-class BaseCrmView(View, AccessMixin):
+class RoleRequiredMixin(View, AccessMixin):
     """Check user is staff."""
+
+    permission_required = None
+
+    def get_permission_required(self):
+        return str(self.permission_required)
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
             return redirect('login')
+        if self.permission_required is None and request.user.is_staff:
+            return super().dispatch(request, *args, **kwargs)
         else:
             if not request.user.is_staff:
-                messages.error(request, f'Вы вошли в систему как {request.user.email}, '
-                                        f'однако у вас недостаточно прав для просмотра данной страницы')
                 return redirect('login')
-            if not request.user.role.statistics:
-                messages.error(request, f'Вы вошли в систему как {request.user.email}, '
-                                        f'однако у вас недостаточно прав для просмотра данной страницы')
+            if not getattr(request.user.role, self.get_permission_required()):
+                messages.error(request, 'Для доступа к данной странице свяжитесь с администрацией')
+                return redirect(request.META.get('HTTP_REFERER') or 'login')
         return super().dispatch(request, *args, **kwargs)
 
 
-class StatisticsView(BaseCrmView):
+class StatisticsView(RoleRequiredMixin):
+    permission_required = 'statistics'
+
     @staticmethod
     def get(request):
         house_id = [obj.id for obj in House.objects.filter(user=request.user)]
@@ -198,10 +205,11 @@ class StatisticsView(BaseCrmView):
 # region CashBox
 
 
-class CashBoxListView(ListView):
+class CashBoxListView(ListView, RoleRequiredMixin):
     model = CashBox
     template_name = 'crm/pages/cash_box/list_cash_box.html'
     context_object_name = 'cash_box'
+    permission_required = 'cash_box'
 
     def get_queryset(self):
         account_id = self.request.GET.get('account', None)
@@ -219,19 +227,21 @@ class CashBoxListView(ListView):
         return context
 
 
-class CashBoxDetailView(DetailView):
+class CashBoxDetailView(DetailView, RoleRequiredMixin):
     model = CashBox
     template_name = 'crm/pages/cash_box/detail_cash_box.html'
     context_object_name = 'cash_box'
+    permission_required = 'cash_box'
 
     def get_queryset(self):
         return self.model.objects.select_related(
             'owner', 'manager', 'payment_items', 'personal_account', 'receipt')
 
 
-class CashBoxCreateView(CreateView):
+class CashBoxCreateView(CreateView, RoleRequiredMixin):
     model = CashBox
     template_name = 'crm/pages/cash_box/create_cash_box.html'
+    permission_required = 'cash_box'
 
     def get_success_url(self):
         messages.success(self.request, f'Ведомость №{self.object.number} добавлена!')
@@ -288,9 +298,10 @@ class CashBoxCreateView(CreateView):
         return super().form_valid(form)
 
 
-class CashBoxUpdateView(UpdateView):
+class CashBoxUpdateView(UpdateView, RoleRequiredMixin):
     model = CashBox
     template_name = 'crm/pages/cash_box/update_cash_box.html'
+    permission_required = 'cash_box'
 
     def get_form(self, form_class=None, **kwargs):
         if form_class is None:
@@ -307,8 +318,9 @@ class CashBoxUpdateView(UpdateView):
         return reverse_lazy('cash_box')
 
 
-class CashBoxDelete(DeleteView):
+class CashBoxDelete(DeleteView, RoleRequiredMixin):
     model = CashBox
+    permission_required = 'cash_box'
 
     def get_success_url(self):
         messages.success(self.request, f'Платеж №{self.object.number} удален!')
@@ -320,10 +332,11 @@ class CashBoxDelete(DeleteView):
 # region Receipts
 
 
-class ReceiptListView(ListView):
+class ReceiptListView(ListView, RoleRequiredMixin):
     model = Receipt
     template_name = 'crm/pages/receipts/list_receipts.html'
     context_object_name = 'receipts'
+    permission_required = 'receipts'
 
     def get_queryset(self):
         account_id = self.request.GET.get('account', None)
@@ -343,10 +356,11 @@ class ReceiptListView(ListView):
         return context
 
 
-class ReceiptDetailView(DetailView):
+class ReceiptDetailView(DetailView, RoleRequiredMixin):
     model = Receipt
     template_name = 'crm/pages/receipts/detail_receipt.html'
     context_object_name = 'receipt'
+    permission_required = 'receipts'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -361,9 +375,10 @@ class ReceiptDetailView(DetailView):
         return context
 
 
-class ReceiptCreateView(CreateView):
+class ReceiptCreateView(CreateView, RoleRequiredMixin):
     model = Receipt
     template_name = 'crm/pages/receipts/create_receipt.html'
+    permission_required = 'receipts'
     formset_for_services = modelformset_factory(
         CalculateReceiptService, form=CalculateReceiptServiceForm, extra=0, can_delete=True)
 
@@ -489,9 +504,10 @@ class ReceiptCreateView(CreateView):
         return self.form_invalid(form)
 
 
-class ReceiptUpdateView(UpdateView):
+class ReceiptUpdateView(UpdateView, RoleRequiredMixin):
     model = Receipt
     template_name = 'crm/pages/receipts/update_receipt.html'
+    permission_required = 'receipts'
     formset_for_services = modelformset_factory(
         CalculateReceiptService, form=CalculateReceiptServiceForm, extra=0, can_delete=True)
 
@@ -548,8 +564,9 @@ class ReceiptUpdateView(UpdateView):
         return self.form_invalid(form)
 
 
-class ReceiptDelete(DeleteView):
+class ReceiptDelete(DeleteView, RoleRequiredMixin):
     model = Receipt
+    permission_required = 'receipts'
 
     def get_success_url(self):
         messages.success(self.request, f'Квитанция №{self.object.number} удалена!')
@@ -561,10 +578,11 @@ class ReceiptDelete(DeleteView):
 
 # region Receipt Template
 
-class ReceiptTemplateListView(ListView):
+class ReceiptTemplateListView(ListView, RoleRequiredMixin):
     model = ReceiptTemplate
     template_name = 'crm/pages/receipts/list_templates.html'
     context_object_name = 'templates'
+    permission_required = 'receipts'
 
     def get_queryset(self):
         return self.model.objects.order_by('id')
@@ -610,9 +628,10 @@ def receipt_template(request, pk):
     return HttpResponseRedirect('/admin/receipt/templates/' + str(pk) + '/')
 
 
-class SettingsTemplate(CreateView):
+class SettingsTemplate(CreateView, RoleRequiredMixin):
     model = ReceiptTemplate
     template_name = 'crm/pages/receipts/settings_templates.html'
+    permission_required = 'receipts'
 
     def get_success_url(self):
         messages.success(self.request, f'Добавлен новый шаблон')
@@ -630,8 +649,9 @@ class SettingsTemplate(CreateView):
         return context
 
 
-class ReceiptTemplateDelete(DeleteView):
+class ReceiptTemplateDelete(DeleteView, RoleRequiredMixin):
     model = ReceiptTemplate
+    permission_required = 'receipts'
 
     def get_success_url(self):
         messages.success(self.request, f'{self.object.name} удалён!')
@@ -667,10 +687,11 @@ def receipt_templates_upload(request, pk):
 
 # region Accounts
 
-class AccountsListView(ListView):
+class AccountsListView(ListView, RoleRequiredMixin):
     model = PersonalAccount
     template_name = 'crm/pages/accounts/list_accounts.html'
     context_object_name = 'accounts'
+    permission_required = 'personal_accounts'
 
     def get_queryset(self):
         queryset = self.model.objects.select_related(
@@ -691,10 +712,11 @@ class AccountsListView(ListView):
         return context
 
 
-class AccountsDetailView(DetailView):
+class AccountsDetailView(DetailView, RoleRequiredMixin):
     model = PersonalAccount
     template_name = 'crm/pages/accounts/detail_accounts.html'
     context_object_name = 'accounts'
+    permission_required = 'personal_accounts'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -724,9 +746,10 @@ class AccountsDetailView(DetailView):
         return context
 
 
-class AccountsCreateView(CreateView):
+class AccountsCreateView(CreateView, RoleRequiredMixin):
     model = PersonalAccount
     template_name = 'crm/pages/accounts/create_accounts.html'
+    permission_required = 'personal_accounts'
 
     def get_success_url(self):
         messages.success(self.request, f'Лицевой счет №{self.object.number} создан!')
@@ -744,9 +767,10 @@ class AccountsCreateView(CreateView):
                                 initial={'number': self.generate_number()})
 
 
-class AccountsUpdateView(UpdateView):
+class AccountsUpdateView(UpdateView, RoleRequiredMixin):
     model = PersonalAccount
     template_name = 'crm/pages/accounts/update_accounts.html'
+    permission_required = 'personal_accounts'
 
     def get_success_url(self):
         messages.success(self.request, f'Лицевой счет №{self.object.number} обновлён!')
@@ -762,8 +786,9 @@ class AccountsUpdateView(UpdateView):
             return AccountsForm(self.request.POST or None, instance=self.object)
 
 
-class AccountsDelete(DeleteView):
+class AccountsDelete(DeleteView, RoleRequiredMixin):
     model = PersonalAccount
+    permission_required = 'personal_accounts'
 
     def get_success_url(self):
         messages.success(self.request, f'Лицевой счет №{self.object} удалён!')
@@ -783,19 +808,21 @@ class AccountsDelete(DeleteView):
 
 # region Houses
 
-class HouseListView(ListView):
+class HouseListView(ListView, RoleRequiredMixin):
     model = House
     template_name = 'crm/pages/houses/list_houses.html'
     context_object_name = 'houses'
+    permission_required = 'houses'
 
     def get_queryset(self):
         return self.model.objects.order_by('-id')
 
 
-class HouseDetailView(DetailView):
+class HouseDetailView(DetailView, RoleRequiredMixin):
     model = House
     template_name = 'crm/pages/houses/detail_house.html'
     context_object_name = 'house'
+    permission_required = 'houses'
 
     def get_queryset(self):
         return self.model.objects.prefetch_related('user__role')
@@ -807,9 +834,10 @@ class HouseDetailView(DetailView):
         return context
 
 
-class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFormView):
+class BaseHouseView(SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFormView, RoleRequiredMixin):
     model = House
     form_class = HouseForm
+    permission_required = 'houses'
     formset_for_section = modelformset_factory(Section, form=SectionForm, extra=0, can_delete=True)
     formset_for_floor = modelformset_factory(Floor, form=FloorForm, extra=0, can_delete=True)
     formset_for_user = formset_factory(form=UserFormSet, extra=0, can_delete=True)
@@ -917,8 +945,9 @@ class HouseCreateView(BaseHouseView):
         return context
 
 
-class HouseDelete(DeleteView):
+class HouseDelete(DeleteView, RoleRequiredMixin):
     model = House
+    permission_required = 'houses'
 
     def get_success_url(self):
         messages.success(self.request, f'Дом  {self.object} удалён!')
@@ -929,10 +958,11 @@ class HouseDelete(DeleteView):
 
 # region Messages
 
-class MessageListView(ListView):
+class MessageListView(ListView, RoleRequiredMixin):
     model = Message
     template_name = 'crm/pages/messages/list_message.html'
     context_object_name = 'message'
+    permission_required = 'messages'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -940,10 +970,11 @@ class MessageListView(ListView):
         ).order_by('-datetime')
 
 
-class MessageDetailView(DetailView):
+class MessageDetailView(DetailView, RoleRequiredMixin):
     model = Message
     template_name = 'crm/pages/messages/detail_message.html'
     context_object_name = 'message'
+    permission_required = 'messages'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -951,9 +982,10 @@ class MessageDetailView(DetailView):
         )
 
 
-class MessageCreateAndSend(CreateView):
+class MessageCreateAndSend(CreateView, RoleRequiredMixin):
     model = Message
     template_name = 'crm/pages/messages/send_message.html'
+    permission_required = 'messages'
 
     def get_success_url(self):
         messages.success(self.request, f'Сообщение отправлено!')
@@ -977,8 +1009,9 @@ class MessageCreateAndSend(CreateView):
         return super().form_valid(form)
 
 
-class MessageDelete(DeleteView):
+class MessageDelete(DeleteView, RoleRequiredMixin):
     model = Message
+    permission_required = 'messages'
 
     def get_success_url(self):
         messages.success(self.request, f'Сообщение  удаленно!')
@@ -991,10 +1024,11 @@ class MessageDelete(DeleteView):
 # region Owners
 
 
-class OwnerListView(ListView):
+class OwnerListView(ListView, RoleRequiredMixin):
     model = User
     template_name = 'crm/pages/owners/list_owners.html'
     context_object_name = 'owners'
+    permission_required = 'owners'
 
     def get_queryset(self):
         return self.model.objects.filter(
@@ -1017,10 +1051,11 @@ class OwnerListView(ListView):
         return context
 
 
-class OwnerDetailView(DetailView):
+class OwnerDetailView(DetailView, RoleRequiredMixin):
     model = User
     template_name = 'crm/pages/owners/detail_owner.html'
     context_object_name = 'owner'
+    permission_required = 'owners'
 
     def get_context_data(self, **kwargs):
         context = super(OwnerDetailView, self).get_context_data()
@@ -1029,28 +1064,31 @@ class OwnerDetailView(DetailView):
         return context
 
 
-class OwnerCreateView(CreateView):
+class OwnerCreateView(CreateView, RoleRequiredMixin):
     model = User
     template_name = 'crm/pages/owners/create_owner.html'
     form_class = OwnerForm
+    permission_required = 'owners'
 
     def get_success_url(self):
         messages.success(self.request, f"{self.object.username} успешно создан!")
         return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
 
 
-class OwnerUpdateView(UpdateView):
+class OwnerUpdateView(UpdateView, RoleRequiredMixin):
     model = User
     template_name = 'crm/pages/owners/update_owner.html'
     form_class = OwnerUpdateForm
+    permission_required = 'owners'
 
     def get_success_url(self):
         messages.success(self.request, f'{self.object.username} успешно обновлён!')
         return reverse_lazy('detail_owner', kwargs={'pk': self.object.id})
 
 
-class OwnerDelete(DeleteView):
+class OwnerDelete(DeleteView, RoleRequiredMixin):
     model = User
+    permission_required = 'owners'
 
     def get_success_url(self):
         messages.success(self.request, f'Владелец  {self.object} удалён!')
@@ -1079,10 +1117,11 @@ def invite_owner(request):
 
 # region Apartment
 
-class ApartmentListView(ListView):
+class ApartmentListView(ListView, RoleRequiredMixin):
     model = Apartment
     template_name = 'crm/pages/apartments/list_apartments.html'
     context_object_name = 'apartments'
+    permission_required = 'apartments'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -1097,10 +1136,11 @@ class ApartmentListView(ListView):
         ).order_by('-id')
 
 
-class ApartmentDetailView(DetailView):
+class ApartmentDetailView(DetailView, RoleRequiredMixin):
     model = Apartment
     template_name = 'crm/pages/apartments/detail_apartment.html'
     context_object_name = 'apartment'
+    permission_required = 'apartments'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -1115,11 +1155,12 @@ class ApartmentDetailView(DetailView):
         return context
 
 
-class ApartmentCreateView(CreateView):
+class ApartmentCreateView(CreateView, RoleRequiredMixin):
     model = Apartment
     form_class = ApartmentForm
     success_url = reverse_lazy('apartments')
     template_name = 'crm/pages/apartments/create_apartment.html'
+    permission_required = 'apartments'
 
     def get_context_data(self, **kwargs):
         context = super(ApartmentCreateView, self).get_context_data()
@@ -1159,11 +1200,12 @@ class ApartmentCreateView(CreateView):
         return super().form_valid(form)
 
 
-class ApartmentUpdateView(UpdateView):
+class ApartmentUpdateView(UpdateView, RoleRequiredMixin):
     model = Apartment
     form_class = ApartmentForm
     success_url = reverse_lazy('apartments')
     template_name = 'crm/pages/apartments/update_apartment.html'
+    permission_required = 'apartments'
 
     def get_context_data(self, **kwargs):
         context = super(ApartmentUpdateView, self).get_context_data()
@@ -1209,8 +1251,9 @@ class ApartmentUpdateView(UpdateView):
         return super().form_valid(form)
 
 
-class ApartmentDelete(DeleteView):
+class ApartmentDelete(DeleteView, RoleRequiredMixin):
     model = Apartment
+    permission_required = 'apartments'
 
     def get_success_url(self):
         messages.success(self.request, f'Квартира №{self.object.number} удалена!')
@@ -1222,9 +1265,10 @@ class ApartmentDelete(DeleteView):
 
 # region Services
 
-class ServicesListView(CreateView):
+class ServicesListView(CreateView, RoleRequiredMixin):
     model = Services
     template_name = 'crm/pages/services/list_services.html'
+    permission_required = 'services'
     formset_for_services = modelformset_factory(Services, form=ServicesForm, extra=0, can_delete=True)
     formset_for_unit = modelformset_factory(UnitOfMeasure, form=UnitOfMeasureForm, extra=0, can_delete=True)
 
@@ -1266,19 +1310,21 @@ class ServicesListView(CreateView):
 # region Tariffs
 
 
-class TariffListView(ListView):
+class TariffListView(ListView, RoleRequiredMixin):
     model = Tariff
     template_name = 'crm/pages/tariffs/list_tariffs.html'
     context_object_name = 'tariffs'
+    permission_required = 'tariffs'
 
     def get_queryset(self):
         return self.model.objects.all().order_by('-id')
 
 
-class TariffDetailView(DetailView):
+class TariffDetailView(DetailView, RoleRequiredMixin):
     model = Tariff
     template_name = 'crm/pages/tariffs/detail_tariff.html'
     context_object_name = 'tariff'
+    permission_required = 'tariffs'
 
     def get_context_data(self, **kwargs):
         context = super(TariffDetailView, self).get_context_data()
@@ -1286,10 +1332,11 @@ class TariffDetailView(DetailView):
         return context
 
 
-class TariffCreateView(CreateView):
+class TariffCreateView(CreateView, RoleRequiredMixin):
     model = Tariff
     form_class = TariffForm
     template_name = 'crm/pages/tariffs/create_tariff.html'
+    permission_required = 'tariffs'
     formset_for_services_price = modelformset_factory(
         PriceTariffServices, form=PriceTariffServicesForm, extra=0, can_delete=True
     )
@@ -1358,10 +1405,11 @@ class TariffCreateView(CreateView):
         return self.form_invalid(form)
 
 
-class TariffUpdateView(UpdateView):
+class TariffUpdateView(UpdateView, RoleRequiredMixin):
     model = Tariff
     form_class = TariffForm
     template_name = 'crm/pages/tariffs/update_tariff.html'
+    permission_required = 'tariffs'
     formset_for_services_price = modelformset_factory(
         PriceTariffServices, form=PriceTariffServicesForm, extra=0, can_delete=True
     )
@@ -1404,8 +1452,9 @@ class TariffUpdateView(UpdateView):
         return self.form_invalid(form)
 
 
-class TariffDelete(DeleteView):
+class TariffDelete(DeleteView, RoleRequiredMixin):
     model = Tariff
+    permission_required = 'tariffs'
 
     def get_success_url(self):
         messages.success(self.request, f'{self.object.title} удалён!')
@@ -1416,9 +1465,10 @@ class TariffDelete(DeleteView):
 
 # region Roles
 
-class RolesUpdateView(CreateView):
+class RolesUpdateView(CreateView, RoleRequiredMixin):
     model = Role
     template_name = 'crm/pages/roles.html'
+    permission_required = 'roles'
     formset_for_role = modelformset_factory(Role, form=RolesForm, extra=0)
 
     def get_form(self, form_class=None):
@@ -1436,10 +1486,11 @@ class RolesUpdateView(CreateView):
 
 # region Requisites
 
-class RequisitesView(UpdateView):
+class RequisitesView(UpdateView, RoleRequiredMixin):
     model = Requisites
     form_class = RequisitesForm
     template_name = 'crm/pages/requisites.html'
+    permission_required = 'requisites'
 
     def get_success_url(self):
         messages.success(self.request, 'Платежные реквизиты обновлены')
@@ -1457,16 +1508,17 @@ class RequisitesView(UpdateView):
 
 # region Users
 
-class UsersListView(ListView):
+class UsersListView(ListView, RoleRequiredMixin):
     model = User
     template_name = 'crm/pages/users/list_users.html'
     context_object_name = 'users'
+    permission_required = 'users'
 
     def get_queryset(self):
         return self.model.objects.filter(is_staff=True).order_by('role', 'id').select_related('role')
 
 
-class UserDetailView(DetailView):
+class UserDetailView(DetailView, RoleRequiredMixin):
     model = User
     template_name = 'crm/pages/users/detail_user.html'
     context_object_name = 'user'
@@ -1475,17 +1527,18 @@ class UserDetailView(DetailView):
         return self.model.objects.select_related('role')
 
 
-class UserCreateView(CreateView):
+class UserCreateView(CreateView, RoleRequiredMixin):
     model = User
     form_class = UserAdminForm
     template_name = 'crm/pages/users/create_user.html'
+    permission_required = 'users'
 
     def get_success_url(self):
         messages.success(self.request, f"{self.object} успешно создан!")
         return reverse_lazy('detail_user', kwargs={'pk': self.object.id})
 
 
-class UserUpdateView(UpdateView):
+class UserUpdateView(UpdateView, RoleRequiredMixin):
     model = User
     form_class = UserAdminChangeForm
     template_name = 'crm/pages/users/update_user.html'
@@ -1498,8 +1551,9 @@ class UserUpdateView(UpdateView):
         return reverse_lazy('detail_user', kwargs={'pk': self.object.id})
 
 
-class UserDelete(DeleteView):
+class UserDelete(DeleteView, RoleRequiredMixin):
     model = User
+    permission_required = 'users'
 
     def get_success_url(self):
         messages.success(self.request, f'{self.object} удалён!')
@@ -1518,7 +1572,7 @@ class UserDelete(DeleteView):
 
 # region Payment Items
 
-class PaymentItemsListView(ListView):
+class PaymentItemsListView(ListView, RoleRequiredMixin):
     model = PaymentItems
     template_name = 'crm/pages/payments/list_payment_items.html'
     context_object_name = 'payments'
@@ -1527,13 +1581,13 @@ class PaymentItemsListView(ListView):
         return self.model.objects.all().order_by('-id')
 
 
-class PaymentItemsDetailView(DetailView):
+class PaymentItemsDetailView(DetailView, RoleRequiredMixin):
     model = PaymentItems
     template_name = 'crm/pages/payments/detail_payment_items.html'
     context_object_name = 'payment'
 
 
-class PaymentItemsCreateView(CreateView):
+class PaymentItemsCreateView(CreateView, RoleRequiredMixin):
     model = PaymentItems
     form_class = PaymentItemsForm
     template_name = 'crm/pages/payments/create_payment_items.html'
@@ -1543,7 +1597,7 @@ class PaymentItemsCreateView(CreateView):
         return reverse_lazy('detail_payment_items', kwargs={'pk': self.object.id})
 
 
-class PaymentItemsUpdateView(UpdateView):
+class PaymentItemsUpdateView(UpdateView, RoleRequiredMixin):
     model = PaymentItems
     form_class = PaymentItemsForm
     template_name = 'crm/pages/payments/update_payment_items.html'
@@ -1553,7 +1607,7 @@ class PaymentItemsUpdateView(UpdateView):
         return reverse_lazy('detail_payment_items', kwargs={'pk': self.object.id})
 
 
-class PaymentItemsDelete(DeleteView):
+class PaymentItemsDelete(DeleteView, RoleRequiredMixin):
     model = PaymentItems
 
     def get_success_url(self):
@@ -1566,10 +1620,11 @@ class PaymentItemsDelete(DeleteView):
 
 # region Master's call
 
-class MasterCallListView(ListView):
+class MasterCallListView(ListView, RoleRequiredMixin):
     model = CallRequest
     template_name = 'crm/pages/master_calls/list_master_calls.html'
     context_object_name = 'calls'
+    permission_required = 'call_requests'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -1577,10 +1632,11 @@ class MasterCallListView(ListView):
         ).order_by('-id')
 
 
-class MasterCallDetailView(DetailView):
+class MasterCallDetailView(DetailView, RoleRequiredMixin):
     model = CallRequest
     template_name = 'crm/pages/master_calls/detail_master_call.html'
     context_object_name = 'call'
+    permission_required = 'call_requests'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -1588,19 +1644,21 @@ class MasterCallDetailView(DetailView):
         ).order_by('-id')
 
 
-class MasterCallCreateView(CreateView):
+class MasterCallCreateView(CreateView, RoleRequiredMixin):
     model = CallRequest
     form_class = MasterCallForm
     template_name = 'crm/pages/master_calls/create_master_call.html'
+    permission_required = 'call_requests'
 
     def get_success_url(self):
         messages.success(self.request, f'Заявка №{self.object.id} добавлена!')
         return reverse_lazy('detail_master_call', kwargs={'pk': self.object.id})
 
 
-class MasterCallUpdateView(UpdateView):
+class MasterCallUpdateView(UpdateView, RoleRequiredMixin):
     model = CallRequest
     template_name = 'crm/pages/master_calls/update_master_call.html'
+    permission_required = 'call_requests'
 
     def get_object(self, queryset=None):
         queryset = self.model.objects.filter(id=self.kwargs.get('pk')).select_related(
@@ -1622,8 +1680,9 @@ class MasterCallUpdateView(UpdateView):
         return reverse_lazy('detail_master_call', kwargs={'pk': self.object.id})
 
 
-class MasterCallDelete(DeleteView):
+class MasterCallDelete(DeleteView, RoleRequiredMixin):
     model = CallRequest
+    permission_required = 'call_requests'
 
     def get_success_url(self):
         messages.success(self.request, f'Заявка №{self.object.id} удалена!')
@@ -1636,10 +1695,11 @@ class MasterCallDelete(DeleteView):
 # region MeterData
 
 
-class MeterDataListView(ListView):
+class MeterDataListView(ListView, RoleRequiredMixin):
     model = MeterData
     template_name = 'crm/pages/meter_data/list_meter_data.html'
     context_object_name = 'meters_data'
+    permission_required = 'counters'
 
     def get_queryset(self):
         queryset = self.model.objects.select_related(
@@ -1648,10 +1708,11 @@ class MeterDataListView(ListView):
         return queryset
 
 
-class MeterDataDetailView(DetailView):
+class MeterDataDetailView(DetailView, RoleRequiredMixin):
     model = MeterData
     template_name = 'crm/pages/meter_data/detail_meter_data.html'
     context_object_name = 'meter_data'
+    permission_required = 'counters'
 
     def get_queryset(self):
         return self.model.objects.select_related(
@@ -1660,10 +1721,11 @@ class MeterDataDetailView(DetailView):
         )
 
 
-class MeterDataApartmentListView(ListView):
+class MeterDataApartmentListView(ListView, RoleRequiredMixin):
     model = MeterData
     template_name = 'crm/pages/meter_data/list_meter_data_for_apartment.html'
     context_object_name = 'meters_data'
+    permission_required = 'counters'
 
     def get_queryset(self, **kwargs):
         return self.model.objects.filter(apartment=self.kwargs.get('pk')).select_related(
@@ -1676,9 +1738,10 @@ class MeterDataApartmentListView(ListView):
         return context
 
 
-class MeterDataCreateView(CreateView):
+class MeterDataCreateView(CreateView, RoleRequiredMixin):
     model = MeterData
     template_name = 'crm/pages/meter_data/create_meter_data.html'
+    permission_required = 'counters'
 
     def get_success_url(self):
         messages.success(self.request, f'Показания счетчика №{self.object.number} добавлены!')
@@ -1717,9 +1780,10 @@ class MeterDataCreateView(CreateView):
                                  initial={'number': self.generate_number()})
 
 
-class MeterDataUpdateView(UpdateView):
+class MeterDataUpdateView(UpdateView, RoleRequiredMixin):
     model = MeterData
     template_name = 'crm/pages/meter_data/update_meter_data.html'
+    permission_required = 'counters'
 
     def get_object(self, queryset=None):
         queryset = self.model.objects.filter(id=self.kwargs.get('pk')).select_related(
@@ -1742,8 +1806,9 @@ class MeterDataUpdateView(UpdateView):
         return reverse_lazy('create_meter_data')
 
 
-class MeterDataDelete(DeleteView):
+class MeterDataDelete(DeleteView, RoleRequiredMixin):
     model = MeterData
+    permission_required = 'counters'
 
     def get_success_url(self):
         messages.success(self.request, f'Показания счетчика №{self.object.number} удалены!')
@@ -1754,10 +1819,11 @@ class MeterDataDelete(DeleteView):
 
 # region SiteManagement
 
-class SiteHomePage(UpdateView):
+class SiteHomePage(UpdateView, RoleRequiredMixin):
     model = HomePage
     form_class = HomePageForm
     template_name = 'crm/pages/site/home_page.html'
+    permission_required = 'site_management'
     formset = modelformset_factory(ContentBlock, form=ContentBlockForm, extra=0)
 
     def get_success_url(self):
@@ -1790,10 +1856,11 @@ class SiteHomePage(UpdateView):
         return super().form_valid(form)
 
 
-class SiteContactPage(UpdateView):
+class SiteContactPage(UpdateView, RoleRequiredMixin):
     model = Contact
     form_class = ContactPageForm
     template_name = 'crm/pages/site/contact_page.html'
+    permission_required = 'site_management'
 
     def get_success_url(self):
         messages.success(self.request, 'Данные обновлены!')
@@ -1822,10 +1889,11 @@ class SiteContactPage(UpdateView):
         return super().form_valid(form)
 
 
-class SiteAboutPage(UpdateView):
+class SiteAboutPage(UpdateView, RoleRequiredMixin):
     model = AboutUs
     form_class = AboutPageForm
     template_name = 'crm/pages/site/about_page.html'
+    permission_required = 'site_management'
     document = modelformset_factory(Document, form=DocumentForm, can_delete=True, extra=0)
 
     def get_object(self, queryset=None):
@@ -1885,23 +1953,26 @@ class SiteAboutPage(UpdateView):
         return super().form_valid(form)
 
 
-class DeleteDocument(DeleteView):
+class DeleteDocument(DeleteView, RoleRequiredMixin):
     model = Document
+    permission_required = 'site_management'
 
     def get_success_url(self):
         return reverse_lazy('about_page_card')
 
 
-class DeleteGalleryImage(DeleteView):
+class DeleteGalleryImage(DeleteView, RoleRequiredMixin):
     model = Gallery
+    permission_required = 'site_management'
 
     def get_success_url(self):
         return reverse_lazy('about_page_card')
 
 
-class SiteServicesPage(UpdateView):
+class SiteServicesPage(UpdateView, RoleRequiredMixin):
     model = SiteService
     template_name = 'crm/pages/site/services_page.html'
+    permission_required = 'site_management'
     services = modelformset_factory(SiteService, form=SiteServiceForm, can_delete=True, extra=0)
 
     def get_object(self, queryset=None):
@@ -1940,8 +2011,9 @@ class SiteServicesPage(UpdateView):
         return super().form_valid(form)
 
 
-class DeleteSiteServices(DeleteView):
+class DeleteSiteServices(DeleteView, RoleRequiredMixin):
     model = SiteService
+    permission_required = 'site_management'
 
     def get_success_url(self):
         return reverse_lazy('service_page_card')

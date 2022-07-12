@@ -471,7 +471,10 @@ class ServicesForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ServicesForm, self).__init__(*args, **kwargs)
         self.fields['u_measurement'].empty_label = 'Выберите...'
-        self.fields['title'].error_messages = {'required': 'Поле Услуга не может быть пустым.'}
+        self.fields['title'].error_messages = {
+            'required': 'Поле Услуга не может быть пустым.',
+            'unique': 'Услуга с таким заголовком уже существует..'
+        }
 
 
 # endregion Services Form

@@ -24,18 +24,16 @@
         <ul class="nav nav-tabs">
             <li class="nav-item">
                 <a class="nav-link"
-                   data-toggle="tab"
                    value="cabinet"
                    id="cabinet-link"
-                   href="#cabinet"
+                   href="{% if user.is_authenticated and not user.is_superuser %}{% url 'cabinet' %}{% endif %}"
                    aria-expanded="true">Для жильца</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link"
-                   data-toggle="tab"
                    value="admin"
                    id="admin-link"
-                   href="#admin"
+                   href="{% if user.is_authenticated and user.is_superuser %}{% url 'admin' %}{% endif %}"
                    aria-expanded="true">Для администрации</a>
             </li>
         </ul>
@@ -137,6 +135,7 @@
     $('.nav-link').on('click', function () {
         const value = $(this).attr('value');
         localStorage.setItem('active_tabs', value)
+        $.get($(this).attr('href'))
     })
 
     if (localStorage.getItem('active_tabs')) {

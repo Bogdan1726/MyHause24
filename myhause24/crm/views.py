@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import AccessMixin
 from django.contrib.sitemaps import ping_google
 from django.core.exceptions import ValidationError
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, F
 from django.db.models.functions import Greatest
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render, redirect
@@ -71,16 +71,11 @@ def get_balance_account():
         'apartment', 'apartment__house', 'apartment__section', 'apartment__owner',
     ).annotate(
         balance=
-        Greatest(Sum('cash_account__sum',
-                     filter=Q(cash_account__status=True),
-                     distinct=True),
-                 Decimal(0))
+        Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
         -
-        Greatest(Sum('receipt_account__sum',
-                     filter=Q(receipt_account__status=True),
-                     distinct=True),
-                 Decimal(0))
+        Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
     ).order_by('-id')
+
 
     for obj in queryset:
         if obj.balance < 0:

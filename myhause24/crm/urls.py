@@ -25,7 +25,7 @@ from .api_views import (
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
     send_invite, new_users, loading_apartment_of_owner, loading_master_of_type_master,
     loading_personal_account_of_owner, loading_services_for_tariff, meter_data_for_receipt, delete_is_checked_receipts,
-    loading_apartment_for_message, delete_is_checked_messages,
+    loading_apartment_for_message, delete_is_checked_messages, check_services,
 )
 
 User = get_user_model()
@@ -184,6 +184,7 @@ urlpatterns = [
     path('loading_apartment_for_message/', loading_apartment_for_message, name='loading_apartment_for_message'),
     path('loading_apartment_owner/', loading_apartment_owner, name='loading_apartment_owner'),
     path('check_units/', check_units, name='check_units'),
+    path('check_services/', check_services, name='check_services'),
     path('send_invite/', send_invite, name='send_invite'),
     path('loading_unit_for_services/', loading_unit_for_services, name="loading_unit_for_services"),
     path('meter_data_for_receipt/', meter_data_for_receipt, name='meter_data_for_receipt'),

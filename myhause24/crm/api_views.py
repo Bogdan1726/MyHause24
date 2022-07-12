@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from .task import send_invite_user
 from .models import (
     Section, Floor, PersonalAccount, Apartment, House, UnitOfMeasure, Services, PriceTariffServices, CashBox, MeterData,
-    Receipt, Message
+    Receipt, Message, CalculateReceiptService
 )
 
 User = get_user_model()
@@ -122,6 +122,18 @@ def check_units(request):
         services = True if Services.objects.filter(u_measurement=obj).exists() else False
         response = {
             'is_services': services
+        }
+        return JsonResponse(response, status=200)
+
+
+def check_services(request):
+    if request.is_ajax():
+        services = request.GET.get('value')
+        print(services)
+        obj = get_object_or_404(Services, title=services)
+        service = True if CalculateReceiptService.objects.filter(services=obj).exists() else False
+        response = {
+            'is_receipt': service
         }
         return JsonResponse(response, status=200)
 

@@ -190,7 +190,7 @@
 
 {% block scripts %}
 <script>
-    function error_message() {
+    function error_message(message) {
         var Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -199,7 +199,7 @@
         });
         Toast.fire({
             icon: 'error',
-            title: '<h5>Эта ед.изм. используется в услуге. Удаление невозможно.</h5>'
+            title: '<h5>' + message + '</h5>'
         })
     }
 
@@ -237,7 +237,9 @@
                     },
                     success: function (response) {
                         if (response.is_services) {
-                            error_message();
+                            error_message(
+                                'Эта ед.изм. используется в услуге. Удаление невозможно.'
+                            );
                         } else {
                             del(prefix);
                         }
@@ -249,10 +251,33 @@
             } else {
                 del(prefix);
             }
-        }else {
-            del(prefix)
         }
+        if (prefix.split('-')[0] === 'services') {
+            if (value) {
+                $.ajax({
+                    method: 'GET',
+                    url: '{% url "check_services" %}',
+                    data: {
+                        'value': value
+                    },
+                    success: function (response) {
 
+                        if (response.is_receipt) {
+                            error_message(
+                                'Эта услуга используется в квитанциях. Удаление невозможно.'
+                            );
+                        } else {
+                            del(prefix);
+                        }
+                    },
+                    error: function (response) {
+                        console.log(response.error)
+                    }
+                })
+            } else {
+                del(prefix);
+            }
+        }
     }
 </script>
 {% endblock %}

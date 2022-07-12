@@ -79,7 +79,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'login' %}">
+                    <a href="{% if user.is_authenticated and not user.is_superuser %}{% url 'cabinet' %}{% else %}{% url 'login' %}{% endif %}">
                         <i class="fas fa-sign-in-alt"></i>
                         Вход
                     </a>

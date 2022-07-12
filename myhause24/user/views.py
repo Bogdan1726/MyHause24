@@ -23,10 +23,9 @@ class UserLoginView(LoginView):
         """Security check complete. Log the user in."""
         auth_login(self.request, form.get_user())
         messages.success(self.request, f'Добро пожаловать {self.request.user}')
-        if self.request.user.role.statistics:
-            return HttpResponseRedirect(self.get_success_url())
-        return redirect(reverse('user_profile', kwargs={'pk': self.request.user.id}))
-
+        if self.request.user.is_staff and not self.request.user.role.statistics:
+            return redirect(reverse('user_profile', kwargs={'pk': self.request.user.id}))
+        return HttpResponseRedirect(self.get_success_url())
 
 class UserLogout(LogoutView):
     next_page = 'login'

@@ -94,7 +94,7 @@ class PriceTariffServices(models.Model):
 
 class Services(models.Model):
     objects = None
-    title = models.CharField(max_length=64)
+    title = models.CharField(max_length=64, unique=True)
     is_show_meter_data = models.BooleanField(default=False)
     u_measurement = models.ForeignKey('UnitOfMeasure', blank=True, null=True, on_delete=models.SET_NULL)
 

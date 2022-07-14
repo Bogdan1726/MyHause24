@@ -1,0 +1,205 @@
+{% extends 'cabinet/elements/layout.html' %}
+
+{% load static %}
+
+{% block title %}
+Профиль
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content-header %}
+<h1>Профиль</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'cabinet'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Профиль</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3">
+        <div class="row">
+            <div class="col-md-6 col-lg-12">
+                <div class="box">
+                    <div class="box-body box-profile">
+                        {% if profile.profile_picture %}
+                        <img class="profile-user-img img-responsive img-circle"
+                             src="{{ profile.profile_picture.url }}"
+                             alt="Аватар">
+                        {% else %}
+                        <img class="profile-user-img img-responsive img-circle"
+                             src="{% static 'crm/media/def_user.jpeg' %}"
+                             alt="Аватар">
+                        {% endif %}
+                        <h3 class="profile-username text-center">{{ profile }}</h3>
+                        <p class="text-muted text-center">Владелец квартиры</p>
+
+                        <ul class="list-group list-group-unbordered">
+                            <li class="list-group-item">
+                                <span>Телефон</span>
+                                {% if profile.phone %}
+                                <span class="pull-right">{{ profile.phone }}</span>
+                                {% else %}
+                                <span class="pull-right">не задан</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item">
+                                <span>Viber</span>
+                                {% if profile.viber %}
+                                <span class="pull-right">{{ profile.viber }}</span>
+                                {% else %}
+                                <span class="pull-right">не задан</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item">
+                                <span>Telegram</span>
+                                {% if profile.telegram %}
+                                <span class="pull-right">{{ profile.telegram }}</span>
+                                {% else %}
+                                <span class="pull-right">не задан</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item">
+                                <span>Email</span>
+                                <span class="pull-right">{{ profile.email }}</span>
+                            </li>
+                        </ul>
+
+                        <a href="{% url 'update_profile' %}" class="btn btn-primary btn-block">Изменить</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-12">
+                <h3 class="page-header">Обо мне (заметки)</h3>
+                <div class="box">
+                    <div class="box-body box-profile">
+                        {% if profile.about_owner %}
+                        {{ profile.about_owner }}
+                        {% else %}
+                        нет информации
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <!-- /.box-body -->
+        </div>
+    </div>
+    <div class="col-lg-9">
+        <h2 class="page-header">Мои квартиры</h2>
+        {% for apartment in apartments %}
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Описание квартиры</h3>
+            </div>
+            <div class="box-body">
+                <p>{{ apartment.house.title }}. {{ apartment.house.address }}, кв. {{ apartment.number}}</p>
+                <div class="row">
+                    <div class="col-xs-12 col-md-6">
+                        {% if apartment.house.image1 %}
+                        <img src="{{ apartment.house.image1.url }}"
+                             class="img-responsive largeImg margin-bottom-30" alt="image1">
+                        {% else %}
+                        <img src="{% static 'cabinet/media/def_image.jpeg' %}"
+                             class="img-responsive largeImg margin-bottom-30" alt="image_not_found">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        {% if apartment.house.image2 %}
+                        <img src="{{ apartment.house.image2.url }}"
+                             class="img-responsive smallImg margin-bottom-30" alt="image2">
+                        {% else %}
+                        <img src="{% static 'cabinet/media/def_image.jpeg' %}"
+                             class="img-responsive smallImg margin-bottom-30" alt="image_not_found">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        {% if apartment.house.image3 %}
+                        <img src="{{ apartment.house.image3.url }}"
+                             class="img-responsive smallImg margin-bottom-30" alt="image3">
+                        {% else %}
+                        <img src="{% static 'cabinet/media/def_image.jpeg' %}"
+                             class="img-responsive smallImg margin-bottom-30" alt="image_not_found">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        {% if apartment.house.image4 %}
+                        <img src="{{ apartment.house.image4.url }}"
+                             class="img-responsive smallImg margin-bottom-30" alt="image4">
+                        {% else %}
+                        <img src="{% static 'cabinet/media/def_image.jpeg' %}"
+                             class="img-responsive smallImg margin-bottom-30" alt="image_not_found">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        {% if apartment.house.image5 %}
+                        <img src="{{ apartment.house.image5.url }}"
+                             class="img-responsive smallImg margin-bottom-30" alt="image5">
+                        {% else %}
+                        <img src="{% static 'cabinet/media/def_image.jpeg' %}"
+                             class="img-responsive smallImg margin-bottom-30" alt="image_not_found">
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th colspan="2">Описание</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <th style="min-width: 200px; font-weight:normal;">Название дома</th>
+                            <th style="font-weight:normal;">{{ apartment.house.title }}</th>
+                        </tr>
+                        <tr>
+                            <td>Адрес</td>
+                            <td>{{ apartment.house.address }}</td>
+                        </tr>
+                        <tr>
+                            <td>№ квартиры</td>
+                            <td>{{ apartment.number }}</td>
+                        </tr>
+                        <tr>
+                            <td>Площадь</td>
+                            {% if apartment.area %}
+                            <td>
+                                {{ apartment.area|floatformat:"0" }}м
+                                <sup>2</sup>
+                            </td>
+                            {% else %}
+                            <td>не указано</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Этаж</td>
+                            <td>{{ apartment.floor.title }}</td>
+                        </tr>
+                        <tr>
+                            <td>Секция</td>
+                            <td>{{ apartment.section.title }}</td>
+                        </tr>
+                        <tr>
+                            <td>Лицевой счет</td>
+                            {% if apartment.account_apartment.number %}
+                            <td>{{ apartment.account_apartment.number }}</td>
+                            {% else %}
+                            <td>не указано</td>
+                            {% endif %}
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

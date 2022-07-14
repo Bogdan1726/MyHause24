@@ -85,7 +85,9 @@ def get_balance_account():
 
 
 class RoleRequiredMixin(View, AccessMixin):
-    """Check user is staff."""
+    """
+    Check user is role and is_staff
+    """
 
     permission_required = None
 
@@ -1379,8 +1381,8 @@ class TariffCreateView(CreateView, RoleRequiredMixin):
     def form_valid(self, form):
         context = self.get_context_data()
         formset = context['formset']
-        self.object = form.save()
         if formset.is_valid():
+            self.object = form.save()
             for forms in formset:
                 if forms.cleaned_data and forms.cleaned_data['DELETE'] is False:
                     if forms.is_valid():
@@ -1544,6 +1546,8 @@ class UserUpdateView(UpdateView, RoleRequiredMixin):
         self.object = self.get_object()
         if self.object.is_superuser and not request.user.is_superuser:
             messages.error(request, f'{self.object} является супер пользователем его нельзя редактировать')
+            return HttpResponseRedirect(reverse_lazy('users'))
+        if self.object != request.user and request.user.role.users is False:
             return HttpResponseRedirect(reverse_lazy('users'))
         return super().post(request, *args, **kwargs)
 

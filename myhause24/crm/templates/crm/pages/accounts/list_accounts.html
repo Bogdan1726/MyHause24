@@ -134,7 +134,9 @@
                             <th style="width: 200px; min-width: 200px">Секция</th>
                             <th style="width: 200px; min-width: 200px">Владелец</th>
                             <th style="width: 100px; min-width: 100px">Остаток</th>
-                            <th style="width: 114px; min-width: 114px">&nbsp;</th>
+                            <th style="
+                            width: 114px; min-width: 114px">&nbsp;
+                            </th>
                         </tr>
                         </thead>
                         <tfoot style="display: table-header-group">
@@ -145,7 +147,13 @@
                             <th></th>
                             <th></th>
                             <th></th>
-                            <th></th>
+                            <td>
+                                <select name="custom_select" id="custom_select">
+                                    <option value="">Выберите</option>
+                                    <option value="true">Есть долг</option>
+                                    <option value="false">Нет долга</option>
+                                </select>
+                            </td>
                         </tr>
                         </tfoot>
                         <tbody>
@@ -254,6 +262,22 @@
             $(this).html('<input type="text" name="custom_search"/>');
         });
 
+        $.fn.dataTable.ext.search.push(function (settings, data) {
+            var status = $('#custom_select').val();
+            var sum = parseInt(data[6]);
+
+            if (status === 'true'){
+                if (sum > 0 || sum === 0){
+                    return false
+                }
+            }
+            if (status === 'false'){
+                if (sum < 0){
+                    return false
+                }
+            }
+            return true
+        });
 
         // DataTable
         var table = $('#table_accounts').DataTable({
@@ -294,7 +318,7 @@
                     });
                 //
                 this.api()
-                    .columns([1, 3, 4, 5, 6])
+                    .columns([1, 3, 4, 5])
                     .every(function () {
                         var column = this;
                         var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
@@ -317,6 +341,10 @@
             },
         });
         $('.buttons-excel').css('display', 'none')
+
+        $('#custom_select').on('change', function () {
+            table.draw();
+        });
 
         $('#export').on("click", function () {
             table.buttons('.buttons-excel').trigger('click');

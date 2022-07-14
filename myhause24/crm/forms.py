@@ -1,5 +1,8 @@
 import os
+import random
 import uuid
+from decimal import Decimal
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
@@ -317,6 +320,12 @@ class OwnerUpdateForm(UserChangeForm):
                                                'data-mask': "+38(000) 000-00-00"}),
             'username': forms.EmailInput(attrs={'class': 'form-control'})
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('prefix') is 'profile':
+            self.fields['user_id'].disabled = True
+            self.fields['status'].required = False
 
     def clean_new_password2(self):
         new_password1 = self.cleaned_data.get("new_password1")
@@ -869,8 +878,6 @@ class CashBoxForm(forms.ModelForm):
 
     def save(self, commit=True):
         cash = super().save(commit=False)
-        print(cash)
-        print(self.cleaned_data)
         manager = self.cleaned_data['manager']
         owner = self.cleaned_data['owner']
         personal_account = self.cleaned_data['personal_account']
@@ -1115,3 +1122,15 @@ class SiteServiceForm(forms.ModelForm):
         return image
 
 # endregion SiteForms
+
+
+class Goods:
+    title = "Мороженое"
+    weight = 154
+    tp = "Еда"
+    price = 1024
+
+
+goods = Goods()
+goods.price = 2048
+goods.inflation = 100

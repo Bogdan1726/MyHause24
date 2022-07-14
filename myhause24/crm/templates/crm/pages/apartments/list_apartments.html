@@ -94,7 +94,13 @@
                             <th></th>
                             <th></th>
                             <th></th>
-                            <th></th>
+                            <td>
+                                <select name="custom_select" id="custom_select">
+                                    <option value="">Выберите</option>
+                                    <option value="true">Есть долг</option>
+                                    <option value="false">Нет долга</option>
+                                </select>
+                            </td>
                         </tr>
                         </tfoot>
                         <tbody>
@@ -186,6 +192,23 @@
             $(this).html('<input type="text" name="custom_search"/>');
         });
 
+        $.fn.dataTable.ext.search.push(function (settings, data) {
+            var status = $('#custom_select').val();
+            var sum = parseInt(data[5]);
+
+            if (status === 'true') {
+                if (sum > 0 || sum === 0) {
+                    return false
+                }
+            }
+            if (status === 'false') {
+                if (sum < 0) {
+                    return false
+                }
+            }
+            return true
+        });
+
         // DataTable
         var table = $('#table_apartment').DataTable({
             "responsive": false,
@@ -228,7 +251,7 @@
                     });
                 //
                 this.api()
-                    .columns([1, 2, 3, 4, 5])
+                    .columns([1, 2, 3, 4])
                     .every(function () {
                         var column = this;
                         var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
@@ -256,6 +279,10 @@
             $('select').val('');
             table.columns().search("").draw();
         })
+
+        $('#custom_select').on('change', function () {
+            table.draw();
+        });
     });
 
 </script>

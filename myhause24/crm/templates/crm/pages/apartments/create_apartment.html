@@ -193,8 +193,8 @@
             $(this).val(null);
         })
 
-        select_section.find('option:not([selected])').slice(1).remove();
-        select_floor.find('option:not([selected])').slice(1).remove();
+        select_section.find('option').slice(1).remove();
+        select_floor.find('option').slice(1).remove();
 
         if (select_house.val()) {
             send_ajax(select_house.val(), true)

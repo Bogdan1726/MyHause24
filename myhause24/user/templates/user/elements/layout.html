@@ -88,6 +88,7 @@
     {% endblock %}
 </div>
 <!-- /.login-box -->
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- jQuery -->
 <script src="{% static 'user/plugins/jquery/jquery.min.js' %}"></script>
@@ -95,6 +96,8 @@
 <script src="{% static 'user/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 <!-- AdminLTE App -->
 <script src="{% static 'user/dist/js/adminlte.min.js' %}"></script>
+
+{% include 'crm/inc/_messages.html' %}
 
 
 {% block script %}

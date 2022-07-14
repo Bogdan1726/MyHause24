@@ -1,8 +1,8 @@
 <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 898px;">
     <section class="sidebar" style="overflow: hidden; width: auto; height: 898px;">
-
+        {% with request.resolver_match.url_name as url %}
         <ul class="sidebar-menu tree" data-widget="tree">
-            <li class="active treeview menu-open"><a href="#!"><i class="fa fa-line-chart"></i> <span>Сводка</span>
+            <li class="treeview menu-open"><a href="#!"><i class="fa fa-line-chart"></i> <span>Сводка</span>
                 <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
                 <ul class="treeview-menu" style="display: block">
                     <li class="active"><a href="/cabinet/?flat_id=89"><i class="fa fa-building-o"></i>
@@ -33,8 +33,14 @@
             </li>
             <li><a href="/cabinet/message/index"><i class="fa fa-envelope-o"></i> <span>Сообщения</span></a></li>
             <li><a href="/cabinet/master-request/index"><i class="fa fa-wrench"></i> <span>Вызов мастера</span></a></li>
-            <li><a href="/cabinet/user/view"><i class="fa fa-user-circle-o"></i> <span>Профиль</span></a></li>
+            <li class="{% if url in '[profile, update_profile]' %}active{% endif %}">
+                <a href="{% url 'profile' %}">
+                    <i class="fa fa-user-circle-o"></i>
+                    <span>Профиль</span>
+                </a>
+            </li>
         </ul>
+        {% endwith %}
     </section>
     <div class="slimScrollBar"
          style="background: rgb(0, 0, 0); width: 7px; position: absolute; top: 0px; opacity: 0.4; display: none; border-radius: 7px; z-index: 99; right: 1px; height: 898px;"></div>

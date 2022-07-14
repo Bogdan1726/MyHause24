@@ -323,7 +323,7 @@ class OwnerUpdateForm(UserChangeForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if kwargs.get('prefix') is 'profile':
+        if kwargs.get('prefix') == 'profile':
             self.fields['user_id'].disabled = True
             self.fields['status'].required = False
 
@@ -734,7 +734,8 @@ class MasterCallForm(forms.ModelForm):
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control'}),
             'time': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control',
+                                                 'rows': 6}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'type_master': forms.Select(attrs={'class': 'form-control'}),
             'master': forms.Select(attrs={'class': 'form-control'}),
@@ -753,6 +754,16 @@ class MasterCallForm(forms.ModelForm):
             )]
         self.fields['owner'].choices = \
             [('', '')] + [(obj.id, obj.__str__) for obj in User.objects.filter(is_staff=False)]
+
+        if kwargs.get('prefix') == 'cabinet':
+            self.fields['description'].widget.attrs.update({'placeholder': 'Опишите проблему'})
+            self.fields['status'].required = False
+            self.fields['apartment'].choices = \
+                [('', 'Выберите...')] + [(obj.id, obj.select2) for obj in Apartment.objects.filter(
+                    owner=kwargs.get('initial')['user']
+                ).select_related(
+                    'house', 'owner', 'section', 'floor'
+                )]
 
     def clean_apartment(self):
         apartment = self.cleaned_data.get("apartment")
@@ -1120,6 +1131,7 @@ class SiteServiceForm(forms.ModelForm):
                     self.error_messages['error_image']
                 )
         return image
+
 
 # endregion SiteForms
 

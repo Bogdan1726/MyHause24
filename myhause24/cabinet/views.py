@@ -1,16 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import AccessMixin
-from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import ListView, DetailView, UpdateView
-from crm.models import PersonalAccount, Apartment
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
+from crm.models import PersonalAccount, Apartment, CallRequest
 
-from crm.forms import OwnerUpdateForm
+from crm.forms import OwnerUpdateForm, MasterCallForm
 
 User = get_user_model()
+
 
 # Create your views here.
 
@@ -34,6 +35,60 @@ class OwnerRequiredMixin(View, AccessMixin):
 class SummaryListView(ListView, OwnerRequiredMixin):
     model = PersonalAccount
     template_name = 'cabinet/pages/index.html'
+
+
+# region Master's call
+
+class MasterCallListView(ListView, OwnerRequiredMixin):
+    model = CallRequest
+    template_name = 'cabinet/pages/master_call/list_master_call.html'
+    context_object_name = 'calls'
+
+    def get_queryset(self):
+        return self.model.objects.filter(
+            apartment_id__in=[obj.id for obj in Apartment.objects.filter(owner=self.request.user)]
+        ).select_related(
+            'apartment', 'master', 'type_master', 'apartment__house', 'apartment__owner'
+        ).order_by('-id')
+
+
+class MasterCallCreateView(CreateView, OwnerRequiredMixin):
+    model = CallRequest
+    form_class = MasterCallForm
+    template_name = 'cabinet/pages/master_call/create_master_call.html'
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            return MasterCallForm(self.request.POST or None,
+                                  prefix='cabinet',
+                                  initial={'user': self.request.user})
+
+    def get_success_url(self):
+        messages.success(self.request, f'Заявка №{self.object.id} добавлена!')
+        return reverse_lazy('master-call')
+
+    def form_invalid(self, form):
+        print(form.errors)
+        return super().form_invalid(form)
+
+
+class MasterCallDelete(DeleteView, OwnerRequiredMixin):
+    model = CallRequest
+
+    def get_success_url(self):
+        messages.success(self.request, "Заявка успешно удалена!")
+        return reverse_lazy('master-call')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.status != 'new':
+            messages.error(request, 'Невозможно удалить вызов с текущим статусом')
+            return HttpResponseRedirect(reverse_lazy('master-call'))
+        self.object.delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+# endregion Master's call
 
 
 # region Profile
@@ -76,9 +131,4 @@ class ProfileUpdateView(UpdateView, OwnerRequiredMixin):
         messages.success(self.request, "Ваш профиль успешно обновлён!")
         return reverse_lazy('profile')
 
-
 # endregion Profile
-
-
-
-

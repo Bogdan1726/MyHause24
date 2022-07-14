@@ -32,7 +32,12 @@
                 </ul>
             </li>
             <li><a href="/cabinet/message/index"><i class="fa fa-envelope-o"></i> <span>Сообщения</span></a></li>
-            <li><a href="/cabinet/master-request/index"><i class="fa fa-wrench"></i> <span>Вызов мастера</span></a></li>
+            <li class="{% if url in '[master-call, create_master-call]' %}active{% endif %}">
+                <a href="{% url 'master-call' %}">
+                    <i class="fa fa-wrench"></i>
+                    <span>Вызов мастера</span>
+                </a>
+            </li>
             <li class="{% if url in '[profile, update_profile]' %}active{% endif %}">
                 <a href="{% url 'profile' %}">
                     <i class="fa fa-user-circle-o"></i>

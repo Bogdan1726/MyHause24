@@ -17,7 +17,7 @@ def get_context(request):
                 'house', 'section', 'floor', 'apartment', 'apartment__owner', 'sender',
                 'sender__role'
             ).order_by('-datetime'),
-            'list_tariff': apartment
+            'list_apartment': apartment
         }
     return {}
 

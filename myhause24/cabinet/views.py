@@ -6,11 +6,11 @@ from django.contrib.auth.mixins import AccessMixin
 from django.db.models import Q, Sum
 from django.db.models.functions import Greatest
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
-from crm.models import PersonalAccount, Apartment, CallRequest, Message
+from crm.models import PersonalAccount, Apartment, CallRequest, Message, PriceTariffServices
 
 from crm.forms import OwnerUpdateForm, MasterCallForm
 
@@ -39,6 +39,41 @@ class OwnerRequiredMixin(View, AccessMixin):
 class SummaryListView(ListView, OwnerRequiredMixin):
     model = PersonalAccount
     template_name = 'cabinet/pages/index.html'
+
+
+# region Tariff
+
+
+class ServicesOfTariffListView(ListView):
+    model = PriceTariffServices
+    template_name = 'cabinet/pages/services_of_tariff.html'
+    context_object_name = 'services'
+
+    def get_queryset(self):
+        if self.request.GET.get('apartment'):
+            apartment = get_object_or_404(Apartment, id=self.request.GET.get('apartment'))
+            if apartment:
+                return self.model.objects.filter(
+                    tariff_id=apartment.tariff_id
+                ).select_related(
+                    'tariff', 'services', 'services__u_measurement'
+                )
+        return self.model.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.GET.get('apartment'):
+            apartment = Apartment.objects.select_related(
+                'house'
+            ).filter(
+                id=self.request.GET.get('apartment')
+            ).first()
+            if apartment:
+                context['apartment'] = apartment
+        return context
+
+
+# endregion Tariff
 
 
 # region Messages

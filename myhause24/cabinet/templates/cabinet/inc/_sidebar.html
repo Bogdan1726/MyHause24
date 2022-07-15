@@ -17,19 +17,33 @@
                         <span>ЖК "Башня Чкалов", кв.3425</span></a></li>
                 </ul>
             </li>
-            <li class="treeview"><a href="#!"><i class="fa fa-files-o"></i> <span>Квитанции</span> <span
-                    class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+            <li class="treeview">
+                <a href="#!">
+                    <i class="fa fa-files-o"></i>
+                    <span>Квитанции</span>
+                    <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                </span>
+                </a>
                 <ul class="treeview-menu">
-                    <li><a href="/cabinet/invoice/index"><i class="fa fa-files-o"></i> <span>Все квитанции</span></a>
+                    <li>
+                        <a href="/cabinet/invoice/index">
+                            <i class="fa fa-files-o"></i>
+                            <span>Все квитанции</span>
+                        </a>
                     </li>
-                    <li><a href="/cabinet/invoice/index?InvoiceSearch%5Bflat_id%5D=89"><i class="fa fa-file-text-o"></i>
-                        <span>Н-О, кв.4</span></a></li>
-                    <li><a href="/cabinet/invoice/index?InvoiceSearch%5Bflat_id%5D=96"><i class="fa fa-file-text-o"></i>
-                        <span>ЖК "Башня Чкалов", кв.3425</span></a></li>
+                    {% for receipt in list_apartment %}
+                    <li>
+                        <a href="">
+                            <i class="fa fa-file-text-o"></i>
+                            <span>{{ receipt.house.title }}, кв.{{ receipt.number }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
                 </ul>
             </li>
-            <li class="treeview">
-                <a href="/cabinet/tariff/index">
+            <li class="treeview {% if url in '[list-tariff]' %}active{% endif %}">
+                <a href="#!">
                     <i class="fa fa-money"></i>
                     <span>Тарифы</span>
                     <span class="pull-right-container">
@@ -37,9 +51,9 @@
                     </span>
                 </a>
                 <ul class="treeview-menu">
-                    {% for tariff in list_tariff %}
-                    <li>
-                        <a href="/cabinet/tariff/index?flat_id=89">
+                    {% for tariff in list_apartment %}
+                    <li class="{% if tariff.id == apartment.id %}active{% endif %}">
+                        <a href="{% url 'list-tariff' %}?apartment={{ tariff.id }}">
                             <i class="fa fa-file-text-o"></i>
                             <span>{{ tariff.house.title }}, кв.{{ tariff.number }}</span>
                         </a>

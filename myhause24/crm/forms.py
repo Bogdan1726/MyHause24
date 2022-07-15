@@ -199,7 +199,7 @@ class UserFormSet(forms.Form):
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
-        exclude = ('datetime', 'is_all',)
+        exclude = ('datetime',)
 
         widgets = {
             'topics': forms.TextInput(attrs={'class': 'form-control',

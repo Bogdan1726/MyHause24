@@ -2,10 +2,16 @@
     <section class="sidebar" style="overflow: hidden; width: auto; height: 898px;">
         {% with request.resolver_match.url_name as url %}
         <ul class="sidebar-menu tree" data-widget="tree">
-            <li class="treeview menu-open"><a href="#!"><i class="fa fa-line-chart"></i> <span>Сводка</span>
-                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+            <li class="treeview">
+                <a href="#!">
+                    <i class="fa fa-line-chart"></i>
+                    <span>Сводка</span>
+                    <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                </span>
+                </a>
                 <ul class="treeview-menu" style="display: block">
-                    <li class="active"><a href="/cabinet/?flat_id=89"><i class="fa fa-building-o"></i>
+                    <li class=""><a href="/cabinet/?flat_id=89"><i class="fa fa-building-o"></i>
                         <span>Н-О, кв.4</span></a></li>
                     <li><a href="/cabinet/?flat_id=96"><i class="fa fa-building-o"></i>
                         <span>ЖК "Башня Чкалов", кв.3425</span></a></li>
@@ -22,16 +28,31 @@
                         <span>ЖК "Башня Чкалов", кв.3425</span></a></li>
                 </ul>
             </li>
-            <li class="treeview"><a href="/cabinet/tariff/index"><i class="fa fa-money"></i> <span>Тарифы</span> <span
-                    class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+            <li class="treeview">
+                <a href="/cabinet/tariff/index">
+                    <i class="fa fa-money"></i>
+                    <span>Тарифы</span>
+                    <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+                </a>
                 <ul class="treeview-menu">
-                    <li><a href="/cabinet/tariff/index?flat_id=89"><i class="fa fa-file-text-o"></i>
-                        <span>Н-О, кв.4</span></a></li>
-                    <li><a href="/cabinet/tariff/index?flat_id=96"><i class="fa fa-file-text-o"></i> <span>ЖК "Башня Чкалов", кв.3425</span></a>
+                    {% for tariff in list_tariff %}
+                    <li>
+                        <a href="/cabinet/tariff/index?flat_id=89">
+                            <i class="fa fa-file-text-o"></i>
+                            <span>{{ tariff.house.title }}, кв.{{ tariff.number }}</span>
+                        </a>
                     </li>
+                    {% endfor %}
                 </ul>
             </li>
-            <li><a href="/cabinet/message/index"><i class="fa fa-envelope-o"></i> <span>Сообщения</span></a></li>
+            <li class="{% if url in '[list-messages, detail-message]' %}active{% endif %}">
+                <a href="{% url 'list-messages' %}">
+                    <i class="fa fa-envelope-o"></i>
+                    <span>Сообщения</span>
+                </a>
+            </li>
             <li class="{% if url in '[master-call, create_master-call]' %}active{% endif %}">
                 <a href="{% url 'master-call' %}">
                     <i class="fa fa-wrench"></i>

@@ -1,12 +1,16 @@
+from decimal import Decimal
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import AccessMixin
+from django.db.models import Q, Sum
+from django.db.models.functions import Greatest
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
-from crm.models import PersonalAccount, Apartment, CallRequest
+from crm.models import PersonalAccount, Apartment, CallRequest, Message
 
 from crm.forms import OwnerUpdateForm, MasterCallForm
 
@@ -35,6 +39,35 @@ class OwnerRequiredMixin(View, AccessMixin):
 class SummaryListView(ListView, OwnerRequiredMixin):
     model = PersonalAccount
     template_name = 'cabinet/pages/index.html'
+
+
+# region Messages
+
+class MessagesListView(ListView, OwnerRequiredMixin):
+    model = Message
+    template_name = 'cabinet/pages/messages/list_messages.html'
+
+
+class MessageDetailView(DetailView, OwnerRequiredMixin):
+    model = Message
+    template_name = 'cabinet/pages/messages/detail_message.html'
+    context_object_name = 'message'
+
+    def get_queryset(self):
+        return self.model.objects.select_related(
+            'house', 'section', 'floor', 'apartment', 'apartment__owner', 'sender'
+        )
+
+
+class MessageDelete(DeleteView, OwnerRequiredMixin):
+    model = Message
+
+    def get_success_url(self):
+        messages.success(self.request, "Сообщение успешно удалено!")
+        return reverse_lazy('list-messages')
+
+
+# endregion Messages
 
 
 # region Master's call
@@ -107,7 +140,7 @@ class ProfileDetailView(DetailView, OwnerRequiredMixin):
         context['apartments'] = Apartment.objects.filter(
             owner=self.request.user
         ).select_related(
-            'floor', 'section', 'house', 'tariff', 'owner'
+            'floor', 'section', 'house', 'tariff', 'owner', 'account_apartment'
         )
         return context
 

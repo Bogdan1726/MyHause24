@@ -996,11 +996,14 @@ class MessageCreateAndSend(CreateView, RoleRequiredMixin):
                                             'topics': 'Владельцам с задолженностями',
                                             'text': '<h3>Администрация CRM24</h3>'
                                                     '<p>Просим Вас погасить задолженность</p>'})
-            return MessageForm(self.request.POST or None)
+            return MessageForm(self.request.POST or None,
+                               initial={'sender': self.request.user})
 
     def form_valid(self, form):
         message = form.save(commit=False)
         message.sender = self.request.user
+        if form.cleaned_data['house'] is None:
+            message.is_all = True
         message.save()
         return super().form_valid(form)
 

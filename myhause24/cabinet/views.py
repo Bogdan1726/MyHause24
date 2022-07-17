@@ -1,12 +1,13 @@
+from datetime import datetime
 from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import AccessMixin
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Avg
 from django.db.models.functions import Greatest
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
@@ -24,7 +25,7 @@ User = get_user_model()
 
 class OwnerRequiredMixin(View, AccessMixin):
     """
-    Check user is owners
+    Check user is the owner of the apartment
     """
 
     def dispatch(self, request, *args, **kwargs):
@@ -35,12 +36,37 @@ class OwnerRequiredMixin(View, AccessMixin):
             messages.error(request, f'Вы вошли в систему как {request.user.username}, '
                                     f'однако у вас недостаточно прав для просмотра личного кабинета')
             return redirect('login')
+        if not Apartment.objects.filter(owner=request.user).exists() and \
+                request.resolver_match.url_name not in ['profile', 'update_profile']:
+            return redirect('profile')
         return super().dispatch(request, *args, **kwargs)
 
 
-class SummaryListView(ListView, OwnerRequiredMixin):
-    model = PersonalAccount
-    template_name = 'cabinet/pages/index.html'
+class StatisticsOfCabinetListView(OwnerRequiredMixin):
+
+    @staticmethod
+    def get(request):
+        apartment_id = request.GET.get('apartment') or None
+        if apartment_id is None:
+            apartment = Apartment.objects.filter(owner=request.user).first()
+            return redirect(reverse_lazy('cabinet') + f'?apartment={apartment.id}')
+
+        personal_account = PersonalAccount.objects.filter(apartment=apartment_id)
+        balance_income = personal_account.aggregate(sum=Greatest(Sum('cash_account__sum'), Decimal(0)))
+        balance_expense = personal_account.aggregate(sum=Greatest(Sum('receipt_account__sum'), Decimal(0)))
+        apartment_balance = (balance_income['sum'] - balance_expense['sum'])
+        avg_expense = personal_account.filter(
+            receipt_account__date__month=datetime.now().month
+        ).aggregate(
+            avg=Avg('receipt_account__sum')
+        )
+
+        context = {
+            'personal_account': personal_account.first(),
+            'avg_expense': avg_expense,
+            'apartment_balance': apartment_balance,
+        }
+        return render(request, 'cabinet/pages/index.html', context)
 
 
 # region Receipts
@@ -78,6 +104,7 @@ def pay_by_receipt(request, pk):
         messages.success(request, 'Квитанция успешно оплачена')
     return HttpResponseRedirect(reverse_lazy('detail-receipt', kwargs={'pk': pk}))
 
+
 # def download_pdf_receipt(request, pk):
 #     file = ReceiptTemplate.objects.all().first
 #     requisites = Requisites.objects.all().first()
@@ -104,14 +131,13 @@ def pay_by_receipt(request, pk):
 #     return HttpResponseRedirect('/cabinet/receipt/' + str(pk) + '/')
 
 
-
 # endregion Receipts
 
 
 # region Tariff
 
 
-class ServicesOfTariffListView(ListView):
+class ServicesOfTariffListView(ListView, OwnerRequiredMixin):
     model = PriceTariffServices
     template_name = 'cabinet/pages/services_of_tariff.html'
     context_object_name = 'services'

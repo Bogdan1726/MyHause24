@@ -1,1 +1,67 @@
 {% extends 'cabinet/elements/layout.html' %}
+
+{% load static %}
+{% load floattags %}
+
+{% block title %}
+Тарифы - {{ apartment.house.title }}, кв.{{ apartment.number }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content-header %}
+<h1>Сводка - {{ apartment.house.title }}, кв.{{ apartment.number }}</h1>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12 col-md-6 col-lg-4">
+        <div class="small-box {% if apartment_balance > 0 %}bg-green{% else %}bg-red{% endif %}">
+            <div class="inner">
+                <h3>{{ apartment_balance|floatformat:"2g"|formatted_float }} грн</h3>
+                <p>Баланс по квартире</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-money"></i>
+            </div>
+            <span class="small-box-footer">
+                &nbsp;
+            </span>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6 col-lg-4">
+        <div class="small-box bg-blue">
+            <div class="inner">
+                <h3>{{ personal_account }}</h3>
+                <p>Лицевой счет</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-user"></i>
+            </div>
+            <span class="small-box-footer">
+                &nbsp;
+            </span>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6 col-lg-4">
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>{{ avg_expense.avg|floatformat:"2g"|formatted_float }} грн</h3>
+                <p>Средний расход за месяц</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-pie-chart"></i>
+            </div>
+            <span class="small-box-footer">
+                &nbsp;
+            </span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

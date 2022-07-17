@@ -25,6 +25,11 @@
         {% block title %} Личный кабинет {% endblock %}
     </title>
     <style>
+        .disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
         .box {
             position: relative;
             border-radius: 3px;
@@ -46,7 +51,8 @@
 <div class="wrapper" style="height: auto; min-height: 100%;">
     <header class="main-header">
         <!-- Logo -->
-        <a href="{% url 'cabinet' %}" class="logo">
+        <a href="{% if first_apartment %}{% url 'cabinet' %}?apartment={{ first_apartment.id }}{% else %}{% url 'profile' %}{% endif %}"
+           class="logo">
         <span class="logo-mini">
             <img src="{% static 'crm/media/logo-mini.svg' %}" class="img-responsive" alt="">
         </span>
@@ -81,7 +87,10 @@
                                         <a href="{% url 'detail-message' message.id %}">
                                             <h5>
                                                 {{ message.sender }}
-                                                <small><i class="fa fa-clock-o"></i> {{ message.datetime|date:"d E" }}</small>
+                                                <small>
+                                                    <i class="fa fa-clock-o"></i>
+                                                    {{ message.datetime|date:"d E" }}
+                                                </small>
                                             </h5>
                                             <p>{{ message.topics }}</p>
                                         </a>
@@ -176,6 +185,7 @@
 <script src="{% static 'crm/bower_components/jquery-slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/chart.js/Chart.js' %}"></script>
 <script src="{% static 'crm/dist/js/main.js' %}"></script>
+
 {% include 'crm/inc/_messages.html' %}
 
 {% block scripts %}

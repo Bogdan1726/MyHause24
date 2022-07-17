@@ -17,6 +17,7 @@ class UserLoginView(LoginView):
 
     def get_success_url(self):
         url = self.request.POST['redirect']
+        print(url)
         return url or resolve_url(settings.LOGIN_REDIRECT_URL)
 
     def form_valid(self, form):

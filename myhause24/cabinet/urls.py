@@ -1,12 +1,13 @@
 from django.urls import path
 from .views import (
-    SummaryListView, ProfileDetailView, ProfileUpdateView, MasterCallListView,
+    StatisticsOfCabinetListView, ProfileDetailView, ProfileUpdateView, MasterCallListView,
     MasterCallDelete, MasterCallCreateView, MessagesListView, MessageDetailView,
-    MessageDelete, ServicesOfTariffListView, ReceiptOfOwnerListView, ReceiptOfOwnerDetailView, pay_by_receipt,
+    MessageDelete, ServicesOfTariffListView, ReceiptOfOwnerListView, ReceiptOfOwnerDetailView,
+    pay_by_receipt,
 )
 
 urlpatterns = [
-    path('', SummaryListView.as_view(), name='cabinet'),
+    path('', StatisticsOfCabinetListView.as_view(), name='cabinet'),
 
     # region Receipts
     path('receipts/', ReceiptOfOwnerListView.as_view(), name='list-receipts'),

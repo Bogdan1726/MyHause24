@@ -20,6 +20,7 @@ def get_context(request):
                 'sender__role'
             ).order_by('-datetime'),
             'list_apartment': apartment,
+            'first_apartment': apartment.first(),
             'apartment': apartment.filter(id=request.GET.get('apartment')).first()
             if request.GET.get('apartment') else None
         }

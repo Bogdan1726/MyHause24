@@ -2,7 +2,8 @@
     <section class="sidebar" style="overflow: hidden; width: auto; height: 898px;">
         {% with request.resolver_match.url_name as url %}
         <ul class="sidebar-menu tree" data-widget="tree">
-            <li class="treeview">
+            {% if first_apartment %}
+            <li class="treeview {% if url in '[cabinet]' %}active{% endif %}">
                 <a href="#!">
                     <i class="fa fa-line-chart"></i>
                     <span>Сводка</span>
@@ -10,13 +11,26 @@
                     <i class="fa fa-angle-left pull-right"></i>
                 </span>
                 </a>
-                <ul class="treeview-menu" style="display: block">
-                    <li class=""><a href="/cabinet/?flat_id=89"><i class="fa fa-building-o"></i>
-                        <span>Н-О, кв.4</span></a></li>
-                    <li><a href="/cabinet/?flat_id=96"><i class="fa fa-building-o"></i>
-                        <span>ЖК "Башня Чкалов", кв.3425</span></a></li>
+                <ul class="treeview-menu">
+                    {% for apart in list_apartment %}
+                    <li class="{% if apartment.id == apart.id and url in '[cabinet]' %}active{% endif %}">
+                        <a href="{% url 'cabinet' %}?apartment={{ apart.id }}">
+                            <i class="fa fa-building-o"></i>
+                            <span>{{ apart.house.title }}, кв.{{ apart.number }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
                 </ul>
             </li>
+            {% else %}
+            <li class="disabled">
+                <a href="#!">
+                    <i class="fa fa-line-chart"></i>
+                    <span>Сводка</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if first_apartment %}
             <li class="treeview {% if url in '[list-receipts, detail-receipt]' %}active{% endif %}">
                 <a href="#!">
                     <i class="fa fa-files-o"></i>
@@ -33,7 +47,7 @@
                         </a>
                     </li>
                     {% for receipt in list_apartment %}
-                    <li class="{% if receipt.id == apartment.id %}active{% endif %}">
+                    <li class="{% if receipt.id == apartment.id and url in '[list-receipts, detail-receipt]' %}active{% endif %}">
                         <a href="{% url 'list-receipts' %}?apartment={{ receipt.id }}">
                             <i class="fa fa-file-text-o"></i>
                             <span>{{ receipt.house.title }}, кв.{{ receipt.number }}</span>
@@ -42,6 +56,15 @@
                     {% endfor %}
                 </ul>
             </li>
+            {% else %}
+            <li class="disabled">
+                <a href="#!">
+                    <i class="fa fa-files-o"></i>
+                    <span>Квитанции</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if first_apartment %}
             <li class="treeview {% if url in '[list-tariff]' %}active{% endif %}">
                 <a href="#!">
                     <i class="fa fa-money"></i>
@@ -52,7 +75,7 @@
                 </a>
                 <ul class="treeview-menu">
                     {% for tariff in list_apartment %}
-                    <li class="{% if tariff.id == apartment.id %}active{% endif %}">
+                    <li class="{% if tariff.id == apartment.id and url in '[list-tariff]' %}active{% endif %}">
                         <a href="{% url 'list-tariff' %}?apartment={{ tariff.id }}">
                             <i class="fa fa-file-text-o"></i>
                             <span>{{ tariff.house.title }}, кв.{{ tariff.number }}</span>
@@ -61,18 +84,44 @@
                     {% endfor %}
                 </ul>
             </li>
+            {% else %}
+            <li class="disabled">
+                <a href="#!">
+                    <i class="fa fa-money"></i>
+                    <span>Тарифы</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if first_apartment %}
             <li class="{% if url in '[list-messages, detail-message]' %}active{% endif %}">
                 <a href="{% url 'list-messages' %}">
                     <i class="fa fa-envelope-o"></i>
                     <span>Сообщения</span>
                 </a>
             </li>
+            {% else %}
+            <li class="disabled">
+                <a href="#!">
+                    <i class="fa fa-envelope-o"></i>
+                    <span>Сообщения</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if first_apartment %}
             <li class="{% if url in '[master-call, create_master-call]' %}active{% endif %}">
                 <a href="{% url 'master-call' %}">
                     <i class="fa fa-wrench"></i>
                     <span>Вызов мастера</span>
                 </a>
             </li>
+            {% else %}
+            <li class="disabled">
+                <a href="#!">
+                    <i class="fa fa-wrench"></i>
+                    <span>Вызов мастера</span>
+                </a>
+            </li>
+            {% endif %}
             <li class="{% if url in '[profile, update_profile]' %}active{% endif %}">
                 <a href="{% url 'profile' %}">
                     <i class="fa fa-user-circle-o"></i>

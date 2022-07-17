@@ -1,0 +1,164 @@
+{% extends 'cabinet/elements/layout.html' %}
+
+{% load static %}
+{% load floattags %}
+
+
+{% block title %}
+Просмотр квитанции: №{{ receipt.number }}
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Просмотр квитанции: №{{ receipt.number }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'cabinet' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'list-receipts' %}">Квитанции</a></li>
+    <li class="active">Просмотр квитанции: №{{ receipt.number }}</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title"></h3>
+        <div class="box-tools">
+            <a class="btn btn-info btn-sm"
+               id="print">
+                <i class="fa fa-print" aria-hidden="true"></i>
+                <span class="hidden-xs">Распечатать</span>
+            </a>
+        </div>
+    </div>
+    <div class="box-body">
+        <div class="table-responsive no-padding margin-top-15">
+            <table id="table_receipt" class="table table-bordered table-hover table-striped">
+                <thead>
+                <tr>
+                    <th style="width: 40px; min-width: 40px;">№</th>
+                    <th style="width: 240px; min-width: 240px;">Услуга</th>
+                    <th style="min-width: 150px;">Количество потребления (расход)</th>
+                    <th style="width: 80px; min-width: 80px;">Ед. изм.</th>
+                    <th style="min-width: 100px;">Цена за ед., грн</th>
+                    <th style="min-width: 100px;">Стоимость, грн</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for service in receipt.calculate_receipt.all %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ service.services }}</td>
+                    <td>{{ service.quantity|floatformat:"2g"|formatted_float }}</td>
+                    <td>{{ service.services.u_measurement }}</td>
+                    <td>{{ service.price|floatformat:"2g"|formatted_float }}</td>
+                    <td>{{ service.cost|floatformat:"2g"|formatted_float }}</td>
+                </tr>
+                {% if forloop.last %}
+                <tr role="row">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><b>Итого: {{ receipt.sum|floatformat:"2g"|formatted_float }}</b></td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="box-footer">
+        <div class="pull-right">
+            <a class="btn btn-sm btn-warning"
+               href="">
+                <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+                Скачать в PDF
+            </a>
+            {% if receipt.status_pay == 'paid' %}
+            <a class="btn btn-sm btn-success disabled">
+                <i class="fa fa-credit-card" aria-hidden="true"></i>
+                Оплатить
+            </a>
+            {% else %}
+            <a class="btn btn-sm btn-success"
+               data-toggle="modal"
+               data-target="#modal-default">
+                <i class="fa fa-credit-card" aria-hidden="true"></i>
+                Оплатить
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="modal fade"
+         id="modal-default" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title">Оплата квитанции</h4>
+                </div>
+                <form method="post" action="{% url 'pay_by_receipt' receipt.id %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p>Вы уверены, что хотите оплатить квитанцию №{{ receipt.number }}?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default pull-left"
+                                data-dismiss="modal">Отмена
+                        </button>
+                        <button type="submit" class="btn btn-success">Подтвердить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
+
+<script>
+
+    // DataTable
+    table = $('#table_receipt').DataTable({
+        dom: 'Bfrtip',
+        buttons: [
+            'print'
+        ],
+        "responsive": false,
+        'paging': false,
+        'lengthChange': false,
+        'searching': false,
+        'ordering': false,
+        'info': false,
+        'autoWidth': true,
+        "language": {
+            "zeroRecords": "Записей не найдено",
+            "info": "",
+            "infoEmpty": "Нет записей."
+        },
+    });
+
+    // export to pdf and print
+    $('.buttons-print').css('display', 'none')
+    $('#print').on("click", function () {
+        table.buttons('.buttons-print').trigger('click');
+    })
+    //
+</script>
+{% endblock %}

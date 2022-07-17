@@ -3,15 +3,17 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import AccessMixin
-from django.db.models import Q, Sum
+from django.db.models import Sum, Q
 from django.db.models.functions import Greatest
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
-from crm.models import PersonalAccount, Apartment, CallRequest, Message, PriceTariffServices
-
+from crm.models import (
+    PersonalAccount, Apartment, CallRequest, Message, PriceTariffServices,
+    Receipt, ReceiptTemplate, Requisites, CalculateReceiptService
+)
 from crm.forms import OwnerUpdateForm, MasterCallForm
 
 User = get_user_model()
@@ -41,6 +43,71 @@ class SummaryListView(ListView, OwnerRequiredMixin):
     template_name = 'cabinet/pages/index.html'
 
 
+# region Receipts
+
+class ReceiptOfOwnerListView(ListView, OwnerRequiredMixin):
+    model = Receipt
+    template_name = 'cabinet/pages/receipt/list_receipts.html'
+    context_object_name = 'receipts'
+
+    def get_queryset(self):
+        apartment_id = [obj.id for obj in Apartment.objects.filter(owner=self.request.user)]
+        if self.request.GET.get('apartment'):
+            apartment = get_object_or_404(Apartment, id=self.request.GET.get('apartment'))
+            if apartment:
+                return self.model.objects.filter(apartment=apartment, status=True)
+        return self.model.objects.filter(
+            apartment_id__in=apartment_id, status=True
+        )
+
+
+class ReceiptOfOwnerDetailView(DetailView, OwnerRequiredMixin):
+    model = Receipt
+    template_name = 'cabinet/pages/receipt/detail_receipt.html'
+    context_object_name = 'receipt'
+
+    def get_queryset(self):
+        return self.model.objects.prefetch_related(
+            'calculate_receipt__services__u_measurement'
+        )
+
+
+def pay_by_receipt(request, pk):
+    if request.method == 'POST':
+        Receipt.objects.filter(id=pk).update(status_pay='paid')
+        messages.success(request, 'Квитанция успешно оплачена')
+    return HttpResponseRedirect(reverse_lazy('detail-receipt', kwargs={'pk': pk}))
+
+# def download_pdf_receipt(request, pk):
+#     file = ReceiptTemplate.objects.all().first
+#     requisites = Requisites.objects.all().first()
+#     receipt = Receipt.objects.filter(id=pk).first()
+#     services = CalculateReceiptService.objects.filter(receipt_id=receipt).select_related(
+#         'services', 'receipt'
+#     )
+#     account_balance = PersonalAccount.objects.filter(
+#         id=receipt.personal_account_id
+#     ).annotate(
+#         balance=
+#         Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
+#         -
+#         Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
+#     ).first()
+#
+#     # write = write_to_file(
+#     #     receipt, receipt.personal_account, requisites.description, file, services, account_balance
+#     # )
+#
+#     # response = HttpResponse(save_virtual_workbook(write), content_type='application/vnd.ms-excel')
+#     # response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
+#     # return response
+#     return HttpResponseRedirect('/cabinet/receipt/' + str(pk) + '/')
+
+
+
+# endregion Receipts
+
+
 # region Tariff
 
 
@@ -59,18 +126,6 @@ class ServicesOfTariffListView(ListView):
                     'tariff', 'services', 'services__u_measurement'
                 )
         return self.model.objects.none()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.GET.get('apartment'):
-            apartment = Apartment.objects.select_related(
-                'house'
-            ).filter(
-                id=self.request.GET.get('apartment')
-            ).first()
-            if apartment:
-                context['apartment'] = apartment
-        return context
 
 
 # endregion Tariff

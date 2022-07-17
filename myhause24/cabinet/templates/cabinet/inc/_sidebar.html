@@ -17,7 +17,7 @@
                         <span>ЖК "Башня Чкалов", кв.3425</span></a></li>
                 </ul>
             </li>
-            <li class="treeview">
+            <li class="treeview {% if url in '[list-receipts, detail-receipt]' %}active{% endif %}">
                 <a href="#!">
                     <i class="fa fa-files-o"></i>
                     <span>Квитанции</span>
@@ -26,15 +26,15 @@
                 </span>
                 </a>
                 <ul class="treeview-menu">
-                    <li>
-                        <a href="/cabinet/invoice/index">
+                    <li class="{% if url in '[list-receipts]' and request.GET.apartment is None %}active{% endif %}">
+                        <a href="{% url 'list-receipts' %}">
                             <i class="fa fa-files-o"></i>
                             <span>Все квитанции</span>
                         </a>
                     </li>
                     {% for receipt in list_apartment %}
-                    <li>
-                        <a href="">
+                    <li class="{% if receipt.id == apartment.id %}active{% endif %}">
+                        <a href="{% url 'list-receipts' %}?apartment={{ receipt.id }}">
                             <i class="fa fa-file-text-o"></i>
                             <span>{{ receipt.house.title }}, кв.{{ receipt.number }}</span>
                         </a>

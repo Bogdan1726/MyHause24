@@ -2,15 +2,21 @@ from django.urls import path
 from .views import (
     SummaryListView, ProfileDetailView, ProfileUpdateView, MasterCallListView,
     MasterCallDelete, MasterCallCreateView, MessagesListView, MessageDetailView,
-    MessageDelete, ServicesOfTariffListView
+    MessageDelete, ServicesOfTariffListView, ReceiptOfOwnerListView, ReceiptOfOwnerDetailView, pay_by_receipt,
 )
 
 urlpatterns = [
     path('', SummaryListView.as_view(), name='cabinet'),
 
+    # region Receipts
+    path('receipts/', ReceiptOfOwnerListView.as_view(), name='list-receipts'),
+    path('receipt/<int:pk>/', ReceiptOfOwnerDetailView.as_view(), name='detail-receipt'),
+    path('receipt//pay/<int:pk>/', pay_by_receipt, name='pay_by_receipt'),
+    # path('receipt/download/pdf/<int:pk>/', download_pdf_receipt, name='download_pdf_receipt'),
+    # endregion Receipts
+
     # region Tariff
     path('tariff/', ServicesOfTariffListView.as_view(), name='list-tariff'),
-
     # endregion Tariff
 
     # region messages
@@ -18,8 +24,6 @@ urlpatterns = [
     path('message/<int:pk>/', MessageDetailView.as_view(), name='detail-message'),
     path('message/delete/<int:pk>/', MessageDelete.as_view(), name='delete-message'),
     # endregion messages
-
-
 
     # region master's call
     path('master-call/', MasterCallListView.as_view(), name='master-call'),

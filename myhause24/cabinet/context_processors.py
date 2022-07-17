@@ -1,5 +1,7 @@
-from crm.models import PersonalAccount, Apartment, CallRequest, Message
 from django.db.models import Q
+from crm.models import (
+    PersonalAccount, Apartment, CallRequest, Message
+)
 
 
 def get_context(request):
@@ -17,9 +19,8 @@ def get_context(request):
                 'house', 'section', 'floor', 'apartment', 'apartment__owner', 'sender',
                 'sender__role'
             ).order_by('-datetime'),
-            'list_apartment': apartment
+            'list_apartment': apartment,
+            'apartment': apartment.filter(id=request.GET.get('apartment')).first()
+            if request.GET.get('apartment') else None
         }
     return {}
-
-
-

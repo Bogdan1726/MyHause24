@@ -1,21 +1,21 @@
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 from decimal import Decimal
-
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import AccessMixin
-from django.db.models import Sum, Q, Avg
+from django.db.models import Sum, Avg
 from django.db.models.functions import Greatest
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
+from crm.forms import OwnerUpdateForm, MasterCallForm
 from crm.models import (
     PersonalAccount, Apartment, CallRequest, Message, PriceTariffServices,
     Receipt, ReceiptTemplate, Requisites, CalculateReceiptService
 )
-from crm.forms import OwnerUpdateForm, MasterCallForm
 
 User = get_user_model()
 
@@ -41,6 +41,8 @@ class OwnerRequiredMixin(View, AccessMixin):
             return redirect('profile')
         return super().dispatch(request, *args, **kwargs)
 
+# region Statistics
+
 
 class StatisticsOfCabinetListView(OwnerRequiredMixin):
 
@@ -55,18 +57,74 @@ class StatisticsOfCabinetListView(OwnerRequiredMixin):
         balance_income = personal_account.aggregate(sum=Greatest(Sum('cash_account__sum'), Decimal(0)))
         balance_expense = personal_account.aggregate(sum=Greatest(Sum('receipt_account__sum'), Decimal(0)))
         apartment_balance = (balance_income['sum'] - balance_expense['sum'])
+        last_month = (datetime.now() - timedelta(days=30)).month
+        list_month = [month for month in range(1, 13)]
+
         avg_expense = personal_account.filter(
             receipt_account__date__month=datetime.now().month
         ).aggregate(
-            avg=Avg('receipt_account__sum')
+            avg=Greatest(Avg('receipt_account__sum'), Decimal(0))
         )
+        expense_to_month = personal_account.filter(
+            receipt_account__date__month=last_month
+        ).values(
+            'receipt_account__calculate_receipt__services__title'
+        ).annotate(
+            sum=Sum('receipt_account__calculate_receipt__cost')
+        )
+
+        expense_to_year = personal_account.filter(
+            receipt_account__date__year=datetime.now().year
+        ).values(
+            'receipt_account__calculate_receipt__services__title'
+        ).annotate(
+            sum=Sum('receipt_account__calculate_receipt__cost')
+        )
+
+        monthly_expenses_per_year = personal_account.filter(
+            receipt_account__status=True, receipt_account__date__year=datetime.now().year
+        ).annotate(
+            sum=Sum('receipt_account__sum')
+        ).values('receipt_account__date__month', 'sum')
+
+        expense_to_month_data = []
+        expense_to_year_data = []
+        monthly_expenses_per_year_data = []
+
+        for expense in expense_to_month:
+            expense_to_month_data.append({
+                'service': expense['receipt_account__calculate_receipt__services__title'],
+                'sum': str(expense['sum'])
+            })
+
+        for expense in expense_to_year:
+            expense_to_year_data.append({
+                'service': expense['receipt_account__calculate_receipt__services__title'],
+                'sum': str(expense['sum'])
+            })
+
+        for month in list_month:
+            expense_sum = 0
+
+            for expense in monthly_expenses_per_year:
+                if expense['receipt_account__date__month'] == month:
+                    expense_sum += expense['sum']
+
+            monthly_expenses_per_year_data.append({
+                'month': month, 'sum': str(expense_sum)
+            })
 
         context = {
             'personal_account': personal_account.first(),
             'avg_expense': avg_expense,
             'apartment_balance': apartment_balance,
+            'expense_to_month': json.dumps(expense_to_month_data) or None,
+            'expense_to_year': json.dumps(expense_to_year_data) or None,
+            'monthly_expenses_per_year': json.dumps(monthly_expenses_per_year_data) or None,
         }
         return render(request, 'cabinet/pages/index.html', context)
+
+# endregion Statistics
 
 
 # region Receipts

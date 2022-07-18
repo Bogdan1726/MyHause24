@@ -101,6 +101,10 @@
                                 </div>
                             </div>
                         </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align:center;">нет данных</td>
+                        </tr>
                         {% endfor %}
                         </tbody>
                     </table>

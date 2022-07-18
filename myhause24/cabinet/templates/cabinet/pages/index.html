@@ -34,7 +34,11 @@
     <div class="col-xs-12 col-md-6 col-lg-4">
         <div class="small-box bg-blue">
             <div class="inner">
+                {% if personal_account %}
                 <h3>{{ personal_account }}</h3>
+                {% else %}
+                <h3>Не закреплен</h3>
+                {% endif %}
                 <p>Лицевой счет</p>
             </div>
             <div class="icon">
@@ -60,8 +64,220 @@
         </div>
     </div>
 </div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 id="pieChartTitle" class="box-title">Диаграмма расходов</h3>
+            </div>
+            {% if personal_account %}
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-xs-12 col-lg-6">
+                        <div class="card-body">
+                            <canvas id="pieChart1"
+                                    style="min-height: 250px; height: 500px; max-height: 500px; max-width: 100%; display: block; width: 730px;"
+                                    width="730" height="250"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-lg-6">
+                        <div class="card-body">
+                            <canvas id="pieChart2"
+                                    style="min-height: 250px; height: 500px; max-height: 500px; max-width: 100%; display: block; width: 730px;"
+                                    width="730" height="250" class="chartjs-render-monitor"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <p>Недостаточно данных для отображения статистики</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Диаграмма расходов по месяцам за год</h3>
+            </div>
+            {% if personal_account %}
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <canvas id="barChart" style="height: 149px; width: 764px;" width="764" height="149"></canvas>
+                        <div id="barChart-legend" class="text-center">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <p>Недостаточно данных для отображения статистики</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+{% if personal_account %}
+<script>
+
+
+    $(function () {
+        var labels = []
+        var data = []
+        var expense_month_data = JSON.parse('{{ expense_to_month|safe }}')
+
+        for (let i = 0; i < expense_month_data.length; i++) {
+            labels.push(expense_month_data[i].service)
+            data.push(expense_month_data[i].sum)
+        }
+
+        var Data = {
+            labels: labels,
+            datasets: [
+                {
+                    data: data,
+                    backgroundColor: [
+                        'rgba(0,192,239,1)', 'rgba(243,156,18,1)',
+                        'rgba(0,166,90,1)', 'rgba(221,75,57,1)',
+                        '#f30606', '#cac805', '#052df1', '#8c05d3',
+                    ],
+                }
+            ]
+        }
+
+        //-------------
+        //- PIE CHART -
+        //-------------
+        var pieChartCanvas = $('#pieChart1')
+        var pieData = Data;
+        var pieOptions = {
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                },
+                title: {
+                    display: true,
+                    text: 'за предыдущий месяц',
+                    padding: {
+                        top: 10,
+                        bottom: 10
+                    }
+                }
+            }
+        }
+
+        new Chart(pieChartCanvas, {
+            type: 'pie',
+            data: pieData,
+            options: pieOptions
+        })
+
+    })
+
+    $(function () {
+        var labels = []
+        var data = []
+        var expense_year_data = JSON.parse('{{ expense_to_year|safe }}')
+
+        for (let i = 0; i < expense_year_data.length; i++) {
+            labels.push(expense_year_data[i].service)
+            data.push(expense_year_data[i].sum)
+        }
+
+        var Data = {
+            labels: labels,
+            datasets: [
+                {
+                    data: data,
+                    backgroundColor: [
+                        'rgba(0,192,239,1)', 'rgba(243,156,18,1)',
+                        'rgba(0,166,90,1)', 'rgba(221,75,57,1)',
+                        '#f30606', '#cac805', '#052df1', '#8c05d3',
+
+                    ],
+                }
+            ]
+        }
+
+        //-------------
+        //- PIE CHART -
+        //-------------
+        var pieChartCanvas = $('#pieChart2')
+        var pieData = Data;
+        var pieOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                },
+                title: {
+                    display: true,
+                    text: 'за текущий год',
+                    padding: {
+                        top: 10,
+                        bottom: 10
+                    }
+                }
+            }
+        }
+        new Chart(pieChartCanvas, {
+            type: 'pie',
+            data: pieData,
+            options: pieOptions
+        })
+    })
+
+    jQuery(function ($) {
+        $(function () {
+            let labels = ['янв.', 'февр.', 'март', 'апр.', 'май.', 'июнь', 'июль', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.']
+            var data = []
+            var monthly_expenses_per_year = JSON.parse('{{ monthly_expenses_per_year|safe }}')
+
+            for (let i = 0; i < monthly_expenses_per_year.length; i++) {
+                data.push(monthly_expenses_per_year[i].sum)
+            }
+
+            var ctx = document.getElementById("barChart").getContext("2d");
+
+            var Data = {
+                labels: labels,
+                datasets: [{
+                    label: "Расход, грн",
+                    backgroundColor: "rgba(27,99,158,1)",
+                    data: data
+                }
+                ]
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: Data,
+                options: {
+                    barValueSpacing: 20,
+                }
+            });
+        })
+    })
+</script>
+{% endif %}
 {% endblock %}

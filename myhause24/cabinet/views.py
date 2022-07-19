@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import AccessMixin
-from django.db.models import Sum, Avg
+from django.db.models import Sum, Avg, Q
 from django.db.models.functions import Greatest
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404, render
@@ -30,12 +30,11 @@ class OwnerRequiredMixin(View, AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
-            messages.error(request, 'Для входа в личный кабинет необходимо авторизоваться')
-            return redirect('login')
+            return redirect('cabinet_login')
         if request.user.is_staff:
             messages.error(request, f'Вы вошли в систему как {request.user.username}, '
                                     f'однако у вас недостаточно прав для просмотра личного кабинета')
-            return redirect('login')
+            return redirect('cabinet_login')
         if not Apartment.objects.filter(owner=request.user).exists() and \
                 request.resolver_match.url_name not in ['profile', 'update_profile']:
             return redirect('profile')
@@ -163,30 +162,30 @@ def pay_by_receipt(request, pk):
     return HttpResponseRedirect(reverse_lazy('detail-receipt', kwargs={'pk': pk}))
 
 
-# def download_pdf_receipt(request, pk):
-#     file = ReceiptTemplate.objects.all().first
-#     requisites = Requisites.objects.all().first()
-#     receipt = Receipt.objects.filter(id=pk).first()
-#     services = CalculateReceiptService.objects.filter(receipt_id=receipt).select_related(
-#         'services', 'receipt'
-#     )
-#     account_balance = PersonalAccount.objects.filter(
-#         id=receipt.personal_account_id
-#     ).annotate(
-#         balance=
-#         Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
-#         -
-#         Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
-#     ).first()
-#
-#     # write = write_to_file(
-#     #     receipt, receipt.personal_account, requisites.description, file, services, account_balance
-#     # )
-#
-#     # response = HttpResponse(save_virtual_workbook(write), content_type='application/vnd.ms-excel')
-#     # response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
-#     # return response
-#     return HttpResponseRedirect('/cabinet/receipt/' + str(pk) + '/')
+def export_pdf(request, pk):
+    file = ReceiptTemplate.objects.all().first
+    requisites = Requisites.objects.all().first()
+    receipt = Receipt.objects.filter(id=pk).first()
+    services = CalculateReceiptService.objects.filter(receipt_id=receipt).select_related(
+        'services', 'receipt'
+    )
+    account_balance = PersonalAccount.objects.filter(
+        id=receipt.personal_account_id
+    ).annotate(
+        balance=
+        Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
+        -
+        Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
+    ).first()
+
+    # write = write_to_file(
+    #     receipt, receipt.personal_account, requisites.description, file, services, account_balance
+    # )
+
+    # response = HttpResponse(save_virtual_workbook(write), content_type='application/vnd.ms-excel')
+    # response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
+    # return response
+    return HttpResponseRedirect(reverse_lazy('detail-receipt', kwargs={'pk': pk}))
 
 
 # endregion Receipts

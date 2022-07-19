@@ -1,0 +1,118 @@
+{% extends 'user/elements/layout.html' %}
+
+{% load recaptcha3 %}
+
+{% block title %}
+{{ block.super }}
+{% endblock %}
+
+{% block style %}
+{% recaptcha_init %}
+{% recaptcha_ready action_name='homepage' %}
+
+<style>
+    .errorlist {
+        color: red;
+    }
+
+    .login-btn {
+        margin: 10px 0 0 0;
+    }
+</style>
+
+{% endblock %}
+
+{% block login %}
+<div class="nav-tabs-custom">
+    <ul class="nav nav-tabs">
+        <li><a href="{% url 'cabinet_login' %}">Для жильца</a></li>
+        <li class="active"><a href="#admin" data-toggle="tab" aria-expanded="true">Для администрации</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="admin">
+            <div class="login-box-body">
+                <p class="login-box-msg">Вход в панель управления</p>
+                <form id="admin_form" method="POST">
+                    {% csrf_token %}
+                    {{ form.captcha }}
+                    <div class="form-group has-feedback">
+                        {{ form.username }}
+                        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+                    </div>
+                    <div class="form-group has-feedback">
+                        {{ form.password }}
+                        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                    </div>
+                    <div class="icheck-primary">
+                        <div class="custom-control custom-checkbox">
+                            {{ form.remember_me2 }}
+                            <label>
+                                Запомнить меня
+                            </label>
+                        </div>
+                    </div>
+                    <input type="hidden" name="redirect" value="{% url 'admin' %}"/>
+                    <button type="submit" class="btn btn-block btn-primary login-btn" value="admin">
+                        Вход
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /.login-card-body -->
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+
+    $('#checkbox2').iCheck({
+        checkboxClass: 'icheckbox_flat-blue',
+        radioClass: 'iradio_flat-blue'
+    });
+
+
+    //  jQuery Validations Form
+    $('#admin_form').validate({
+        rules: {
+            username: {
+                required: true,
+                email: true
+            },
+
+            password: {
+                required: true,
+            },
+
+        },
+        messages: {
+            username: {
+                required: "",
+                email: ""
+            },
+            password: {
+                required: "",
+            },
+
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
+</script>
+{% endblock %}
+
+
+

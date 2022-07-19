@@ -1,0 +1,118 @@
+{% extends 'user/elements/layout.html' %}
+
+{% load recaptcha3 %}
+
+{% block title %}
+{{ block.super }}
+{% endblock %}
+
+{% block style %}
+{% recaptcha_init %}
+{% recaptcha_ready action_name='homepage' %}
+
+<style>
+    .login-btn {
+        margin: 10px 0 0 0;
+    }
+</style>
+
+{% endblock %}
+
+{% block login %}
+<div class="nav-tabs-custom">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#cabinet" data-toggle="tab" aria-expanded="true">Для жильца</a></li>
+        <li><a href="{% url 'admin_login' %}">Для администрации</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="cabinet">
+            <div class="login-box-body">
+                <p class="login-box-msg">Вход в личный кабинет</p>
+                <form id="cabinet_form" method="post">
+                    {% csrf_token %}
+                    {{ form.captcha }}
+                    <div class="form-group has-feedback">
+                        {{ form.username }}
+                        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+                    </div>
+                    <div class="form-group has-feedback">
+                        {{ form.password }}
+                        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                    </div>
+                    <div class="icheck-primary">
+                        <div class="custom-control custom-checkbox">
+                            {{ form.remember_me }}
+                            <label>
+                                Запомнить меня
+                            </label>
+                        </div>
+                    </div>
+                    <input type="hidden" name="redirect" value="{% url 'cabinet' %}"/>
+                    <button type="submit" class="btn btn-primary btn-block login-btn" value="cabinet">
+                        Вход
+                    </button>
+                </form>
+                <p style="text-align: center; padding-top: 15px; margin-bottom: 0">
+                    У Вас ещё нет аккаунтa? <a href="{% url 'register' %}">Регистрация</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /.login-card-body -->
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+    $('#checkbox1').iCheck({
+        checkboxClass: 'icheckbox_flat-blue',
+        radioClass: 'iradio_flat-blue'
+    });
+
+    $("#cabinet input[name=username]").attr('placeholder', 'E-mail или ID')
+
+
+    //  jQuery Validations Form
+    $('#cabinet_form').validate({
+        rules: {
+            username: {
+                required: true,
+                email: false
+            },
+
+            password: {
+                required: true,
+            },
+
+        },
+        messages: {
+            username: {
+                required: "",
+            },
+            password: {
+                required: "",
+            },
+
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
+
+</script>
+{% endblock %}
+
+
+

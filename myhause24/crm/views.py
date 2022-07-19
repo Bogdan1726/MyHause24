@@ -96,12 +96,12 @@ class RoleRequiredMixin(View, AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
-            return redirect('login')
+            return redirect('admin_login')
         if self.permission_required is None and request.user.is_staff:
             return super().dispatch(request, *args, **kwargs)
         else:
             if not request.user.is_staff:
-                return redirect('login')
+                return redirect('admin_login')
             if not getattr(request.user.role, self.get_permission_required()):
                 messages.error(request, 'Для доступа к данной странице свяжитесь с администрацией')
                 return redirect(request.META.get('HTTP_REFERER') or 'login')

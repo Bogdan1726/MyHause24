@@ -143,7 +143,7 @@
             </div>
             <div class="row">
                 <div class="col-xs-12 text-right">
-                    <a href="{% url 'owners' %}" class="btn btn-default">Отменить</a>
+                    <a href="{% url 'profile' %}" class="btn btn-default">Отменить</a>
                     <button type="submit" class="btn btn-success">Сохранить</button>
                 </div>
             </div>
@@ -163,8 +163,8 @@
 <script>
     function generatePassword() {
         const password = Math.random().toString(36).slice(-8);
-        $('input[name="new_password1"]').val(password);
-        $('input[name="new_password2"]').val(password);
+        $('input[name="profile-new_password1"]').val(password);
+        $('input[name="profile-new_password2"]').val(password);
     }
 
     !function (a) {
@@ -183,7 +183,7 @@
     }(jQuery);
 
 
-    $('#id_date_of_birth').datepicker({
+    $('#id_profile-date_of_birth').datepicker({
         format: 'dd.mm.yyyy',
         startDate: '-100y',
         endDate: '+0d',
@@ -197,7 +197,6 @@
         rules: {
             'profile-username': {
                 required: true,
-                email: true
             },
 
         },

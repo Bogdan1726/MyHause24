@@ -156,42 +156,28 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
-
 <script src="{% static 'crm/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+<script src="{% static 'cabinet/js/rus_datepicker.js' %}"></script>
 
 <script>
+
     function generatePassword() {
         const password = Math.random().toString(36).slice(-8);
         $('input[name="profile-new_password1"]').val(password);
         $('input[name="profile-new_password2"]').val(password);
     }
 
-    !function (a) {
-        a.fn.datepicker.dates.ru = {
-            days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
-            daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
-            daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
-            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
-            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
-            today: "Сегодня",
-            clear: "Очистить",
-            format: "dd.mm.yyyy",
-            weekStart: 1,
-            monthsTitle: "Месяцы"
-        }
-    }(jQuery);
-
-
+    // datepicker widget
     $('#id_profile-date_of_birth').datepicker({
         format: 'dd.mm.yyyy',
         startDate: '-100y',
         endDate: '+0d',
         language: 'ru'
     });
+    //
 
     //  jQuery Validations Form
-
     $('#update_profile').validate({
 
         rules: {
@@ -217,7 +203,6 @@
             $(element).closest('.form-group').removeClass('has-error');
         },
     });
-
     //
 
 </script>

@@ -70,21 +70,29 @@
             <div class="box-header with-border">
                 <h3 id="pieChartTitle" class="box-title">Диаграмма расходов</h3>
             </div>
-            {% if personal_account %}
+            {% if personal_account and expense_to_month|length > 2 or expense_to_year|length > 2 %}
             <div class="box-body">
                 <div class="row">
                     <div class="col-xs-12 col-lg-6">
                         <div class="card-body">
+                            {% if expense_to_month|length > 2 %}
                             <canvas id="pieChart1"
                                     style="min-height: 250px; height: 500px; max-height: 500px; max-width: 100%; display: block; width: 730px;"
-                                    width="730" height="250"></canvas>
+                                    width="730" height="250">
+
+                            </canvas>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-xs-12 col-lg-6">
                         <div class="card-body">
+                            {% if expense_to_year|length > 2 %}
                             <canvas id="pieChart2"
                                     style="min-height: 250px; height: 500px; max-height: 500px; max-width: 100%; display: block; width: 730px;"
-                                    width="730" height="250" class="chartjs-render-monitor"></canvas>
+                                    width="730" height="250" class="chartjs-render-monitor">
+
+                            </canvas>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -105,7 +113,7 @@
             <div class="box-header with-border">
                 <h3 class="box-title">Диаграмма расходов по месяцам за год</h3>
             </div>
-            {% if personal_account %}
+            {% if personal_account and expense_to_month|length > 2 or expense_to_year|length > 2 %}
             <div class="box-body">
                 <div class="row">
                     <div class="col-xs-12">
@@ -136,7 +144,6 @@
 <script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
 {% if personal_account %}
 <script>
-
 
     $(function () {
         var labels = []

@@ -29,7 +29,7 @@
         <h3 class="box-title"></h3>
         <div class="box-tools">
             <a class="btn btn-info btn-sm"
-               id="print">
+               id="print" href="{% url 'receipt_print' receipt.id %}" target="_blank">
                 <i class="fa fa-print" aria-hidden="true"></i>
                 <span class="hidden-xs">Распечатать</span>
             </a>
@@ -78,7 +78,7 @@
             <a class="btn btn-sm btn-warning"
                href="{% url 'export_pdf' receipt.id %}">
                 <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
-                Скачать в PDF
+                Скачать в XLSX
             </a>
             {% if receipt.status_pay == 'paid' %}
             <a class="btn btn-sm btn-success disabled">
@@ -127,19 +127,9 @@
 {% block scripts %}
 <script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
-
 <script>
-
     // DataTable
     table = $('#table_receipt').DataTable({
-        dom: 'Bfrtip',
-        buttons: [
-            'print'
-        ],
         "responsive": false,
         'paging': false,
         'lengthChange': false,
@@ -153,12 +143,5 @@
             "infoEmpty": "Нет записей."
         },
     });
-
-    // export to pdf and print
-    $('.buttons-print').css('display', 'none')
-    $('#print').on("click", function () {
-        table.buttons('.buttons-print').trigger('click');
-    })
-    //
 </script>
 {% endblock %}

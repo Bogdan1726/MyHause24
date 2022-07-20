@@ -3,7 +3,7 @@ from .views import (
     StatisticsOfCabinetListView, ProfileDetailView, ProfileUpdateView, MasterCallListView,
     MasterCallDelete, MasterCallCreateView, MessagesListView, MessageDetailView,
     MessageDelete, ServicesOfTariffListView, ReceiptOfOwnerListView, ReceiptOfOwnerDetailView,
-    pay_by_receipt, export_pdf
+    pay_by_receipt, export_pdf, receipt_print
 )
 
 urlpatterns = [
@@ -14,6 +14,7 @@ urlpatterns = [
     path('receipt/<int:pk>/', ReceiptOfOwnerDetailView.as_view(), name='detail-receipt'),
     path('receipt/pay/<int:pk>/', pay_by_receipt, name='pay_by_receipt'),
     path('receipt/download/pdf/<int:pk>/', export_pdf, name='export_pdf'),
+    path('receipt/print/<int:pk>', receipt_print, name='receipt_print'),
     # endregion Receipts
 
     # region Tariff

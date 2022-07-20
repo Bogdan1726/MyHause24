@@ -78,38 +78,23 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
 <script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
 <script src="{% static 'crm/plugins/timepicker/bootstrap-timepicker.min.js' %}"></script>
+<script src="{% static 'cabinet/js/rus_datepicker.js' %}"></script>
+
 <script>
-    !function (a) {
-        a.fn.datepicker.dates.ru = {
-            days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
-            daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
-            daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
-            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
-            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
-            today: "Сегодня",
-            clear: "Очистить",
-            format: "dd.mm.yyyy",
-            weekStart: 1,
-            monthsTitle: "Месяцы"
-        }
-    }(jQuery);
-
-
+    // date and timepicker widgets
     $('#id_cabinet-date').datepicker({
         format: 'dd.mm.yyyy',
         startDate: '-100y',
         language: 'ru',
-
     });
 
     $('#id_cabinet-time').timepicker({
         showInputs: false,
         showMeridian: false,
-
     });
+    //
 
     //  jQuery Validations Form
-
     $('#create_master-call').validate({
 
         rules: {

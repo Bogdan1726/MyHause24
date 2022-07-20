@@ -101,7 +101,6 @@
 
     $(document).ready(function () {
 
-
         // DataTable
         var table = $('#list_messages').DataTable({
             "responsive": false,
@@ -126,7 +125,6 @@
         })
         //
     });
-
 
     jQuery(function ($) {
         //Enable iCheck plugin for checkboxes
@@ -171,7 +169,6 @@
                             if (response) {
                                 location.reload();
                             }
-
                         },
                         error: function (response) {
                             console.log(response.error);
@@ -183,9 +180,6 @@
                 }
             }
         });
-
     });
-
-
 </script>
 {% endblock %}

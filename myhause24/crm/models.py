@@ -196,7 +196,7 @@ class CashBox(models.Model):
     date = models.DateField(default=datetime.date.today)
     status = models.BooleanField(default=True)
     type = models.BooleanField(default=True)
-    sum = models.DecimalField(max_digits=10, decimal_places=2)
+    sum = models.DecimalField(max_digits=10, decimal_places=4)
     comment = models.TextField(blank=True)
     payment_items = models.ForeignKey('PaymentItems', blank=True, null=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='owner')

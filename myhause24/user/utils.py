@@ -10,7 +10,7 @@ def send_email_for_verification(user):
     if ALLOWED_HOSTS:
         host = 'http://' + ALLOWED_HOSTS[0]
     else:
-        host = 'http://localhost:8000'
+        host = 'http://127.0.0.1:8000'
     context = {
         'domain': host,
         'user': user,

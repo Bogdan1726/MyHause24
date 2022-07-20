@@ -1,6 +1,7 @@
 {% extends 'cabinet/elements/layout.html' %}
 
 {% load static %}
+{% load floattags %}
 
 {% block title %}
 Тарифы - {{ apartment.house.title }}, кв.{{ apartment.number }}
@@ -35,7 +36,7 @@
                 <tr>
                     <td>{{ service.services }}</td>
                     <td>{{ service.services.u_measurement }}</td>
-                    <td>{{ service.price }}</td>
+                    <td>{{ service.price|floatformat:"2g"|formatted_float }}</td>
                 </tr>
                 {% empty %}
                  <tr>

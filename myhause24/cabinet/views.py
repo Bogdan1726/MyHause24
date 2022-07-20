@@ -6,15 +6,17 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import AccessMixin
 from django.db.models import Sum, Avg, Q
 from django.db.models.functions import Greatest
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views import View
+from openpyxl.writer.excel import save_virtual_workbook
+from .services.pdf_services import write_to_file
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
 from crm.forms import OwnerUpdateForm, MasterCallForm
 from crm.models import (
     PersonalAccount, Apartment, CallRequest, Message, PriceTariffServices,
-    Receipt, ReceiptTemplate, Requisites, CalculateReceiptService
+    Receipt, ReceiptTemplate, Requisites, CalculateReceiptService, Services
 )
 
 User = get_user_model()
@@ -27,7 +29,6 @@ class OwnerRequiredMixin(View, AccessMixin):
     """
     Check user is the owner of the apartment
     """
-
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
             return redirect('cabinet_login')
@@ -51,10 +52,15 @@ class StatisticsOfCabinetListView(OwnerRequiredMixin):
         if apartment_id is None:
             apartment = Apartment.objects.filter(owner=request.user).first()
             return redirect(reverse_lazy('cabinet') + f'?apartment={apartment.id}')
-
         personal_account = PersonalAccount.objects.filter(apartment=apartment_id)
-        balance_income = personal_account.aggregate(sum=Greatest(Sum('cash_account__sum'), Decimal(0)))
-        balance_expense = personal_account.aggregate(sum=Greatest(Sum('receipt_account__sum'), Decimal(0)))
+        balance_income = personal_account.aggregate(
+            sum=Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True)), Decimal(0))
+        )
+        balance_expense = personal_account.aggregate(
+            sum=Greatest(Sum('receipt_account__sum',
+                             filter=Q(receipt_account__status=True, receipt_account__status_pay='not_paid')),
+                         Decimal(0))
+        )
         apartment_balance = (balance_income['sum'] - balance_expense['sum'])
         last_month = (datetime.now() - timedelta(days=30)).month
         list_month = [month for month in range(1, 13)]
@@ -62,14 +68,14 @@ class StatisticsOfCabinetListView(OwnerRequiredMixin):
         avg_expense = personal_account.filter(
             receipt_account__date__month=datetime.now().month
         ).aggregate(
-            avg=Greatest(Avg('receipt_account__sum'), Decimal(0))
+            avg=Greatest(Avg('receipt_account__sum', filter=Q(receipt_account__status=True)), Decimal(0))
         )
         expense_to_month = personal_account.filter(
             receipt_account__date__month=last_month
         ).values(
             'receipt_account__calculate_receipt__services__title'
         ).annotate(
-            sum=Sum('receipt_account__calculate_receipt__cost')
+            sum=Sum('receipt_account__calculate_receipt__cost', filter=Q(receipt_account__status=True))
         )
 
         expense_to_year = personal_account.filter(
@@ -77,13 +83,13 @@ class StatisticsOfCabinetListView(OwnerRequiredMixin):
         ).values(
             'receipt_account__calculate_receipt__services__title'
         ).annotate(
-            sum=Sum('receipt_account__calculate_receipt__cost')
+            sum=Sum('receipt_account__calculate_receipt__cost', filter=Q(receipt_account__status=True))
         )
 
         monthly_expenses_per_year = personal_account.filter(
             receipt_account__status=True, receipt_account__date__year=datetime.now().year
         ).annotate(
-            sum=Sum('receipt_account__sum')
+            sum=Sum('receipt_account__sum', filter=Q(receipt_account__status=True))
         ).values('receipt_account__date__month', 'sum')
 
         expense_to_month_data = []
@@ -122,6 +128,7 @@ class StatisticsOfCabinetListView(OwnerRequiredMixin):
             'monthly_expenses_per_year': json.dumps(monthly_expenses_per_year_data) or None,
         }
         return render(request, 'cabinet/pages/index.html', context)
+
 
 # endregion Statistics
 
@@ -163,36 +170,45 @@ def pay_by_receipt(request, pk):
 
 
 def export_pdf(request, pk):
-    file = ReceiptTemplate.objects.all().first
+    file = ReceiptTemplate.objects.all().first()
     requisites = Requisites.objects.all().first()
     receipt = Receipt.objects.filter(id=pk).first()
     services = CalculateReceiptService.objects.filter(receipt_id=receipt).select_related(
         'services', 'receipt'
     )
-    account_balance = PersonalAccount.objects.filter(
-        id=receipt.personal_account_id
-    ).annotate(
-        balance=
-        Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
-        -
-        Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
-    ).first()
+    personal_account = PersonalAccount.objects.filter(id=receipt.personal_account_id)
+    balance_income = personal_account.aggregate(
+        sum=Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True)), Decimal(0))
+    )
+    balance_expense = personal_account.aggregate(
+        sum=Greatest(Sum('receipt_account__sum',
+                         filter=Q(receipt_account__status=True, receipt_account__status_pay='not_paid')),
+                     Decimal(0))
+    )
+    account_balance = (balance_income['sum'] - balance_expense['sum'])
 
-    # write = write_to_file(
-    #     receipt, receipt.personal_account, requisites.description, file, services, account_balance
-    # )
+    write = write_to_file(
+        receipt, receipt.personal_account, requisites.description, file, services, account_balance
+    )
 
-    # response = HttpResponse(save_virtual_workbook(write), content_type='application/vnd.ms-excel')
-    # response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
-    # return response
-    return HttpResponseRedirect(reverse_lazy('detail-receipt', kwargs={'pk': pk}))
+    response = HttpResponse(save_virtual_workbook(write), content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=tpl-' + str(file.id) + '.xlsx'
+    return response
 
+
+def receipt_print(request, pk):
+    receipt = Receipt.objects.get(id=pk)
+    context = {
+        'today': datetime.now(),
+        'receipt': receipt,
+        'services': CalculateReceiptService.objects.filter(receipt=receipt)
+    }
+    return render(request, 'cabinet/pages/receipt/receipt_print.html', context)
 
 # endregion Receipts
 
 
 # region Tariff
-
 
 class ServicesOfTariffListView(ListView, OwnerRequiredMixin):
     model = PriceTariffServices

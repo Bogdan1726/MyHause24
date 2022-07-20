@@ -9,40 +9,9 @@
 {% endblock %}
 
 {% block style %}
-<style>
-    #export:hover {
-        cursor: pointer;
-    }
-
-    input[name="custom_search"] {
-        width: 100%;
-        font-weight: normal;
-        padding: 5px;
-        border: 1px solid #d2d6de;
-    }
-
-    input[name="custom_search"]:focus {
-        color: #212529;
-        border-color: #bdbdbd;
-        outline: 0;
-    }
-
-    select[name="custom_select"] {
-        width: 100%;
-        font-weight: normal;
-        padding: 5px;
-        border: 1px solid #d2d6de;
-    }
-
-    select[name="custom_select"] {
-        color: #212529;
-        border-color: #bdbdbd;
-        outline: 0;
-    }
-
-</style>
+<link rel="stylesheet" href="{% static 'crm/css/style_dataTable_filter.css' %}">
 <link rel="stylesheet"
-          href="{% static 'crm/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
+      href="{% static 'crm/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
 <link rel="stylesheet" href="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.css' %}">
 <link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
 {% endblock %}
@@ -122,7 +91,7 @@
 {% block scripts %}
 <script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
-
+<script src="{% static 'cabinet/js/rus_datepicker.js' %}"></script>
 <script>
     // DataTable
     var table = $('#table_receipts').DataTable({
@@ -182,7 +151,6 @@
         },
     });
 
-
     // clean button
     $("#table_receipts_filter").css('display', 'none')
     $("#clean").on("click", function () {
@@ -192,26 +160,12 @@
     })
     //
 
-    !function (a) {
-        a.fn.datepicker.dates.ru = {
-            days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
-            daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
-            daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
-            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
-            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
-            today: "Сегодня",
-            clear: "Очистить",
-            format: "dd.mm.yyyy",
-            weekStart: 1,
-            monthsTitle: "Месяцы"
-        }
-    }(jQuery);
-
-
+    // datepicker widget
     $('#id_date').datepicker({
         format: 'dd.mm.yyyy',
         startDate: '-100y',
         language: 'ru',
     });
+    //
 </script>
 {% endblock %}

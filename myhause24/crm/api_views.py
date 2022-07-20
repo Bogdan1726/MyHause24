@@ -50,7 +50,8 @@ def loading_personal_account(request):
         obj = PersonalAccount.objects.filter(id=pk).values(
             'id', 'number', 'apartment', 'apartment__house', 'apartment__section', 'apartment__section__title',
             'apartment__tariff', 'apartment__number', 'apartment__owner__first_name',
-            'apartment__owner__last_name', 'apartment__owner__username', 'apartment__owner__phone'
+            'apartment__owner__last_name', 'apartment__owner__username', 'apartment__owner__phone',
+            'apartment__owner_id'
         )
         response = {
             'personal_account': list(obj),

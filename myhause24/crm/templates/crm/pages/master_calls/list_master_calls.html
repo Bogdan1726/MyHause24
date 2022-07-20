@@ -109,7 +109,7 @@
                             <td>{{ call.id }}</td>
                             <td>{{ call.date|date:"d.m.Y" }} - {{ call.time|date:"H:i" }}</td>
                             <td>{{ call.type_master }}</td>
-                            <td>{{ call.description }}</td>
+                            <td>{{ call.description|truncatechars:30 }}</td>
                             <td>
                                 <a href="{% url 'detail_apartment' call.apartment_id %}">
                                     кв.{{ call.apartment.number }},{{ call.apartment.house.title }}

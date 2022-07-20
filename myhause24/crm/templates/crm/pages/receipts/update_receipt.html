@@ -674,6 +674,7 @@
                     var owner_first_name = response.personal_account[0].apartment__owner__first_name
                     var owner_username = response.personal_account[0].apartment__owner__username
                     var owner_phone = response.personal_account[0].apartment__owner__phone
+                    var owner_id = response.personal_account[0].apartment__owner_id
                     if (owner_username !== null) {
                         show_owner(
                             [
@@ -682,6 +683,7 @@
                                     'owner__first_name': owner_first_name,
                                     'owner__username': owner_username,
                                     'owner__phone': owner_phone
+                                    'owner_id': owner_id
                                 }]
                         )
                     } else {
@@ -913,6 +915,17 @@
             return true;
         });
 
+        $.validator.addMethod("date_end", function (value) {
+            var date_start = $('#id_date_start').val();
+            var correct_date_start = date_start.split(".")[2] + '-' + date_start.split(".")[1] + '-' + date_start.split(".")[0]
+            var correct_date_end = value.split(".")[2] + '-' + value.split(".")[1] + '-' + value.split(".")[0]
+            if (new Date(correct_date_start).getTime() > new Date(correct_date_end).getTime()) {
+                return false
+            } else {
+                return true
+            }
+        });
+
         var validator = $('#receipt-form').validate({
             rules: {
                 date: {
@@ -930,7 +943,10 @@
                 },
                 personal_accounts: {
                     required_accounts: true,
-                }
+                },
+                date_end: {
+                    date_end: true
+                },
 
             },
             messages: {
@@ -942,6 +958,7 @@
                 },
                 date_end: {
                     required: "Обязательное поле",
+                    date_end: "Не корректный Период",
                 },
                 number: {
                     required: "Обязательное поле",

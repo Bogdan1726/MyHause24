@@ -1,11 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.views import LoginView, LogoutView
-from django.http import HttpResponseRedirect
+from django.core.exceptions import ValidationError
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.http import urlsafe_base64_decode
+from django.views import View
 from django.views.generic import CreateView
 from .forms import UserLoginForm, RegisterUserForm
-from django.contrib.auth import login as auth_login, get_user_model
+from django.contrib.auth import login as auth_login, get_user_model, login
+from django.contrib.auth.tokens import default_token_generator as token_generator
 
 User = get_user_model()
 
@@ -58,8 +62,29 @@ class UserRegisterView(CreateView):
     form_class = RegisterUserForm
 
     def get_success_url(self):
-        messages.success(self.request, f'Добро пожаловать {self.request.user}')
-        return reverse_lazy('cabinet_login')
+        return reverse_lazy('confirm')
+
+
+class EmailVerificationDone(View):
+
+    def get(self, request, uidb64, token):
+        user = self.get_user(uidb64)
+        if user is not None and token_generator.check_token(user, token):
+            user.is_active = True
+            user.status = 'new'
+            user.save()
+            login(request, user, backend='user.authentication.EmailAuthBackend')
+            return redirect('done_confirm')
+        return HttpResponse('Error Token')
+
+    @staticmethod
+    def get_user(uidb64):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(id=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist, ValidationError):
+            user = None
+        return user
 
 
 class OwnerLogout(LogoutView):

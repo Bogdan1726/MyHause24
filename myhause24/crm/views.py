@@ -104,7 +104,7 @@ class RoleRequiredMixin(View, AccessMixin):
                 return redirect('admin_login')
             if not getattr(request.user.role, self.get_permission_required()):
                 messages.error(request, 'Для доступа к данной странице свяжитесь с администрацией')
-                return redirect(request.META.get('HTTP_REFERER') or 'login')
+                return redirect(reverse_lazy('user_profile', kwargs={'pk': request.user.id}))
         return super().dispatch(request, *args, **kwargs)
 
 

@@ -5,11 +5,11 @@ from django.contrib import messages
 from django.contrib.auth.mixins import AccessMixin
 from django.contrib.sitemaps import ping_google
 from django.core.exceptions import ValidationError
-from django.db.models import Sum, Q, F
+from django.db.models import Sum, Q
 from django.db.models.functions import Greatest
 from django.forms import modelformset_factory, formset_factory
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.views import View
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
@@ -22,6 +22,9 @@ import random
 from user.models import Role
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView, CreateView
+from main.models import (
+    HomePage, ContentBlock, Contact, AboutUs, Gallery, SiteService, Document
+)
 from .models import (
     House, Section, Floor, Apartment, PersonalAccount, Services, UnitOfMeasure,
     Tariff, PriceTariffServices, PaymentItems, MeterData, CallRequest,
@@ -37,9 +40,7 @@ from .forms import (
     HomePageForm, SeoBlockForm, ContentBlockForm, ContactPageForm, AboutPageForm, GalleryForm,
     DocumentForm, SiteServiceForm
 )
-from main.models import (
-    HomePage, ContentBlock, Contact, AboutUs, Gallery, SiteService, Document
-)
+
 
 User = get_user_model()
 
@@ -50,30 +51,25 @@ User = get_user_model()
 
 def get_balance_cash():
     cash = CashBox.objects.all()
-    cash_balance = 0
-    cash_income = cash.filter(status=True, type=True).aggregate(sum=Sum('sum'))
-    cash_expense = cash.filter(status=True, type=False).aggregate(sum=Sum('sum'))
-
-    income = cash_income['sum']
-    expense = cash_expense['sum']
-    if income is not None:
-        cash_balance += income
-    if expense is not None:
-        cash_balance -= expense
-
+    cash_income = cash.filter(status=True, type=True).aggregate(sum=Greatest(Sum('sum'), Decimal(0)))
+    cash_expense = cash.filter(status=True, type=False).aggregate(sum=Greatest(Sum('sum'), Decimal(0)))
+    cash_balance = cash_income['sum'] - cash_expense['sum']
     return cash_balance
 
 
 def get_balance_account():
     account_balance = 0
     account_debit = 0
-    queryset = PersonalAccount.objects.select_related(
-        'apartment', 'apartment__house', 'apartment__section', 'apartment__owner',
-    ).annotate(
+    personal_account = PersonalAccount.objects.select_related(
+        'apartment', 'apartment__house', 'apartment__section', 'apartment__owner'
+    )
+    queryset = personal_account.annotate(
         balance=
         Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
         -
-        Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
+        Greatest(
+            Sum('receipt_account__sum', filter=Q(receipt_account__status=True,
+                                                 receipt_account__status_pay='not_paid'), distinct=True), Decimal(0))
     ).order_by('-id')
 
     for obj in queryset:
@@ -114,7 +110,6 @@ class StatisticsView(RoleRequiredMixin):
     @staticmethod
     def get(request):
         house_id = [obj.id for obj in House.objects.filter(user=request.user)]
-        apartment_id = [obj.id for obj in Apartment.objects.filter(house_id__in=house_id)]
         list_month = [month for month in range(1, 13)]
         cash_income = CashBox.objects.select_related(
             'receipt', 'personal_account', 'payment_items'

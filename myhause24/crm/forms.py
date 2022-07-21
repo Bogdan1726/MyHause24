@@ -226,6 +226,9 @@ class MessageForm(forms.ModelForm):
 
 # region Owner Form
 class OwnerForm(UserCreationForm):
+    error_messages = {
+        'isdigit': 'ID должен содержать только цифры',
+    }
     password1 = forms.CharField(
         label=_("Password"),
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password',
@@ -248,7 +251,8 @@ class OwnerForm(UserCreationForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'patronymic': forms.TextInput(attrs={'class': 'form-control'}),
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control'}),
-            'user_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'user_id': forms.TextInput(attrs={'class': 'form-control',
+                                              'data-mask': "000000"}),
             'about_owner': forms.Textarea(attrs={'class': 'form-control', 'rows': '12'}),
             'phone': forms.TextInput(attrs={'class': 'form-control',
                                             'data-mask': "+38(000) 000-00-00"}),
@@ -269,6 +273,14 @@ class OwnerForm(UserCreationForm):
             )
         return password2
 
+    def clean_user_id(self):
+        user_id = self.cleaned_data['user_id']
+        if user_id.isdigit() is False:
+            raise ValidationError(
+                self.error_messages['isdigit']
+            )
+        return user_id
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['username']
@@ -281,7 +293,8 @@ class OwnerForm(UserCreationForm):
 class OwnerUpdateForm(UserChangeForm):
     error_messages = {
         'password_mismatch': _('The two password fields didn’t match.'),
-        'duplicate_user_id': _('Владелец с данным ID уже существует!')
+        'duplicate_user_id': _('Владелец с данным ID уже существует!'),
+        'isdigit': 'ID должен содержать только цифры'
     }
 
     new_password1 = forms.CharField(
@@ -310,7 +323,8 @@ class OwnerUpdateForm(UserChangeForm):
             'patronymic': forms.TextInput(attrs={'class': 'form-control'}),
             'profile_picture': forms.FileInput(),
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control'}),
-            'user_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'user_id': forms.TextInput(attrs={'class': 'form-control',
+                                              'data-mask': "000000"}),
             'about_owner': forms.Textarea(attrs={'class': 'form-control', 'rows': '12'}),
             'phone': forms.TextInput(attrs={'class': 'form-control',
                                             'data-mask': "+38(000) 000-00-00"}),
@@ -336,6 +350,14 @@ class OwnerUpdateForm(UserChangeForm):
                 code='password_mismatch',
             )
         return new_password2
+
+    def clean_user_id(self):
+        user_id = self.cleaned_data['user_id']
+        if user_id.isdigit() is False:
+            raise ValidationError(
+                self.error_messages['isdigit']
+            )
+        return user_id
 
     def save(self, commit=True):
         user = super().save(commit=False)

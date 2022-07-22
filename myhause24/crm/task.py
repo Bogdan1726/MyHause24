@@ -1,14 +1,10 @@
 from decimal import Decimal
-from io import BytesIO, StringIO
-
 from django.core.mail import send_mail, EmailMessage
 from django.db.models import Sum, Q
 from django.db.models.functions import Greatest
 from django.shortcuts import get_object_or_404
 from myhause24.celery import app
-from django.template.loader import render_to_string
 from openpyxl.writer.excel import save_virtual_workbook
-
 from .models import (
     Receipt, Requisites, CalculateReceiptService, PersonalAccount, ReceiptTemplate
 )
@@ -24,14 +20,20 @@ def send_receipt_for_owner(pk, id):
     services = CalculateReceiptService.objects.filter(receipt=receipt.id).select_related(
         'services', 'receipt'
     )
-    account_balance = PersonalAccount.objects.filter(
-        id=receipt.personal_account_id
-    ).annotate(
-        balance=
-        Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True), distinct=True), Decimal(0))
-        -
-        Greatest(Sum('receipt_account__sum', filter=Q(receipt_account__status=True), distinct=True), Decimal(0))
-    ).first()
+
+    personal_account = PersonalAccount.objects.filter(id=receipt.personal_account_id)
+    balance_income = personal_account.aggregate(
+        sum=Greatest(Sum('cash_account__sum',
+                         filter=Q(cash_account__status=True,
+                                  cash_account__type=True)), Decimal(0))
+    )
+    balance_expense = personal_account.aggregate(
+        sum=Greatest(Sum('cash_account__sum',
+                         filter=Q(cash_account__status=True,
+                                  cash_account__type=False)),
+                     Decimal(0))
+    )
+    account_balance = (balance_income['sum'] - balance_expense['sum'])
 
     write = write_to_file(
         receipt, receipt.personal_account, requisites.description, file, services, account_balance
@@ -41,7 +43,7 @@ def send_receipt_for_owner(pk, id):
         'CRM 24 Administrations',
         f'Квитанция',
         None,
-        ['bogdan24ro@gmail.com'],
+        [f'{receipt.apartment.owner.email}'],
     )
 
     email.attach(f'Квитанция №{receipt.number}.xlsx', save_virtual_workbook(write),

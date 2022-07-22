@@ -8,8 +8,8 @@ def write_to_file(receipt, account, requisites, file, services, account_balance)
 
     data = {
         'total': services.aggregate(Sum('cost'))['cost__sum'],
-        'totalDebt': float(str(account_balance.balance).replace('-', '')),
-        'accountBalance': account_balance.balance,
+        'totalDebt': float(str(account_balance).replace('-', '')) if account_balance < 0 else float(str(0)),
+        'accountBalance': account_balance,
         'invoiceNumber': receipt.number,
         'invoiceDate': receipt.date.strftime("%d.%m.%Y"),
         'invoiceMonth': f'{receipt.date_start.strftime("%d.%m")} - {receipt.date_end.strftime("%d.%m")}',

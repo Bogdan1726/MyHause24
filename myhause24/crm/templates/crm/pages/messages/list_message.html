@@ -69,6 +69,11 @@
                                    style="position: absolute; opacity: 0;">
                         </td>
                         <td>
+                            {% if message.owner %}
+                            <a href="{% url 'detail_message' message.id %}">
+                                {{ message.owner }}
+                            </a>
+                            {% else %}
                             <a href="{% url 'detail_message' message.id %}">
                                 {% if message.house %}
                                 {{ message.house.title }}
@@ -88,6 +93,7 @@
                                 , {{ message.apartment.owner }}
                                 {% endif %}
                             </a>
+                            {% endif %}
                         </td>
                         <td>
                             <b>{{ message.topics }}</b>

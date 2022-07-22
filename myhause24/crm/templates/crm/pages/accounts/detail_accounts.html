@@ -128,7 +128,7 @@
                         <td>
                             <span class="text-green">{{ accounts.balance|floatformat:"2g"|formatted_float }}</span>
                         </td>
-                        {% elif balance < 0 %}
+                        {% elif accounts.balance < 0 %}
                         <td>
                             <span class="text-red">{{ accounts.balance|floatformat:"2g"|formatted_float }}</span>
                         </td>

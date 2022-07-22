@@ -135,7 +135,6 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 
@@ -143,16 +142,19 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
 {% if personal_account %}
-<script>
 
+{% if expense_to_month|length > 2 %}
+<script>
     $(function () {
         var labels = []
         var data = []
         var expense_month_data = JSON.parse('{{ expense_to_month|safe }}')
 
         for (let i = 0; i < expense_month_data.length; i++) {
-            labels.push(expense_month_data[i].service)
-            data.push(expense_month_data[i].sum)
+            if (expense_month_data[i].service) {
+                labels.push(expense_month_data[i].service)
+                data.push(expense_month_data[i].sum)
+            }
         }
 
         var Data = {
@@ -198,15 +200,21 @@
         })
 
     })
+</script>
+{% endif %}
 
+{% if expense_to_year|length > 2 %}
+<script>
     $(function () {
         var labels = []
         var data = []
         var expense_year_data = JSON.parse('{{ expense_to_year|safe }}')
 
         for (let i = 0; i < expense_year_data.length; i++) {
-            labels.push(expense_year_data[i].service)
-            data.push(expense_year_data[i].sum)
+            if (expense_year_data[i].service) {
+                labels.push(expense_year_data[i].service)
+                data.push(expense_year_data[i].sum)
+            }
         }
 
         var Data = {
@@ -253,7 +261,10 @@
             options: pieOptions
         })
     })
+</script>
+{% endif %}
 
+<script>
     jQuery(function ($) {
         $(function () {
             let labels = ['янв.', 'февр.', 'март', 'апр.', 'май.', 'июнь', 'июль', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.']

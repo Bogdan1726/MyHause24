@@ -54,12 +54,14 @@ class StatisticsOfCabinetListView(OwnerRequiredMixin):
             return redirect(reverse_lazy('cabinet') + f'?apartment={apartment.id}')
         personal_account = PersonalAccount.objects.filter(apartment=apartment_id)
         balance_income = personal_account.aggregate(
-            sum=Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True)), Decimal(0))
+            sum=Greatest(Sum('cash_account__sum',
+                             filter=Q(cash_account__status=True,
+                                      cash_account__type=True)), Decimal(0))
         )
         balance_expense = personal_account.aggregate(
-            sum=Greatest(Sum('receipt_account__sum',
-                             filter=Q(receipt_account__status=True, receipt_account__status_pay='not_paid')),
-                         Decimal(0))
+            sum=Greatest(Sum('cash_account__sum',
+                             filter=Q(cash_account__status=True,
+                                      cash_account__type=False)),Decimal(0))
         )
         apartment_balance = (balance_income['sum'] - balance_expense['sum'])
         last_month = (datetime.now() - timedelta(days=30)).month
@@ -178,12 +180,14 @@ def export_pdf(request, pk):
     )
     personal_account = PersonalAccount.objects.filter(id=receipt.personal_account_id)
     balance_income = personal_account.aggregate(
-        sum=Greatest(Sum('cash_account__sum', filter=Q(cash_account__status=True)), Decimal(0))
+        sum=Greatest(Sum('cash_account__sum',
+                         filter=Q(cash_account__status=True,
+                                  cash_account__type=True)), Decimal(0))
     )
     balance_expense = personal_account.aggregate(
-        sum=Greatest(Sum('receipt_account__sum',
-                         filter=Q(receipt_account__status=True, receipt_account__status_pay='not_paid')),
-                     Decimal(0))
+        sum=Greatest(Sum('cash_account__sum',
+                         filter=Q(cash_account__status=True,
+                                  cash_account__type=False)), Decimal(0))
     )
     account_balance = (balance_income['sum'] - balance_expense['sum'])
 

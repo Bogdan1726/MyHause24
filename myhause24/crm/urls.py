@@ -1,6 +1,5 @@
 from django.urls import path
 from django.contrib.auth import get_user_model
-
 from .views import (
     HouseListView, HouseCreateView, HouseUpdateView, HouseDetailView,
     OwnerListView, OwnerCreateView, OwnerUpdateView, OwnerDetailView, ApartmentListView,
@@ -19,7 +18,6 @@ from .views import (
     MessageDelete, MessageListView, StatisticsView, SiteHomePage, SiteContactPage, SiteAboutPage, DeleteDocument,
     DeleteGalleryImage, SiteServicesPage, DeleteSiteServices, update_robots_and_sitemap
 )
-
 from .api_views import (
     load_role, loading_floor_section, loading_personal_account, loading_section_for_house,
     loading_apartment_for_section, loading_apartment_owner, check_units, loading_unit_for_services,
@@ -33,7 +31,6 @@ User = get_user_model()
 urlpatterns = [
     # region statistics
     path('', StatisticsView.as_view(), name='admin'),
-
     # endregion
 
     # region cash_box urls
@@ -55,61 +52,58 @@ urlpatterns = [
     path('receipt/templates/delete/<int:pk>/<slug:slug>/', ReceiptTemplateDelete.as_view(), name='delete_template'),
     path('receipt/templates/edit/<int:pk>/<slug:slug>/', receipt_templates_edit, name='edit_template'),
     path('receipt/templates/upload/<int:pk>/', receipt_templates_upload, name='upload_template'),
-
     path('receipt/<int:pk>/templates/send/', receipt_template, name='receipt_template'),
     # endregion receipts urls
 
-    # house
+    # region house
     path('house/', HouseListView.as_view(), name='houses'),
     path('house/create/', HouseCreateView.as_view(), name='create_house'),
     path('house/<int:pk>/', HouseDetailView.as_view(), name='detail_house'),
     path('house/update/<int:pk>/', HouseUpdateView.as_view(), name='update_house'),
     path('house/delete/<int:pk>/', HouseDelete.as_view(), name='delete_house'),
-    # houses end
+    # endregion houses
 
     # region messages
     path('message/', MessageListView.as_view(), name='list_message'),
     path('message/send/', MessageCreateAndSend.as_view(), name='send_message'),
     path('message/<int:pk>/', MessageDetailView.as_view(), name='detail_message'),
     path('message/delete/<int:pk>/', MessageDelete.as_view(), name='delete_message'),
-
     # endregion messages
 
-    # owners
+    # region owners
     path('owner/invite/', invite_owner, name='invite_owner'),
     path('owner/', OwnerListView.as_view(), name='owners'),
     path('owner/create/', OwnerCreateView.as_view(), name='create_owner'),
     path('owner/<int:pk>/', OwnerDetailView.as_view(), name='detail_owner'),
     path('owner/update/<int:pk>/', OwnerUpdateView.as_view(), name='update_owner'),
     path('owner/delete/<int:pk>/', OwnerDelete.as_view(), name='delete_owner'),
-    # owners end
+    # endregion owners
 
-    # apartments
+    # region apartments
     path('apartments/', ApartmentListView.as_view(), name='apartments'),
     path('apartment/create/', ApartmentCreateView.as_view(), name='create_apartment'),
     path('apartment/<int:pk>/', ApartmentDetailView.as_view(), name='detail_apartment'),
     path('apartment/update/<int:pk>/', ApartmentUpdateView.as_view(), name='update_apartment'),
     path('apartment/delete/<int:pk>/', ApartmentDelete.as_view(), name='delete_apartment'),
-    # apartments end
+    # endregion apartments
 
-    # accounts
+    # region accounts
     path('accounts/', AccountsListView.as_view(), name='accounts'),
     path('accounts/<int:pk>/', AccountsDetailView.as_view(), name='detail_accounts'),
     path('accounts/create/', AccountsCreateView.as_view(), name='create_accounts'),
     path('accounts/update/<int:pk>/', AccountsUpdateView.as_view(), name='update_accounts'),
     path('accounts/delete/<int:pk>/', AccountsDelete.as_view(), name='delete_accounts'),
-    # accounts end
+    # endregion accounts
 
-    # master's call
+    # region master's call
     path('master-calls/', MasterCallListView.as_view(), name='master_calls'),
     path('master-call/<int:pk>/', MasterCallDetailView.as_view(), name='detail_master_call'),
     path('master-call/create/', MasterCallCreateView.as_view(), name='create_master_call'),
     path('master-call/update/<int:pk>/', MasterCallUpdateView.as_view(), name='update_master_call'),
     path('master-call/delete/<int:pk>/', MasterCallDelete.as_view(), name='delete_master_call'),
+    # endregion master's call
 
-    # master's call end
-
-    # meter_data
+    # region meter_data
     path('meter-data/', MeterDataListView.as_view(), name='meter_data'),
     path('meter-data/apartment/<int:pk>/', MeterDataApartmentListView.as_view(),
          name='meter_data_for_apartment'),
@@ -117,7 +111,7 @@ urlpatterns = [
     path('meter-data/<int:pk>/', MeterDataDetailView.as_view(), name='detail_meter_data'),
     path('meter-data/update/<int:pk>/', MeterDataUpdateView.as_view(), name='update_meter_data'),
     path('meter-data/delete/<int:pk>/', MeterDataDelete.as_view(), name='delete_meter_data'),
-    # meter_data end
+    # endregion meter_data
 
     # region site_management
     path('site/home_page/', SiteHomePage.as_view(), name='home_page_card'),
@@ -128,48 +122,47 @@ urlpatterns = [
     path('site/services_page/delete/<int:pk>/', DeleteSiteServices.as_view(), name='delete_site_services'),
     path('site/about_page/delte_document/<int:pk>/', DeleteDocument.as_view(), name='delete_document'),
     path('site/about_page/delete_image/<int:pk>/', DeleteGalleryImage.as_view(), name='delete_gallery_image'),
-
     # endregion site_management
 
-    # services
+    # region services
     path('services/', ServicesListView.as_view(), name='services'),
-    # services end
+    # endregion services
 
-    # tariffs
+    # region tariffs
     path('tariffs/', TariffListView.as_view(), name='tariffs'),
     path('tariff/<int:pk>/', TariffDetailView.as_view(), name='detail_tariff'),
     path('tariff/create/', TariffCreateView.as_view(), name='create_tariff'),
     path('tariff/create/<int:pk>/', TariffCreateView.as_view(), name='create_copy_tariff'),
     path('tariff/update/<int:pk>/', TariffUpdateView.as_view(), name='update_tariff'),
     path('tariff/delete/<int:pk>/', TariffDelete.as_view(), name='delete_tariff'),
-    # tariffs end
+    # endregion tariffs
 
-    # roles
+    # region roles
     path('roles/', RolesUpdateView.as_view(), name='roles'),
-    # roles end
+    # endregion roles
 
-    # requisites
+    # region requisites
     path('requisites/', RequisitesView.as_view(), name='requisites'),
-    # requisites end
+    # endregion requisites
 
-    # user
+    # region user
     path('users/', UsersListView.as_view(), name='users'),
     path('user/<int:pk>/', UserDetailView.as_view(), name='detail_user'),
     path('user/create/', UserCreateView.as_view(), name='create_user'),
     path('user/update/<int:pk>/', UserUpdateView.as_view(), name='update_user'),
     path('user/delete/<int:pk>/', UserDelete.as_view(), name='delete_user'),
     path('user/profile/<int:pk>/', UserUpdateView.as_view(), name='user_profile'),
-    # users
+    # endregion users
 
-    # payment_items
+    # region payment_items
     path('payment-items/', PaymentItemsListView.as_view(), name='payment_items'),
     path('payment-items/create/', PaymentItemsCreateView.as_view(), name='create_payment_items'),
     path('payment-items/<int:pk>/', PaymentItemsDetailView.as_view(), name='detail_payment_items'),
     path('payment-items/update/<int:pk>/', PaymentItemsUpdateView.as_view(), name='update_payment_items'),
     path('payment-items/delete/<int:pk>/', PaymentItemsDelete.as_view(), name='delete_payment_items'),
-    # payment_items end
+    # endregion payment_items
 
-    # api_urls
+    # region api_urls
     path('new_users/', new_users, name='new_users'),
     path('load_role/', load_role, name='load_role'),
     path('loading_personal_account_of_owner/', loading_personal_account_of_owner,
@@ -190,5 +183,5 @@ urlpatterns = [
     path('meter_data_for_receipt/', meter_data_for_receipt, name='meter_data_for_receipt'),
     path('delete_is_checked_receipts/', delete_is_checked_receipts, name='delete_is_checked_receipts'),
     path('delete_is_checked_messages/', delete_is_checked_messages, name='delete_is_checked_messages')
-
+    # endregion api_urls
 ]

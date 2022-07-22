@@ -5,37 +5,7 @@
 {% endblock %}
 
 {% block style %}
-
-<style>
-
-    input[name="custom_search"] {
-        width: 100%;
-        font-weight: normal;
-        padding: 5px;
-        border: 1px solid #d2d6de;
-    }
-
-    input[name="custom_search"]:focus {
-        color: #212529;
-        border-color: #bdbdbd;
-        outline: 0;
-    }
-
-    select[name="custom_select"] {
-        width: 100%;
-        font-weight: normal;
-        padding: 5px;
-        border: 1px solid #d2d6de;
-    }
-
-    select[name="custom_select"] {
-        color: #212529;
-        border-color: #bdbdbd;
-        outline: 0;
-    }
-
-
-</style>
+<link rel="stylesheet" href="{% static 'crm/css/style_dataTable_filter.css' %}">
 <link rel="stylesheet" href="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.css' %}">
 <link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
 {% endblock %}

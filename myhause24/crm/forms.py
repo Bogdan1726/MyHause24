@@ -197,6 +197,7 @@ class UserFormSet(forms.Form):
 # region Message Form
 
 class MessageForm(forms.ModelForm):
+
     class Meta:
         model = Message
         exclude = ('datetime',)
@@ -211,6 +212,8 @@ class MessageForm(forms.ModelForm):
             'section': forms.Select(attrs={'class': 'form-control'}),
             'floor': forms.Select(attrs={'class': 'form-control'}),
             'apartment': forms.Select(attrs={'class': 'form-control'}),
+            'owner': forms.Select(attrs={'class': 'form-control select2 select2-hidden-accessible',
+                                         'style': 'width: 100%;'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -219,6 +222,8 @@ class MessageForm(forms.ModelForm):
         self.fields['section'].empty_label = 'Всем...'
         self.fields['floor'].empty_label = 'Всем...'
         self.fields['apartment'].empty_label = 'Всем...'
+        self.fields['owner'].empty_label = 'Выберите...'
+        self.fields['owner'].queryset = User.objects.filter(is_staff=False)
 
 
 # endregion Message Form

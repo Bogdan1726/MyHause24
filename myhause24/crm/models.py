@@ -256,10 +256,11 @@ class Message(models.Model):
     text = models.TextField(blank=True)
     is_dept = models.BooleanField(default=False)
     is_all = models.BooleanField(default=False)
+    owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='owner_message')
     apartment = models.ForeignKey('Apartment', blank=True, null=True, on_delete=models.CASCADE)
     house = models.ForeignKey('House', blank=True, null=True, on_delete=models.SET_NULL)
     section = models.ForeignKey('Section', blank=True, null=True, on_delete=models.SET_NULL)
     floor = models.ForeignKey('Floor', blank=True, null=True, on_delete=models.SET_NULL)
-    sender = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='sender')
 
 # endregion CallRequest and Messages

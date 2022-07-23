@@ -29,9 +29,9 @@ load_dotenv(dotenv_path=ENV_PATH)
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(os.getenv('DEBUG', 1))
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1']
 
 # Application definition
 
@@ -96,6 +96,17 @@ WSGI_APPLICATION = 'myhause24.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': os.getenv('DATABASE_NAME_HOST'),
+#         'USER': os.getenv('DATABASE_USER_HOST'),
+#         'PASSWORD': os.getenv('DATABASE_PASS_HOST'),
+#         'HOST': os.getenv('HOST'),
+#         'PORT': os.getenv('PORT')
+#     }
+# }
 
 DATABASES = {
     'default': {
@@ -172,6 +183,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = []
 
 # Media Files
 MEDIA_URL = '/media/'

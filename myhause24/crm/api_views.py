@@ -225,7 +225,10 @@ def meter_data_for_receipt(request):
 def delete_is_checked_receipts(request):
     if request.is_ajax():
         receipts_number = request.POST.get('receipts').split(',')
-        Receipt.objects.filter(number__in=receipts_number).delete()
+        receipts = Receipt.objects.filter(number__in=receipts_number)
+        cash_boxes = CashBox.objects.filter(receipt__in=receipts)
+        cash_boxes.delete()
+        receipts.delete()
         response = {
         }
         return JsonResponse(response, status=200)

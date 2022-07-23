@@ -21,6 +21,7 @@ def create_or_update_expense(request, receipt, total_sum):
                 personal_account=receipt.personal_account
             )
 
+
 def delete_expense(receipt):
     if CashBox.objects.filter(receipt=receipt).exists():
         obj = get_object_or_404(CashBox, receipt=receipt)

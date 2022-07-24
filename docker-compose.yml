@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3'
 
 services:
 
@@ -21,8 +21,8 @@ services:
     command: make start_app
     volumes:
       - ./:/usr/src/app
-      - static_volume:/usr/src/app/myhause24/static/
-      - media_volume:/usr/src/app/myhause24/media/
+      - static_volume:/usr/src/app/myhause24/static
+      - media_volume:/usr/src/app/myhause24/media
     depends_on:
       - db
     ports:
@@ -37,8 +37,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - static_volume:/usr/src/app/myhause24/static/
-      - media_volume:/usr/src/app/myhause24/media/
+      - static_volume:/usr/src/app/myhause24/static
+      - media_volume:/usr/src/app/myhause24/media
 
   redis:
     image: 'redis:alpine'

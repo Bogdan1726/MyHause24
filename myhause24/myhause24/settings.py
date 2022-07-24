@@ -29,10 +29,9 @@ load_dotenv(dotenv_path=ENV_PATH)
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(os.getenv('DEBUG', 0))
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1']
 
 # Application definition
 
@@ -48,8 +47,11 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'crm.apps.CrmConfig',
     'cabinet.apps.CabinetConfig',
+    # apps
     'phonenumber_field',
     'snowpenguin.django.recaptcha3',
+    'debug_toolbar',
+    'django.contrib.sitemaps'
 
 ]
 
@@ -61,6 +63,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
 ]
 
 ROOT_URLCONF = 'myhause24.urls'
@@ -76,16 +80,33 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'cabinet.context_processors.get_context'
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'myhause24.wsgi.application'
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
 
+WSGI_APPLICATION = 'myhause24.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': os.getenv('DATABASE_NAME_HOST'),
+#         'USER': os.getenv('DATABASE_USER_HOST'),
+#         'PASSWORD': os.getenv('DATABASE_PASS_HOST'),
+#         'HOST': os.getenv('HOST'),
+#         'PORT': os.getenv('PORT')
+#     }
+# }
 
 DATABASES = {
     'default': {
@@ -97,6 +118,28 @@ DATABASES = {
         'PORT': os.getenv('PORT')
     }
 }
+
+# Cache
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     },
+#     "select2": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/2",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
+#
+# # Tell select2 which cache configuration to use:
+# SELECT2_CACHE_BACKEND = "select2"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -123,14 +166,12 @@ AUTHENTICATION_BACKENDS = (
     'user.authentication.EmailAuthBackend',
 )
 
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Kiev'
 
 USE_I18N = True
 
@@ -138,11 +179,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = []
 
 # Media Files
 MEDIA_URL = '/media/'
@@ -153,7 +194,18 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Celery
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
 
+# SMTP gmail
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
+
+# RECAPTCHA
 RECAPTCHA_PRIVATE_KEY = os.getenv('GOOGLE_RECAPTCHA_SECRET_KEY')
 RECAPTCHA_PUBLIC_KEY = os.getenv('GOOGLE_RECAPTCHA_PUBLIC_KEY')
 RECAPTCHA_DEFAULT_ACTION = 'generic'

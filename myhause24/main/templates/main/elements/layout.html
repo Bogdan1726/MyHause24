@@ -2,66 +2,118 @@
 {% load static %}
 <html lang="ru">
 <head>
-    <title>Главная</title>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="{% static 'main/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'cabinet/plugins/fontawesome-free/css/fontawesome.css' %}" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="{% static 'user/media/favicon.svg' %}"/>
+    {% block seo %} {% endblock %}
+    <link href="{% static 'main/css/fontawesome-all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'main/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'main/css/slick.css' %}" rel="stylesheet">
+    <link href="{% static 'main/css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'main/js/simplelightbox/simplelightbox.min.css' %}" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script type="text/javascript" async="" src="https://www.google-analytics.com/analytics.js"></script>
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-64276279-2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+        gtag('config', 'UA-64276279-2');
+    </script>
+
+    {% block style %}{% endblock %}
+
+    <title>
+        {% block title %}{% endblock %}
+    </title>
 
 </head>
 
-
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-default navbar-fixed-top">
     <div class="container">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03"
-                aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand" href="#">
-            <img src="{% static 'crm/media/logo.svg' %}" alt="" width="150" height="30"
-                 class="d-inline-block align-text-top">
-        </a>
-        <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menuBtn"
+                    aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+                <img src="{% static 'crm/media/logo.svg' %}" alt="Demo CRM 24">
+            </a>
+        </div>
 
-            </ul>
+        <div class="collapse navbar-collapse" id="menuBtn">
             <ul class="nav navbar-nav navbar-right">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Главная</a>
+                {% with request.resolver_match.url_name as url %}
+                <li class="{% if url in '[main]' %}active{% endif %}">
+                    <a href="{% url 'main' %}">
+                    Главная
+                    <span class="sr-only">(current)</span>
+                </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">О нас</a>
-
+                <li class="{% if url in '[about]' %}active{% endif %}">
+                    <a href="{% url 'about' %}">О нас</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link">Услуги</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Условия приобретения</a>
-
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">Контакты</a>
+                <li class="{% if url in '[site_services]' %}active{% endif %}">
+                    <a href="{% url 'site_services' %}">Услуги</a>
                 </li>
                 <li>
-                    <a class="nav-link" href="{% url 'login' %}">Вход
+                    <a href="https://avada-media.ua/moydom24/">Условия приобретения</a>
+                </li>
+                <li class="{% if url in '[contact]' %}active{% endif %}">
+                    <a href="{% url 'contact' %}">
+                        Контакты
                     </a>
                 </li>
+                <li>
+                    <a href="{% url 'cabinet_login' %}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Вход
+                    </a>
+                </li>
+                {% endwith %}
             </ul>
-
         </div>
     </div>
 </nav>
 
 
-<!-- Bootstrap js -->
-<script src="{% static 'main/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+{% block content %}{% endblock %}
+
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 text-center">
+                <p class="text-muted">Разработано <a href="https://avada-media.ua/">AVADA-MEDIA</a>. На базе системы
+                    управления <a href="https://avada-media.ua/moydom24/">"МойДом24"</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="{% static 'crm/js/jquery.js' %}"></script>
+<script src="{% static 'crm/js/yii.js' %}"></script>
+<script src="{% static 'main/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'main/js/slick.min.js' %}"></script>
+<script src="{% static 'main/js/main.js' %}"></script>
+<script src="{% static 'main/js/simplelightbox/simple-lightbox.min.js' %}"></script>
 
 
 {% block script %}
 {% endblock %}
+
 </body>
 </html>

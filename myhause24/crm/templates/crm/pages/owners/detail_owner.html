@@ -1,0 +1,181 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+
+{% block title %}
+Профиль владельца
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Профиль владельца</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'owners'%}">Владельцы квартир</a></li>
+    <li class="active">Профиль владельца</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title"></h3>
+        <div class="box-tools">
+            <a href="#" target="_blank"
+               class="btn btn-default btn-sm"><i class="fa fa-external-link"></i> Перейти в кабинет</a>
+            <a href="{% url 'update_owner' owner.id %}" class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать профиль</span>
+                <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <div class="box-body">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="userAvatar">
+                    {% if owner.profile_picture %}
+                    <img class="img-circle img-responsive"
+                         src="{{ owner.profile_picture.url }}"
+                         style="width:160px; height: 160px;"
+                         alt="profile">
+                    {% else %}
+                    <img class="img-circle img-responsive"
+                         src="{% static 'crm/media/def_user.jpeg' %}"
+                         style="width:160px; height: 160px;"
+                         alt="profile">
+                    {% endif %}
+                </div>
+                <div class="table-responsive no-padding">
+                    <table class="table table-bordered table-striped table-view">
+                        <tbody>
+                        <tr>
+                            <td>Статус</td>
+                            {% if owner.status == 'disabled' %}
+                            <td><small class="label label-danger">Отключен</small></td>
+                            {% elif owner.status == 'active' %}
+                            <td><small class="label label-success">Активен</small></td>
+                            {% else %}
+                            <td><small class="label label-warning">Новый</small></td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>ID</td>
+                            <td>{{ owner.user_id }}</td>
+                        </tr>
+                        <tr>
+                            <td>Фамилия</td>
+                            {% if owner.last_name %}
+                            <td>{{ owner.last_name }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Имя</td>
+                            {% if owner.first_name %}
+                            <td>{{ owner.first_name }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Отчество</td>
+                            {% if owner.patronymic %}
+                            <td>{{ owner.patronymic }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Дата рождения</td>
+                            {% if owner.date_of_birth %}
+                            <td>{{ owner.date_of_birth|date:"d.m.Y" }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>О владельце (заметки)</td>
+                            {% if owner.about_owner %}
+                            <td>{{ owner.about_owner }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Телефон</td>
+                            {% if owner.phone %}
+                            <td>{{ owner.phone }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Viber</td>
+                            {% if owner.viber %}
+                            <td>{{ owner.viber }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Telegram</td>
+                            {% if owner.telegram %}
+                            <td>{{ owner.telegram }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Email</td>
+                            <td>{{ owner.email }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% if apartments %}
+                <h4>Квартиры</h4>
+                <div class="table-responsive no-padding margin-top-15">
+                    <table id="apartment" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Дом</th>
+                            <th>Секция</th>
+                            <th>Квартира</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for apartment in apartments %}
+                        <tr role="row">
+                            <td></td>
+                            <td><a href="{% url 'detail_house' apartment.house_id %}">{{ apartment.house }}</a></td>
+                            <td>{{ apartment.section }}</td>
+                            <td><a href="{% url 'detail_apartment' apartment.id %}">{{ apartment }}</a></td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var l = $("#apartment tr").length;
+    for (var i = 1; i <= l; i++) {
+        $('#apartment tbody tr').each(function (i) {
+            $(this).find('td:first').text(i+1);
+        });
+    }
+</script>
+{% include 'crm/inc/_messages.html' %}
+{% endblock %}
+

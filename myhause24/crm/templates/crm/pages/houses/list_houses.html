@@ -1,0 +1,183 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Дома
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/css/style_dataTable_filter.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Дома</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Дома</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="pull-right margin-bottom">
+            <a class="btn btn-success" href="{% url 'create_house' %}">Добавить дом</a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a id="clean" class="btn btn-default btn-sm">
+                        <span class="hidden-xs">Очистить</span><i class="fa fa-eraser visible-xs"
+                                                                  aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="list_houses" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="table_houses" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th style="width: 40px; min-width: 40px">#</th>
+                            <th style="width: 50%; color: #3c8dbc">Название</th>
+                            <th style="width: 50%; color: #3c8dbc">Адрес</th>
+                            <th style="width: 80px; min-width: 80px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <td></td>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for house in houses %}
+                        <tr data-href="{% url 'detail_house' house.id %}">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ house.title }}</td>
+                            <td>{{ house.address }}</td>
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_house' house.id %}"
+                                       title="Редактировать"
+                                       data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление дома</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_house' house.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить этот {{ house.title }} ?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        // Setup - add a text input to each footer cell
+        $('#table_houses tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search"/>');
+        });
+
+        // DataTable
+        var table = $('#table_houses').DataTable({
+            "responsive": false,
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [0, 3]
+                }
+            ],
+            order: [],
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "info": "Количество домов: <strong>_TOTAL_</stong>",
+                "infoEmpty": "Нет записей.",
+                "paginate": {
+                    "previous": '<i class="fa fa-angle-left" style="color: #337AB7"></i>',
+                    "last": "Последняя",
+                    "next": '<i class="fa fa-angle-right" style="color: #337AB7"></i>',
+                }
+            },
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+        $("#table_houses_filter").css('display', 'none')
+        $("#clean").on("click", function () {
+            $('input').val('');
+            table.columns().search("").draw();
+        })
+    });
+
+</script>
+
+{% endblock %}

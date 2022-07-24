@@ -1,0 +1,174 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+
+{% block title %}
+Настройка шаблонов
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Настройка шаблонов</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'receipts' %}">Квитанции</a></li>
+    <li class="active">Настройка шаблонов</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title">Список шаблонов</h3>
+    </div>
+    <div class="box-body">
+        {% for template in templates %}
+        <div class="template">
+            {% if template.is_default %}
+            <p>
+                {{ template.name }}
+                <span class="text-bold">(по-умолчанию)</span>
+            </p>
+            {% else %}
+            <p>{{ template.name }}</p>
+            {% endif %}
+            <a href="{% url 'upload_template' template.id %}">
+                <i class="fa fa-download" aria-hidden="true"></i>
+                Скачать шаблон
+            </a>
+            <a href="/admin/invoice/template?default_id=27"
+               class="text-success"
+               data-toggle="modal"
+               data-target="#modal-default-{{ forloop.counter }}">
+                Назначить шаблоном по умоланию
+            </a>
+            <a href="/admin/invoice/template?delete_id=27"
+               class="text-danger"
+               data-toggle="modal"
+               data-target="#modal-delete-{{ forloop.counter }}">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+                Удалить шаблон
+            </a>
+        </div>
+        <div class="modal fade"
+             id="modal-delete-{{ forloop.counter }}" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close">
+                            <span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title">Удаление шаблона</h4>
+                    </div>
+                    <form method="post" action="{% url 'delete_template' template.id receipt_id %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <p>Вы уверены, что хотите удалить {{ template.name }}?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default pull-left"
+                                    data-dismiss="modal">Отмена
+                            </button>
+                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade"
+             id="modal-default-{{ forloop.counter }}" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close">
+                            <span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title">Управление шаблоном</h4>
+                    </div>
+                    <form method="post" action="{% url 'edit_template' template.id receipt_id %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <p>Назначить {{ template.name }} шаблоном по умолчанию?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default pull-left"
+                                    data-dismiss="modal">Отмена
+                            </button>
+                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <form id="create_template" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label">Загрузить пользовательский шаблон</label>
+                        {{ form.template }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Название</label>
+                        {{ form.name }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 text-center">
+                        <a href="{% url 'template_receipt' receipt_id %}" class="btn btn-default">Назад</a>
+                        <button type="submit" class="btn btn-success">Добавить</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    //  jQuery Validations Form
+
+    $('#create_template').validate({
+        rules: {
+            template: {
+                extension: "xlsx",
+                required: true,
+            },
+            name: {
+                required: true,
+                minlength: 5
+            },
+
+        },
+        messages: {
+            template: {
+                extension: "Допустимое расширение(.xlsx)",
+                required: "Обязательное поле",
+            },
+            name: {
+                required: "Обязательное поле",
+                minlength: "Пожалуйста, введите не менее 5 символов"
+            },
+        },
+
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
+</script>
+{% endblock %}

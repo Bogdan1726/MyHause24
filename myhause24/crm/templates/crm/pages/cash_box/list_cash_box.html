@@ -1,0 +1,246 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% load floattags %}
+
+{% block title %}
+Касса
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/css/style_dataTable_filter.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Касса</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Касса</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12 col-lg-9">
+        <div class="row">
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-green overflow-hidden">
+                    <div class="inner">
+                        <h3>{{ cash_balance|floatformat:"2g"|formatted_float }} грн</h3>
+                        <p>Состояние кассы</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-blue overflow-hidden">
+                    <div class="inner">
+                        <h3>{{ account_balance|floatformat:"2g"|formatted_float }} грн</h3>
+                        <p>Баланс по счетам</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-red overflow-hidden">
+                    <div class="inner">
+                        <h3>{{ account_debit|floatformat:"2g"|formatted_float }} грн</h3>
+                        <p>Задолженность по счетам</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-lg-3">
+        <div class="btn-group pull-right margin-bottom">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+                Выберите действие <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'create_cash_box' %}?type_pay=income">Создать приход</a></li>
+                <li><a href="{% url 'create_cash_box' %}?type_pay=expense">Создать расход</a></li>
+                <li><a id="export">Выгрузить в Excel</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a id="clean" class="btn btn-default btn-sm">
+                        <span class="hidden-xs">Очистить</span>
+                        <i class="fa fa-eraser visible-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="list_cash_box" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="table_cash_box" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th style="width: 70px; min-width: 70px;">№</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">Дата</th>
+                            <th style="width: 120px; min-width: 120px;">Статус</th>
+                            <th style="min-width: 200px">Тип платежа</th>
+                            <th style="min-width: 100px">Владелец</th>
+                            <th style="width: 100px; min-width: 100px">Лицевой счет</th>
+                            <th style="width: 120px; min-width: 120px">Приход/расход</th>
+                            <th style="width: 120px; min-width: 120px">Сумма (грн)</th>
+                            <th style="width: 80px; min-width: 80px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <th></th>
+                            <td style="z-index: 9999">
+                                <input type="text" name="custom_search" id="id_date">
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for cash in cash_box %}
+                        <tr data-href="{% url 'detail_cash_box' cash.id %}">
+                            <td>{{ cash.number }}</td>
+                            <td>{{ cash.date|date:"d.m.Y" }}</td>
+                            {% if cash.status %}
+                            <td>Проведен</td>
+                            {% else %}
+                            <td>Не проведен</td>
+                            {% endif %}
+                            {% if cash.payment_items %}
+                            <td>{{ cash.payment_items }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if cash.owner %}
+                            <td>{{ cash.owner }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if cash.personal_account %}
+                            <td>{{ cash.personal_account }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if cash.type %}
+                            <td>Приход</td>
+                            {% else %}
+                            <td>Расход</td>
+                            {% endif %}
+                            {% if cash.type %}
+                            {% if cash.status %}
+                            <td data-filter="income" value="{{ cash.sum|formatted_float }}">
+                                <span class="text-green">{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
+                            </td>
+                            {% else %}
+                            <td>
+                                <span class="text-green">{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
+                            </td>
+                            {% endif %}
+                            {% else %}
+                            {% if cash.status %}
+                            <td data-filter="expense" value="{{ cash.sum|formatted_float }}">
+                                <span class="text-red">-{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
+                            </td>
+                            {% else %}
+                            <td>
+                                <span class="text-red">-{{ cash.sum|floatformat:"2g"|formatted_float }}</span>
+                            </td>
+                            {% endif %}
+                            {% endif %}
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_cash_box' cash.id %}"
+                                       title="Редактировать" data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление операции</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_cash_box' cash.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>
+                                                Вы уверены, что хотите удалить
+                                                {% if cash.type is True %}
+                                                Приход
+                                                {% else %}
+                                                Расход
+                                                {% endif %} № {{ cash.number }}?
+                                            </p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer">
+                    <div>Проведен приход: <span class="text-bold" id="pri">0.00 грн</span></div>
+                    <div>Проведен расход: <span class="text-bold" id="ras">0.00 грн</span></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {{ request.kwargs }}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+<script src="{% static 'crm/js/cash_box_scripts.js' %}"></script>
+{% endblock %}

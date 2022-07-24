@@ -1,0 +1,62 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+{{ payment.title }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>{{ payment.title }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'payment_items' %}">Статьи приходов/расходов</a></li>
+    <li class="active">{{ payment.title }}</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title"></h3>
+        <div class="box-tools">
+            <a href="{% url 'update_payment_items' payment.id %}" class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать статью</span>
+                <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="box-body">
+        <div class="row">
+            <div class="col-xs-12">
+                <table class="table table-bordered table-striped table-view">
+                    <tbody>
+                    <tr>
+                        <td>Название</td>
+                        <td>
+                            {{ payment.title }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Тип</td>
+                        {% if payment.type == 'income' %}
+                        <td><span class="text text-green">Приход</span></td>
+                        {% else %}
+                        <td><span class="text text-red">Расход</span></td>
+                        {% endif %}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

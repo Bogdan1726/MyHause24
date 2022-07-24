@@ -1,0 +1,86 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Тариф: {{ tariff.title }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Тариф: {{ tariff.title }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'tariffs' %}">Тарифы</a></li>
+    <li class="active">Тариф: {{ tariff.title }}</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title"></h3>
+        <div class="box-tools">
+            <a href="{% url 'update_tariff' tariff.id %}" class="btn btn-primary btn-sm">
+                <span class="hidden-xs">Редактировать тариф</span>
+                <i class="fa fa-pencil visible-xs" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <div class="box-body">
+        <table class="table table-bordered table-striped table-view">
+            <tbody>
+            <tr>
+                <td>Название тарифа</td>
+                <td>
+                    {{ tariff.title }}
+                </td>
+            </tr>
+            <tr>
+                <td>Описание</td>
+                <td>{{ tariff.description }}</td>
+            </tr>
+            <tr>
+                <td>Дата редактирования</td>
+                <td>{{ tariff.date_edit|date:"d.m.Y - H:m" }}</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="table-responsive no-padding margin-top-15">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Услуга</th>
+                    <th>Ед. изм.</th>
+                    <th>Цена за ед., грн</th>
+                    <th>Валюта</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for service in services_price %}
+                <tr>
+                    <td>1</td>
+                    <td>{{ service.services.title }}</td>
+                    <td>{{ service.services.u_measurement }}</td>
+                    <td>{{ service.price }}</td>
+                    <td>грн</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align:center;">Нет услуг</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
+

@@ -1,0 +1,330 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Заявки вызова мастера
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/css/style_dataTable_filter.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Заявки вызова мастера</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Заявки вызова мастера</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="pull-right margin-bottom">
+            <a class="btn btn-success" href="{% url 'create_master_call' %}">Добавить заявку</a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a id="clean" class="btn btn-default btn-sm">
+                        <span class="hidden-xs">Очистить</span>
+                        <i class="fa fa-eraser visible-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="list_counter" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="table_counter" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th style="width: 70px; min-width: 70px; color: #3c8dbc">№ заявки</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">Удобное время</th>
+                            <th style="width: 120px; min-width: 120px; color: #3c8dbc">Тип мастера</th>
+                            <th style="min-width: 200px">Описание</th>
+                            <th style="min-width: 100px">Квартира</th>
+                            <th style="width: 120px; min-width: 120px">Владелец</th>
+                            <th style="min-width: 100px">Телефон</th>
+                            <th style="width: 120px; min-width: 120px">Мастер</th>
+                            <th style="width: 120px; min-width: 120px">Статус</th>
+                            <th style="width: 80px; min-width: 80px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <th></th>
+                            <td style="z-index: 9999">
+                                <input type="text" name="custom_search" id="id_date">
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for call in calls %}
+                        <tr data-href="{% url 'detail_master_call' call.id %}">
+                            <td>{{ call.id }}</td>
+                            <td>{{ call.date|date:"d.m.Y" }} - {{ call.time|date:"H:i" }}</td>
+                            <td>{{ call.type_master }}</td>
+                            <td>{{ call.description|truncatechars:30 }}</td>
+                            <td>
+                                <a href="{% url 'detail_apartment' call.apartment_id %}">
+                                    кв.{{ call.apartment.number }},{{ call.apartment.house.title }}
+                                </a>
+                            </td>
+                            {% if call.apartment.owner %}
+                            <td>{{ call.apartment.owner }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if call.apartment.owner.phone %}
+                            <td>{{ call.apartment.owner.phone }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if call.master %}
+                            <td>{{ call.master }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if call.status == 'new' %}
+                            <td><small class="label label-primary">Новое</small></td>
+                            {% elif call.status == 'in_work'%}
+                            <td><small class="label label-warning">В роботе</small></td>
+                            {% else %}
+                            <td><small class="label label-success">Выполнено</small></td>
+                            {% endif %}
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_master_call' call.id %}"
+                                       title="Редактировать" data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление заявки</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_master_call' call.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить заявку №{{ call.id }} от
+                                                {{ call.date|date:"j E Y" }} года?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script>
+    // Initial date range filter
+    var minDate, maxDate
+
+    $.fn.dataTable.ext.search.push(function (settings, data) {
+        var min = new Date(minDate).getTime();
+        var max = new Date(maxDate).getTime();
+        var table_date = data[1].split(".")[2].split("-")[0] - '' + '-' + data[1].split(".")[1] + '-' + data[1].split(".")[0]
+        var date = new Date(table_date).getTime();
+        console.log(date)
+
+        if (
+            (isNaN(min) && isNaN(max)) ||
+            (isNaN(min) && date <= max) ||
+            (min <= date && isNaN(max)) ||
+            (min <= date && date <= max)
+        ) {
+            return true;
+        }
+        return false;
+    });
+    //
+
+
+    $(document).ready(function () {
+        var date_input = $('#id_date')
+
+        //Date range picker
+        date_input.daterangepicker({
+            timePicker: false,
+            timePickerIncrement: 30,
+            autoUpdateInput: false,
+
+            locale: {
+                format: 'DD.MM.YYYY',
+                "applyLabel": "Ок",
+                "cancelLabel": "Отмена",
+                "fromLabel": "От",
+                "toLabel": "До",
+                "customRangeLabel": "Произвольный",
+                "daysOfWeek": [
+                    "Вс",
+                    "Пн",
+                    "Вт",
+                    "Ср",
+                    "Чт",
+                    "Пт",
+                    "Сб"
+                ],
+                "monthNames": [
+                    "Январь",
+                    "Февраль",
+                    "Март",
+                    "Апрель",
+                    "Май",
+                    "Июнь",
+                    "Июль",
+                    "Август",
+                    "Сентябрь",
+                    "Октябрь",
+                    "Ноябрь",
+                    "Декабрь"
+                ],
+                firstDay: 1
+            }
+        });
+
+        // Setup - add a text input to each footer cell
+        $('#table_counter tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search"/>');
+        });
+
+        // DataTable
+        var table = $('#table_counter').DataTable({
+            "responsive": false,
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': true,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [3, 4, 5, 6, 7, 8, 9]
+                }
+            ],
+            order: [],
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "info": "Количество заявок: <strong>_TOTAL_</stong>",
+                "infoEmpty": "Нет записей.",
+                "paginate": {
+                    "previous": '<i class="fa fa-angle-left" style="color: #337AB7"></i>',
+                    "last": "Последняя",
+                    "next": '<i class="fa fa-angle-right" style="color: #337AB7"></i>',
+                }
+            },
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns([0, 1, 3, 4, 6])
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+                //
+                this.api()
+                    .columns([2, 5, 7, 8])
+                    .every(function () {
+                        var column = this;
+                        var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+
+                        column
+                            .data()
+                            .unique()
+                            .sort()
+                            .each(function (d, j) {
+                                var val = $('<div/>').html(d).text();
+                                select.append('<option value="' + val + '">' + val + '</option>');
+                            });
+                    });
+            },
+        });
+        $("#table_counter_filter").css('display', 'none')
+        $("#clean").on("click", function () {
+            $('input').val('');
+            $('select').val('');
+            minDate = ''
+            maxDate = ''
+            table.columns().search("").draw();
+        })
+
+        date_input.on('apply.daterangepicker', function (ev, picker) {
+            minDate = new Date(picker.startDate).getTime();
+            maxDate = new Date(picker.endDate).getTime();
+            $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY'));
+            table.draw();
+        });
+
+        date_input.on('cancel.daterangepicker', function () {
+            $(this).val('');
+            minDate = ''
+            maxDate = ''
+            table.draw();
+        });
+    });
+
+</script>
+
+{% endblock %}

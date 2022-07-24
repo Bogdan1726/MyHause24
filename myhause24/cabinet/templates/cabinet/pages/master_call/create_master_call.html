@@ -1,0 +1,141 @@
+{% extends 'cabinet/elements/layout.html' %}
+
+{% load static %}
+
+{% block title %}
+Новая заявка
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet"
+      href="{% static 'crm/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
+<link rel="stylesheet" href="{% static 'crm/plugins/timepicker/bootstrap-timepicker.min.css' %}">
+{% endblock %}
+
+{% block content-header %}
+<h1>Новая заявка</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'cabinet' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'master-call' %}">Вызов мастера</a></li>
+    <li class="active">Новая заявка</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-body">
+        <form id="create_master-call" method="post">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="control-label">Тип мастера</label>
+                    {{ form.type_master }}
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Квартира</label>
+                    {{ form.apartment }}
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label">Дата работ</label>
+                            <div class="input-group date">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </div>
+                                {{ form.date }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group bootstrap-timepicker">
+                            <label class="control-label">Время работ</label>
+                            <div class="input-group">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-clock-o"></i>
+                                </div>
+                                {{ form.time }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Описание</label>
+                    {{ form.description }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Отправить заявку</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+<script src="{% static 'crm/plugins/timepicker/bootstrap-timepicker.min.js' %}"></script>
+<script src="{% static 'cabinet/js/rus_datepicker.js' %}"></script>
+
+<script>
+    // date and timepicker widgets
+    $('#id_cabinet-date').datepicker({
+        format: 'dd.mm.yyyy',
+        startDate: '-100y',
+        language: 'ru',
+    });
+
+    $('#id_cabinet-time').timepicker({
+        showInputs: false,
+        showMeridian: false,
+    });
+    //
+
+    //  jQuery Validations Form
+    $('#create_master-call').validate({
+
+        rules: {
+            'cabinet-apartment': {
+                required: true,
+            },
+            'cabinet-description': {
+                required: true,
+            },
+            'cabinet-type_master': {
+                required: true,
+            }
+        },
+        messages: {
+            'cabinet-apartment': {
+                required: "",
+            },
+            'cabinet-description': {
+                required: "",
+            },
+            'cabinet-type_master': {
+                required: "",
+            },
+            'cabinet-date': {
+                required: "",
+            },
+            'cabinet-time': {
+                required: "",
+            }
+        },
+
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'user/elements/layout.html' %}
+
+
+{% block title %}
+Подтверждения электронной почты
+{% endblock %}
+
+
+{% block login %}
+<div class="panel box box-primary">
+    <div class="register-box-body box-primary">
+        <p class="login-box-msg">Подтверждения электронной почты</p>
+        <div class="text-center">
+            <p>Подтверждения электронной почты успешно выполнено</p>
+        </div>
+        <a href="{% url 'cabinet_login' %}" class="btn btn-primary btn-block login-btn">
+            Вход
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+{% endblock %}
+
+
+

@@ -1,0 +1,283 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Редактирование услуг
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Редактирование услуг</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Услуги</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-body">
+        <form id="services_form" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-lg-7">
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs">
+                            <li class="active">
+                                <a href="#tab_service"
+                                   data-toggle="tab"
+                                   aria-expanded="true">
+                                    Услуги
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#tab_unit"
+                                   data-toggle="tab"
+                                   aria-expanded="false">
+                                    Единицы измерения
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="can-delete-list"></div>
+                            <div class="tab-pane clearfix active" id="tab_service">
+                                {{ form.management_form }}
+                                <div id="form-services-rows">
+                                    {% for form in form %}
+                                    {{ form.id }}
+                                    <div id="{{ form.prefix }}" class="row form-service">
+                                        <div class="col-xs-12 col-sm-7">
+                                            <div class="form-group">
+                                                <label>Услуга</label>
+                                                {{ form.title }}
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-5">
+                                            <div class="form-group">
+                                                <label>Ед. изм.</label>
+                                                <div class="input-group">
+                                                    {{ form.u_measurement }}
+                                                    <span class="input-group-btn">
+                                                     <button type="button"
+                                                             class="btn btn-default form-row-remove-btn"
+                                                             onclick="delForm('{{ form.prefix }}')">
+                                                         <i class="fa fa-trash"></i>
+                                                     </button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12">
+                                            <div class="form-group">
+                                                {{ form.is_show_meter_data }}
+                                                <label class="form-check-label">Показывать в
+                                                    счетчиках</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% with form.empty_form as form %}
+                                <div id="empty_form-services" style="display: none;">
+                                    <div id="{{ form.prefix }}" class="row form-service">
+                                        <div class="col-xs-12 col-sm-7">
+                                            <div class="form-group">
+                                                <label>Услуга</label>
+                                                {{ form.title }}
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-5">
+                                            <div class="form-group">
+                                                <label>Ед. изм.</label>
+                                                <div class="input-group">
+                                                    {{ form.u_measurement }}
+                                                    <span class="input-group-btn">
+                                                     <button type="button"
+                                                             class="btn btn-default form-row-remove-btn"
+                                                             onclick="delForm('{{ form.prefix }}')">
+                                                         <i class="fa fa-trash"></i>
+                                                     </button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12">
+                                            <div class="form-group">
+                                                {{ form.is_show_meter_data }}
+                                                <label class="form-check-label">Показывать в
+                                                    счетчиках</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                <a type="button"
+                                   onclick="addEmptyForm('{{ form.prefix }}')"
+                                   class="btn btn-default btn-hover-change pull-left form-row-add-service-btn">
+                                    Добавить
+                                </a>
+                            </div>
+                            <div class="tab-pane clearfix" id="tab_unit">
+                                {{ form_unit.management_form }}
+                                <div id="form-unit-rows">
+                                    {% for form in form_unit %}
+                                    {{ form.id }}
+                                    <div id="{{ form.prefix }}" class="row form-unit">
+                                        <div class="col-xs-12">
+                                            <div class="form-group">
+                                                <label>Ед. изм.</label>
+                                                <div class="input-group">
+                                                    {{ form.title }}
+                                                    <span class="input-group-btn">
+                                                   <button type="button"
+                                                           class="btn btn-default form-row-remove-btn"
+                                                           onclick="delForm('{{ form.prefix }}')">
+                                                       <i class="fa fa-trash"></i>
+                                                   </button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% with form_unit.empty_form as form %}
+                                <div id="empty_form-unit" style="display: none;">
+                                    <div id="{{ form.prefix }}" class="row form-unit">
+                                        <div class="col-xs-12">
+                                            <div class="form-group">
+                                                <label>Ед. изм.</label>
+                                                <div class="input-group">
+                                                    {{ form.title }}
+                                                    <span class="input-group-btn">
+                                                   <button type="button"
+                                                           class="btn btn-default form-row-remove-btn"
+                                                           onclick="delForm('{{ form.prefix }}')">
+                                                       <i class="fa fa-trash"></i>
+                                                   </button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                <a type="button"
+                                   onclick="addEmptyForm('{{ form_unit.prefix }}')"
+                                   class="btn btn-default btn-hover-change pull-left form-row-add-serviceunit-btn">
+                                    Добавить
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-center">
+                    <div class="form-group">
+                        <a href="{% url 'services' %}" class="btn btn-default">Отменить</a>
+                        <button type="submit" class="btn btn-success">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function error_message(message) {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>' + message + '</h5>'
+        })
+    }
+
+
+    function addEmptyForm(prefix) {
+        const totalForms = $('#id_' + prefix + '-TOTAL_FORMS')
+        const form_idx = totalForms.val();
+        $("#form-" + prefix + "-rows").append($('#empty_form-' + prefix + '').html().replace(/__prefix__/g, form_idx))
+        totalForms.val(parseInt(form_idx) + 1);
+    }
+
+    function del(prefix) {
+        var form = $("div[id='" + prefix + "']")
+        const result = confirm('Удалить?');
+        if (result) {
+            $('.can-delete-list').append(
+                '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
+            );
+            form.css('display', 'none');
+        } else {
+        }
+    }
+
+
+    function delForm(prefix) {
+        var form = $("div[id='" + prefix + "']")
+        var value = form.find('input').val()
+        if (prefix.split('-')[0] === 'unit') {
+            if (value) {
+                $.ajax({
+                    method: 'GET',
+                    url: '{% url "check_units" %}',
+                    data: {
+                        'value': value
+                    },
+                    success: function (response) {
+                        if (response.is_services) {
+                            error_message(
+                                'Эта ед.изм. используется в услуге. Удаление невозможно.'
+                            );
+                        } else {
+                            del(prefix);
+                        }
+                    },
+                    error: function (response) {
+                        console.log(response.error)
+                    }
+                })
+            } else {
+                del(prefix);
+            }
+        }
+        if (prefix.split('-')[0] === 'services') {
+            if (value) {
+                $.ajax({
+                    method: 'GET',
+                    url: '{% url "check_services" %}',
+                    data: {
+                        'value': value
+                    },
+                    success: function (response) {
+
+                        if (response.is_receipt) {
+                            error_message(
+                                'Эта услуга используется в квитанциях. Удаление невозможно.'
+                            );
+                        } else {
+                            del(prefix);
+                        }
+                    },
+                    error: function (response) {
+                        console.log(response.error)
+                    }
+                })
+            } else {
+                del(prefix);
+            }
+        }
+    }
+</script>
+{% endblock %}

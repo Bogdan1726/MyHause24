@@ -24,13 +24,35 @@
     <title>
         {% block title %} Личный кабинет {% endblock %}
     </title>
+    <style>
+        .disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .box {
+            position: relative;
+            border-radius: 3px;
+            background: #ffffff;
+            border: 1px solid #d2d6de;
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 100%;
+            box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.1)
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 
 <body class="skin-black-light sidebar-mini fixed sidebar-mini-expand-feature" style="height: auto; min-height: 100%;">
 <div class="wrapper" style="height: auto; min-height: 100%;">
     <header class="main-header">
         <!-- Logo -->
-        <a href="{% url 'cabinet' %}" class="logo">
+        <a href="{% if first_apartment %}{% url 'cabinet' %}?apartment={{ first_apartment.id }}{% else %}{% url 'profile' %}{% endif %}"
+           class="logo">
         <span class="logo-mini">
             <img src="{% static 'crm/media/logo-mini.svg' %}" class="img-responsive" alt="">
         </span>
@@ -53,10 +75,33 @@
                     <li class="dropdown notifications-menu">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <i class="fa fa-bell"></i>
+                            <span class="label label-success">{{ list_messages|length }}</span>
                         </a>
+
                         <ul class="dropdown-menu">
+                            {% if list_messages %}
+                            <li>
+                                <ul class="menu">
+                                    {% for message in list_messages %}
+                                    <li>
+                                        <a href="{% url 'detail-message' message.id %}">
+                                            <h5>
+                                                {{ message.sender }}
+                                                <small>
+                                                    <i class="fa fa-clock-o"></i>
+                                                    {{ message.datetime|date:"d E" }}
+                                                </small>
+                                            </h5>
+                                            <p>{{ message.topics }}</p>
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                            {% else %}
                             <li class="header">Нет новых сообщений</li>
-                            <li class="footer"><a href="/cabinet/message/index">Перейти в раздел сообщений</a></li>
+                            {% endif %}
+                            <li class="footer"><a href="{% url 'list-messages' %}">Перейти в раздел сообщений</a></li>
                         </ul>
                     </li>
                     <!-- User Account -->
@@ -83,10 +128,10 @@
                             <!-- Menu Footer-->
                             <li class="user-footer">
                                 <div class="pull-left">
-                                    <a class="btn btn-default btn-flat" href="#">Профиль</a>
+                                    <a class="btn btn-default btn-flat" href="{% url 'profile' %}">Профиль</a>
                                 </div>
                                 <div class="pull-right">
-                                    <a class="btn btn-default btn-flat" href="{% url 'logout' %}">Выход</a>
+                                    <a class="btn btn-default btn-flat" href="{% url 'cabinet_logout' %}">Выход</a>
                                 </div>
                             </li>
                         </ul>
@@ -106,7 +151,9 @@
 
     <div class="content-wrapper" style="min-height: 897px;">
         <section class="content-header">
+            {% block content-header %}
             <h1>Сводка</h1>
+            {% endblock %}
         </section>
 
         <section class="content">
@@ -124,6 +171,7 @@
 
 <script src="{% static 'crm/js/jquery.js' %}"></script>
 <script src="{% static 'crm/js/yii.js' %}"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{% static 'crm/js/adminlte.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script>
@@ -137,6 +185,9 @@
 <script src="{% static 'crm/bower_components/jquery-slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/chart.js/Chart.js' %}"></script>
 <script src="{% static 'crm/dist/js/main.js' %}"></script>
+
+{% include 'crm/inc/_messages.html' %}
+
 {% block scripts %}
 {% endblock %}
 </body>

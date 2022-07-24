@@ -11,11 +11,11 @@ class User(AbstractUser):
     DoesNotExist = None
 
     class Status(models.TextChoices):
-        ACTIVE = 'active', _("Active")
-        NEW = 'new', _("New")
-        DISABLED = 'disabled', _("Disabled")
+        ACTIVE = 'active', _("Активен")
+        NEW = 'new', _("Новый")
+        DISABLED = 'disabled', _("Отключен")
 
-    username = models.CharField(_("username"), max_length=150, unique=True)
+    username = models.CharField(_("email"), max_length=150, unique=True)
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
     patronymic = models.CharField(max_length=150, blank=True)
@@ -24,20 +24,30 @@ class User(AbstractUser):
     phone = PhoneNumberField(null=True, blank=True)
     viber = PhoneNumberField(null=True, blank=True)
     telegram = PhoneNumberField(null=True, blank=True)
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField(_('email address'), blank=True)
     status = models.CharField(max_length=8,
                               choices=Status.choices,
                               default=Status.NEW)
-    user_id = models.CharField(max_length=32, blank=True)
+    user_id = models.CharField(max_length=6, verbose_name='ID', unique=True)
     about_owner = models.TextField(blank=True)
     role = models.ForeignKey('Role', null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        if self.first_name or self.last_name:
+            return f'{self.first_name} {self.last_name}'
+        return f'{self.username}'
 
     def get_full_name(self):
         """
           Return the first_name plus the last_name, with a space in between.
         """
-        full_name = f'{self.first_name} {self.last_name}'
-        return full_name
+        if self.first_name or self.last_name:
+            return f'{self.last_name} {self.first_name} {self.patronymic}'
+        return f'{self.username}'
+
+    @property
+    def role_str(self):
+        return f'{self.role} - {self.__str__()}'
 
 
 class Role(models.Model):

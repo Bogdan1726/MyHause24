@@ -1,0 +1,5 @@
+CREATE USER myhouse24_admin WITH PASSWORD 'Zaqwerty123#';
+
+CREATE DATABASE myhouse24;
+GRANT ALL PRIVILEGES ON DATABASE myhouse24 TO myhouse24_admin;
+

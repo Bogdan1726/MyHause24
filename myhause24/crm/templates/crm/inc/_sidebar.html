@@ -1,56 +1,185 @@
 <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 898px;">
     <section class="sidebar" style="overflow: hidden; width: auto; height: 898px;">
-
+        {% with request.resolver_match.url_name as url %}
         <ul class="sidebar-menu tree" data-widget="tree">
-            <li class="active"><a href="/admin/"><i class="fa fa-line-chart"></i> <span>Статистика</span></a>
+            {% if request.user.role.statistics or request.user.is_superuser %}
+            <li class="{% if url in '[admin]' %}active{% endif %}">
+                <a href="/admin/">
+                    <i class="fa fa-line-chart"></i>
+                    <span>Статистика</span>
+                </a>
             </li>
-            <li><a href="/admin/account-transaction/index"><i class="fa fa-dollar"></i> <span>Касса</span></a>
+            {% endif %}
+            {% if request.user.role.cash_box or request.user.is_superuser %}
+            <li class="{% if url in '[cash_box, detail_cash_box, create_cash_box, update_cash_box]' %}active{% endif %}">
+                <a href="{% url 'cash_box' %}">
+                    <i class="fa fa-dollar"></i>
+                    <span>Касса</span>
+                </a>
             </li>
-            <li><a href="/admin/invoice/index"><i class="fa fa-files-o"></i>
-                <span>Квитанции на оплату</span></a></li>
-            <li><a href="/admin/account/index"><i class="fa fa-credit-card"></i> <span>Лицевые счета</span></a>
+            {% endif %}
+            {% if request.user.role.receipts or request.user.is_superuser %}
+            <li class="{% if url in '[receipts, detail_receipts, create_receipts, update_receipts, template_receipt, settings_templates]' %}active{% endif %}">
+                <a href="{% url 'receipts' %}">
+                    <i class="fa fa-files-o"></i>
+                    <span>Квитанции на оплату</span>
+                </a>
             </li>
-            <li><a href="/admin/flat/index"><i class="fa fa-key"></i> <span>Квартиры</span></a></li>
-            <li><a href="/admin/user/index"><i class="fa fa-users"></i> <span>Владельцы квартир</span></a></li>
-            <li><a href="/admin/house/index"><i class="fa fa-building"></i> <span>Дома</span></a></li>
-            <li><a href="/admin/message/index"><i class="fa fa-envelope-o"></i> <span>Сообщения</span></a></li>
-            <li><a href="/admin/master-request/index"><i class="fa fa-wrench"></i>
-                <span>Заявки вызова мастера</span></a></li>
-            <li><a href="/admin/counter-data/counters"><i class="fa fa-dashboard"></i>
-                <span>Показания счетчиков</span></a></li>
-            <li class="treeview"><a href="#!"><i class="fa fa-desktop"></i> <span>Управление сайтом</span> <span
-                    class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+            {% endif %}
+            {% if request.user.role.personal_accounts or request.user.is_superuser %}
+            <li class="{% if url in '[accounts, create_accounts, update_accounts, detail_accounts]' %}active{% endif %}">
+                <a href="{% url 'accounts' %}">
+                    <i class="fa fa-credit-card"></i>
+                    <span>Лицевые счета</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if request.user.role.apartments or request.user.is_superuser %}
+            <li class="{% if url in '[apartments, create_apartment, update_apartment, detail_apartment]' %}active{% endif %}">
+                <a href="{% url 'apartments' %}">
+                    <i class="fa fa-key"></i>
+                    <span>Квартиры</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if request.user.role.owners or request.user.is_superuser %}
+            <li class="{% if url in '[owners, create_owner, update_owner, detail_owner, invite_owner]' %}active{% endif %}">
+                <a href="{% url 'owners' %}">
+                    <i class="fa fa-users"></i>
+                    <span>Владельцы квартир</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if request.user.role.houses or request.user.is_superuser %}
+            <li class="{% if url in '[houses, create_house, update_house, detail_house]' %}active{% endif %}">
+                <a href="{% url 'houses' %}">
+                    <i class="fa fa-building"></i>
+                    <span>Дома</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if request.user.role.messages or request.user.is_superuser %}
+            <li class="{% if url in '[list_message, send_message, detail_message]' %}active{% endif %}">
+                <a href="{% url 'list_message' %}">
+                    <i class="fa fa-envelope-o"></i>
+                    <span>Сообщения</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if request.user.role.call_requests or request.user.is_superuser %}
+            <li class="{% if url in '[master_calls, detail_master_call, create_master_call, update_master_call]' %}active{% endif %}">
+                <a href="{% url 'master_calls' %}">
+                    <i class="fa fa-wrench"></i>
+                    <span>Заявки вызова мастера</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if request.user.role.counters or request.user.is_superuser %}
+            <li class="{% if url in '[meter_data, create_meter_data, meter_data_for_apartment, create_meter_data_for_apartment, update_meter_data, detail_meter_data]' %}active{% endif %}">
+                <a href="{% url 'meter_data' %}">
+                    <i class="fa fa-dashboard"></i>
+                    <span>Показания счетчиков</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if request.user.role.site_management or request.user.is_superuser %}
+            <li class="treeview {% if url in '[home_page_card, contact_page_card, about_page_card, service_page_card]' %}active{% endif %}">
+                <a href="#"><i class="fa fa-desktop"></i>
+                    <span>Управление сайтом</span>
+                    <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+                </a>
                 <ul class="treeview-menu">
-                    <li><a href="/admin/website/home"><i class="fa fa-circle-o"></i>
-                        <span>Главная страница</span></a></li>
-                    <li><a href="/admin/website/about"><i class="fa fa-circle-o"></i> <span>О нас</span></a>
+                    <li class="{% if url in '[home_page_card]' %}active{% endif %}">
+                        <a href="{% url 'home_page_card' %}">
+                            <i class="fa fa-circle-o"></i>
+                            <span>Главная страница</span>
+                        </a>
                     </li>
-                    <li><a href="/admin/website/services"><i class="fa fa-circle-o"></i> <span>Услуги</span></a>
+                    <li class="{% if url in '[about_page_card]' %}active{% endif %}">
+                        <a href="{% url 'about_page_card' %}">
+                            <i class="fa fa-circle-o"></i>
+                            <span>О нас</span>
+                        </a>
                     </li>
-                    <li><a href="/admin/website/tariffs"><i class="fa fa-circle-o"></i> <span>Тарифы</span></a>
+                    <li class="{% if url in '[service_page_card]' %}active{% endif %}">
+                        <a href="{% url 'service_page_card' %}">
+                            <i class="fa fa-circle-o"></i>
+                            <span>Услуги</span>
+                        </a>
                     </li>
-                    <li><a href="/admin/website/contact"><i class="fa fa-circle-o"></i>
-                        <span>Контакты</span></a></li>
+                    <li class="{% if url in '[contact_page_card]' %}active{% endif %}">
+                        <a href="{% url 'contact_page_card' %}">
+                            <i class="fa fa-circle-o"></i>
+                            <span>Контакты</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
-            <li class="treeview"><a href="#!"><i class="fa fa-cogs"></i> <span>Настройки системы</span> <span
-                    class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+            {% endif %}
+            <li class="treeview
+                       {% if url in '[services, tariffs, detail_tariff, create_tariff, update_tariff, create_copy_tariff, roles, requisites, users, detail_user, update_user, create_user, payment_items, create_payment_items, detail_payment_items, update_payment_items]' %}
+                       active
+                       {% endif %}">
+                <a href="#"><i class="fa fa-cogs"></i>
+                    <span>Настройки системы</span>
+                    <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+                </a>
                 <ul class="treeview-menu">
-                    <li><a href="/admin/service/index"><i class="fa fa-briefcase"></i> <span>Услуги</span></a>
+                    {% if request.user.role.services or request.user.is_superuser %}
+                    <li class="{% if url in '[services]' %}active{% endif %}">
+                        <a href="{% url 'services' %}">
+                            <i class="fa fa-briefcase"></i>
+                            <span>Услуги</span>
+                        </a>
                     </li>
-                    <li><a href="/admin/tariff/index"><i class="fa fa-money"></i> <span>Тарифы</span></a></li>
-                    <li><a href="/admin/user-admin/role"><i class="fa fa-user"></i> <span>Роли</span></a></li>
-                    <li><a href="/admin/user-admin/index"><i class="fa fa-user-plus"></i>
-                        <span>Пользователи</span></a></li>
-                    <li><a href="/admin/pay-company/index"><i class="fa fa-credit-card"></i>
-                        <span>Платежные реквизиты</span></a>
+                    {% endif %}
+                    {% if request.user.role.tariffs or request.user.is_superuser %}
+                    <li class="
+                    {% if url in '[tariffs, detail_tariff, create_tariff, update_tariff, create_copy_tariff]' %}active{% endif %}">
+                        <a href="{% url 'tariffs' %}">
+                            <i class="fa fa-money"></i>
+                            <span>Тарифы</span>
+                        </a>
                     </li>
-                    <li><a href="/admin/transaction-purpose/index"><i class="fa fa-list-ol"></i>
-                        <span>Статьи платежей</span></a>
+                    {% endif %}
+                    {% if request.user.role.roles or request.user.is_superuser %}
+                    <li class="{% if url in '[roles]' %}active{% endif %}">
+                        <a href="{% url 'roles' %}">
+                            <i class="fa fa-user"></i>
+                            <span>Роли</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if request.user.role.users or request.user.is_superuser %}
+                    <li class="{% if url in '[users, detail_user, update_user, create_user]' %}active{% endif %}">
+                        <a href="{% url 'users' %}">
+                            <i class="fa fa-user-plus"></i>
+                            <span>Пользователи</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if request.user.role.requisites or request.user.is_superuser %}
+                    <li class="{% if url in '[requisites]' %}active{% endif %}">
+                        <a href="{% url 'requisites' %}">
+                            <i class="fa fa-credit-card"></i>
+                            <span>Платежные реквизиты</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="{% if url in '[payment_items, create_payment_items, detail_payment_items, update_payment_items]' %}active{% endif %}">
+                        <a href="{% url 'payment_items' %}">
+                            <i class="fa fa-list-ol"></i>
+                            <span>Статьи платежей</span>
+                        </a>
                     </li>
                 </ul>
             </li>
         </ul>
+        {% endwith %}
     </section>
     <div class="slimScrollBar"
          style="background: rgb(0, 0, 0); width: 7px; position: absolute; top: 0px; opacity: 0.4; display: none; border-radius: 7px; z-index: 99; right: 1px; height: 898px;"></div>

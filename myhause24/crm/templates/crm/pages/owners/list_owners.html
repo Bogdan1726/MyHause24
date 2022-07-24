@@ -1,0 +1,306 @@
+{% extends 'crm/elements/layout.html'%}
+
+{% load static %}
+{% load floattags %}
+
+{% block title %}
+Владельцы квартир
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/css/style_dataTable_filter.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Владельцы квартир</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Владельцы квартир</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="btn-group pull-right margin-bottom">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+                Выберите действие <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'create_owner' %}">Добавить владельца квартиры</a></li>
+                <li><a href="{% url 'send_message' %}?debt=true">Отправить сообщение должникам</a></li>
+                <li><a href="{% url 'invite_owner' %}">Отправить приглашение</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a id="clean" class="btn btn-default btn-sm">
+                        <span class="hidden-xs">Очистить</span><i class="fa fa-eraser visible-xs"
+                                                                  aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="list_owners" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="table_owners" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th style="width: 80px; min-width: 80px">ID</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">ФИО</th>
+                            <th style="width: 140px; min-width: 140px">Телефон</th>
+                            <th style="width: 140px; min-width: 140px">Email</th>
+                            <th style="width: 200px; min-width: 200px">Дом</th>
+                            <th style="width: 200px; min-width: 200px">Квартира</th>
+                            <th style="width: 80px; min-width: 80px; color: #3c8dbc">Добавлен</th>
+                            <th style="width: 100px; min-width: 100px">Статус</th>
+                            <th style="width: 100px; min-width: 100px">Есть долг</th>
+                            <th style="width: 114px; min-width: 114px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td style="z-index: 9999">
+                                <input type="text" name="custom_search" id="id_date">
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for owner in owners %}
+                        <tr data-href="{% url 'detail_owner' owner.id %}">
+                            <td>{{ owner.user_id }}</td>
+                            {% if owner.first_name or owner.last_name or owner.patronymic %}
+                            <td>{{ owner.get_full_name }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            {% if owner.phone %}
+                            <td>{{ owner.phone }}</td>
+                            {% else %}
+                            <td>(не задано)</td>
+                            {% endif %}
+                            <td>{{ owner.email }}</td>
+                            <td>
+                                {% for apartment in apartments %}
+                                {% if apartment.owner == owner %}
+                                <a href="{% url 'detail_house' apartment.house_id %}">{{ apartment.house }}</a>
+                                <br>
+                                {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for apartment in apartments %}
+                                {% if apartment.owner == owner %}
+                                <p>
+                                    <a href="{% url 'detail_apartment' apartment.id %}">
+                                        №{{ apartment.number }}, {{ apartment.house }}
+                                    </a>
+                                </p>
+                                {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ owner.date_joined|date:"d.m.Y" }}</td>
+                            {% if owner.status == 'disabled' %}
+                            <td><small class="label label-danger">Отключен</small></td>
+                            {% elif owner.status == 'active' %}
+                            <td><small class="label label-success">Активен</small></td>
+                            {% else %}
+                            <td><small class="label label-warning">Новый</small></td>
+                            {% endif %}
+                            {% if owner.balance > 0 %}
+                            <td>нет</td>
+                            {% elif owner.balance < 0 %}
+                            <td>да</td>
+                            {% else %}
+                            <td>нет</td>
+                            {% endif %}
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'send_message' %}?owner={{ owner.id }}"
+                                       title="Отправить сообщение"
+                                       data-toggle="tooltip">
+                                        <i class="fa fa-envelope"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_owner' owner.id %}"
+                                       title="Редактировать"
+                                       data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление владельца</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_owner' owner.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить {{ owner.email }} ?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        // Setup - add a text input to each footer cell
+        $('#table_owners tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search"/>');
+        });
+
+        // DataTable
+        var table = $('#table_owners').DataTable({
+            "responsive": false,
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': true,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [0, 2, 3, 4, 5, 7, 8, 9]
+                }
+            ],
+            order: [],
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "info": "Количество владельцев: <strong>_TOTAL_</stong>",
+                "infoEmpty": "Нет записей.",
+                "paginate": {
+                    "previous": '<i class="fa fa-angle-left" style="color: #337AB7"></i>',
+                    "last": "Последняя",
+                    "next": '<i class="fa fa-angle-right" style="color: #337AB7"></i>',
+                }
+            },
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns([0, 1, 2, 3, 4, 5, 6])
+                    .every(function () {
+                        var that = this;
+
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+                //
+                this.api()
+                    .columns([7, 8])
+                    .every(function () {
+                        var column = this;
+                        var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+
+                        column
+                            .data()
+                            .unique()
+                            .sort()
+                            .each(function (d, j) {
+                                var val = $('<div/>').html(d).text();
+                                select.append('<option value="' + val + '">' + val + '</option>');
+                            });
+                    });
+            },
+        });
+        $("#table_owners_filter").css('display', 'none')
+        $("#clean").on("click", function () {
+            $('input').val('');
+            $('select').val('');
+            table.columns().search("").draw();
+        })
+    });
+
+</script>
+<script>
+
+    !function (a) {
+        a.fn.datepicker.dates.ru = {
+            days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+            daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
+            daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+            today: "Сегодня",
+            clear: "Очистить",
+            format: "dd.mm.yyyy",
+            weekStart: 1,
+            monthsTitle: "Месяцы"
+        }
+    }(jQuery);
+
+
+    $('#id_date').datepicker({
+        format: 'dd.mm.yyyy',
+        startDate: '-100y',
+        endDate: '+0d',
+        language: 'ru',
+    });
+
+
+</script>
+
+{% endblock %}

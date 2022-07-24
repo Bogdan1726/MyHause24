@@ -1,0 +1,310 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+
+{% block title %}
+Новое сообщение
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Новое сообщение</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'list_message' %}">Сообщения</a></li>
+    <li class="active">Новое сообщение</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+
+    <form id="send_message" method="post">
+        {% csrf_token %}
+        <div class="box-header with-border">
+            <h3 class="box-title"></h3>
+        </div>
+        <div class="box-body">
+            <div class="form-group">
+                {{ form.topics }}
+            </div>
+            <div class="form-group">
+                {{ form.text }}
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-md-6">
+                    <h4>Кому отправить:</h4>
+                    {% if request.GET.owner %}
+                    <div class="form-group">
+                        <label class="control-label">Владелец квартир</label>
+                        {{ form.owner }}
+                    </div>
+                    {% else %}
+
+                    <div class="form-group">
+                        {{ form.is_dept }}
+                        <label>Владельцам с задолженностями</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">ЖК</label>
+                        {{ form.house }}
+                    </div>
+                    <div class="form-group field-messageaddress-section_id">
+                        <label class="control-label">Секция</label>
+                        {{ form.section }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Этаж</label>
+                        {{ form.floor }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Квартира</label>
+                        {{ form.apartment }}
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+        <div class="box-footer">
+            <div class="pull-right">
+                <button type="submit" class="btn btn-success">
+                    <i class="fa fa-envelope-o"></i>
+                    Отправить
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js' %}"></script>
+
+<script>
+
+    $(document).ready(function () {
+        var select_house = $("select[name='house']")
+        var select_section = $("select[name='section']")
+        var select_floor = $("select[name='floor']")
+        var select_apartment = $("select[name='apartment']")
+        var owner = $("select[name='owner']")
+
+        var data_filter = new Map()
+
+        select_section.find('option').slice(1).remove();
+        select_floor.find('option').slice(1).remove();
+        select_apartment.find('option').slice(1).remove();
+
+
+        owner.select2({
+            data: ({id: 68, text: 'text'}),
+            allowClear: false,
+            placeholder: "Выберите...",
+            language: {
+                noResults: function () {
+                    return "Совпавдений не найдено";
+                }
+            }
+        })
+
+
+        // changes select
+        select_house.on("change", function () {
+            select_apartment.find('option').slice(1).remove();
+            if (this.value) {
+                data_filter.set('house_id', this.value)
+                data_filter.set('section_id', null)
+                data_filter.set('floor_id', null)
+                send_ajax_for_section(this.value)
+                loading_apartment_for_message()
+            } else {
+                select_section.find('option').slice(1).remove();
+                select_apartment.find('option').slice(1).remove();
+                select_floor.find('option').slice(1).remove();
+                data_filter.set('section_id', null)
+                data_filter.set('floor_id', null)
+                data_filter.set('house_id', null)
+            }
+        })
+
+        select_section.on('change', function () {
+            if (this.value) {
+                data_filter.set('section_id', this.value)
+                loading_apartment_for_message(data_filter)
+            } else {
+                select_apartment.find('option').slice(1).remove();
+                data_filter.set('section_id', null)
+                loading_apartment_for_message(data_filter)
+            }
+        })
+
+        select_floor.on('change', function () {
+            if (this.value) {
+                data_filter.set('floor_id', this.value)
+                loading_apartment_for_message(data_filter)
+            } else {
+                select_apartment.find('option').slice(1).remove();
+                data_filter.set('floor_id', null)
+                loading_apartment_for_message(data_filter)
+            }
+        })
+
+        //
+
+        // ajax request
+
+        function send_ajax_for_section(data) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_floor_section' %}",
+                data: {
+                    'house_id': data,
+                },
+                success: function (response) {
+                    section_select(response.section)
+                    floor_select(response.floor)
+
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function loading_apartment_for_message() {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_apartment_for_message' %}",
+                data: {
+                    'floor_id': data_filter.get('floor_id'),
+                    'house_id': data_filter.get('house_id'),
+                    'section_id': data_filter.get('section_id'),
+                },
+                success: function (response) {
+                    apartment_select(response.apartment)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        //
+
+
+        // load data
+        function section_select(data) {
+            select_section.find('option').slice(1).remove();
+            for (section in data) {
+                if (!select_section.find('option[value="' + data[section].id + '"]').length) {
+                    select_section.append(
+                        '<option value="' + data[section].id + '">' + data[section].title + '</option>\n'
+                    )
+                }
+            }
+        }
+
+        function apartment_select(data) {
+            select_apartment.find('option').slice(1).remove();
+            for (apartment in data) {
+                if (!select_apartment.find('option[value="' + data[apartment].id + '"]').length) {
+                    select_apartment.append(
+                        '<option value="' + data[apartment].id + '">' + data[apartment].number + '</option>\n'
+                    )
+                }
+            }
+        }
+
+        function floor_select(data) {
+            select_floor.find('option').slice(1).remove();
+            for (floor in data) {
+                if (!select_floor.find('option[value="' + data[floor].id + '"]').length) {
+                    select_floor.append(
+                        '<option value="' + data[floor].id + '">' + data[floor].title + '</option>\n'
+                    )
+                }
+            }
+        }
+
+        //
+    })
+
+    // WYSIHTML5
+
+    !function ($) {
+        $.fn.wysihtml5.locale["ru-RU"] = {
+            font_styles: {
+                normal: "Обычный текст",
+                h1: "Заголовок 1",
+                h2: "Заголовок 2",
+                h3: "Заголовок 3",
+                h4: "Заголовок 4",
+                h5: "Заголовок 5",
+                h6: "Заголовок 6"
+
+            },
+            emphasis: {
+                bold: "Полужирный",
+                italic: "Курсив",
+                underline: "Подчёркнутый"
+            },
+            lists: {
+                unordered: "Маркированный список",
+                ordered: "Нумерованный список",
+                outdent: "Уменьшить отступ",
+                indent: "Увеличить отступ"
+            }
+        };
+    }(jQuery);
+
+    $('textarea[name=text]').wysihtml5({
+        useLineBreaks: false,
+        locale: 'ru-RU',
+        toolbar: {
+            "font-styles": true,
+            "emphasis": true,
+            "lists": true,
+            "html": false,
+            "link": false,
+            "image": false,
+            "color": false,
+            "blockquote": false,
+            "fa": true,
+            "size": 'none'
+        }
+    })
+    //
+
+    //  jQuery Validations Form
+    $('#send_message').validate({
+        rules: {
+            topics: {
+                required: true,
+                minlength: 5,
+            },
+        },
+        messages: {
+            topics: {
+                required: "Обязательное поле",
+                minlength: 'Пожалуйста, введите не менее 5 символов.'
+            },
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
+</script>
+{% endblock %}

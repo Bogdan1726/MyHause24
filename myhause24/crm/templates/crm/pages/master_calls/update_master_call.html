@@ -1,0 +1,431 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Заявка №{{ object.id }}
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css' %}">
+<link rel="stylesheet" href="{% static 'crm/plugins/timepicker/bootstrap-timepicker.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Заявка №{{ object.id }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'master_calls' %}">Заявки вызова мастера</a></li>
+    <li><a href="{% url 'detail_master_call' object.id %}">Заявка №{{ object.id }}</a></li>
+    <li class="active">Редактирование</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<form id="master_call_form" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-xs-12 col-md-7 col-lg-6">
+            <div class="page-header-spec">
+                <div class="form-group">
+                    <div class="input-group date">
+                        <div class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        {{ form.date }}
+                    </div>
+                </div>
+                <span class="label-mid">от</span>
+                <div class="form-group bootstrap-timepicker">
+                    <div class="input-group">
+                        <div class="input-group-addon">
+                            <i class="fa fa-clock-o"></i>
+                        </div>
+                        {{ form.time }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="box">
+        <div class="box-body">
+            <div class="row">
+                <div class="col-xs-12 col-md-6">
+                    <div class="form-group">
+                        <label>Владелец квартиры</label>
+                        <a href="{% url 'detail_owner' form.instance.apartment.owner_id %}" target="_blank">
+                            <i class="fa fa-external-link"></i>
+                        </a>
+                        {{ form.owner }}
+                    </div>
+                    <p>
+                        {% if form.instance.apartment.owner.phone %}
+                        <b>Телефон:</b>
+                        <a href="tel:{{ form.instance.apartment.owner.phone }}">
+                            {{ form.instance.apartment.owner.phone }}
+                        </a>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-xs-12 col-md-6">
+                    <p><b>Дом:</b>
+                        <a href="{% url 'detail_house' form.instance.apartment.house_id %}">
+                            {{ form.instance.apartment.house.title }}
+                        </a>
+                    </p>
+                    <p><b>Секция:</b> {{ form.instance.apartment.section.title }}</p>
+                    <p><b>Этаж:</b> {{ form.instance.apartment.floor.title }}</p>
+                </div>
+                <div class="clearfix"></div>
+                <div class="col-xs-12 col-sm-6">
+                    <div class="form-group ">
+                        <label class="control-label">Описание</label>
+                        {{ form.description }}
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label">Квартира</label>
+                        {{ form.apartment }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Тип мастера</label>
+                        {{ form.type_master }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Статус</label>
+                        {{ form.status }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Мастер</label>
+                        {{ form.master }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label">Комментарий</label>
+                        {{ form.comment }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <div class="form-group">
+                        <a href="{% url 'master_calls' %}" class="btn btn-default">Отменить</a>
+                        <button type="submit" class="btn btn-success">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+<script src="{% static 'crm/plugins/timepicker/bootstrap-timepicker.min.js' %}"></script>
+
+<script>
+    $(document).ready(function () {
+
+        var owner_select = $('select[name=owner]')
+        var apartment_select = $('select[name=apartment]')
+        var type_master_select = $('select[name=type_master]')
+        var master_select = $('select[name=master]')
+        var initial_options = []
+        var options = []
+
+        master_select.find('option:not([selected])').slice(1).remove();
+
+        $('select[name=apartment] option').each(function () {
+            initial_options.push({
+                id: $(this).val(),
+                text: $(this).text()
+            })
+        })
+
+        owner_select.select2({
+            allowClear: true,
+            placeholder: "Выберите...",
+            language: {
+                noResults: function () {
+                    return "Совпавдений не найдено";
+                }
+            }
+        })
+
+        apartment_select.select2({
+            placeholder: "Выберите...",
+            language: {
+                noResults: function () {
+                    return "Совпавдений не найдено";
+                }
+            }
+        })
+
+        if (type_master_select.val()) {
+            master_ajax(type_master_select.val(), true)
+        }
+
+        if (owner_select.val()) {
+            apartment_ajax(owner_select.val(), true);
+        }
+
+        type_master_select.on('change', function () {
+            if (this.value) {
+                master_ajax(this.value, false)
+            } else {
+                master_select.find('option').slice(1).remove();
+            }
+        })
+
+        owner_select.on('change', function () {
+            if (this.value) {
+                apartment_ajax(this.value, false);
+            } else {
+                apartment_select.empty().select2({
+                    data: initial_options,
+                    placeholder: "Выберите...",
+                    language: {
+                        noResults: function () {
+                            return "Совпавдений не найдено";
+                        }
+                    }
+                });
+            }
+        })
+
+        function apartment_ajax(data, flag) {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "loading_apartment_of_owner" %}',
+                dataType: 'json',
+                data: {
+                    'owner_id': data
+                },
+                success: function (response) {
+                    load_apartment(response.apartments, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function master_ajax(data, flag) {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "loading_master_of_type_master" %}',
+                dataType: 'json',
+                data: {
+                    'role_id': data
+                },
+                success: function (response) {
+                    select_master(response.masters, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+
+            })
+        }
+
+        function load_apartment(data, flag) {
+            if (flag) {
+                apartment_select.find('option:not([selected])').slice(1).remove();
+            } else {
+                apartment_select.find('option').slice(1).remove();
+            }
+            for (apartment in data) {
+                options.push({
+                    text: data[apartment].number + ',' + data[apartment].house__title,
+                    id: data[apartment].id
+                })
+            }
+            apartment_select.select2({
+                data: options,
+                placeholder: "Выберите...",
+                language: {
+                    noResults: function () {
+                        return "Совпавдений не найдено";
+                    }
+                }
+            });
+            options = []
+        }
+
+        function select_master(data, flag) {
+            if (flag) {
+                master_select.find('option:not([selected])').slice(1).remove();
+            } else {
+                master_select.find('option').slice(1).remove();
+            }
+            for (master in data) {
+                if (!master_select.find('option[value="' + data[master].id + '"]').length) {
+                    if (data[master].first_name || data[master].last_name) {
+                        master_select.append(
+                            '<option value="' +
+                            data[master].id + '">' +
+                            data[master].first_name + ' ' +
+                            data[master].last_name +
+                            '</option>\n'
+                        )
+                    } else {
+                        master_select.append(
+                            '<option value="' +
+                            data[master].id + '">' +
+                            data[master].email +
+                            '</option>\n'
+                        )
+                    }
+                }
+            }
+        }
+
+        //  jQuery Validations Form
+        //  jQuery Validations Form
+        $.validator.addMethod("required_apartment", function (value) {
+            if (!value) {
+                return false
+            }
+            return true;
+        });
+
+        var validator = $('#master_call_form').validate({
+            rules: {
+                date: {
+                    required: true,
+                },
+                time: {
+                    required: true,
+                },
+                description: {
+                    required: true,
+                },
+                type_master: {
+                    required: true,
+                },
+                apartment: {
+                    required_apartment: true,
+                }
+
+            },
+            messages: {
+                date: {
+                    required: "Обязательное поле",
+                },
+                time: {
+                    required: "Обязательное поле",
+                },
+                description: {
+                    required: "Обязательное поле",
+                },
+                type_master: {
+                    required: "Обязательное поле",
+                },
+                apartment: {
+                    required_apartment: "Обязательное поле",
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element) {
+                $(element).closest('.form-group').addClass('has-error');
+            },
+            unhighlight: function (element) {
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+        });
+
+        apartment_select.on('change', function () {
+            validator.element($(this))
+        })
+
+    });
+
+</script>
+<script>
+
+    !function ($) {
+        $.fn.wysihtml5.locale["ru-RU"] = {
+            font_styles: {
+                normal: "Обычный текст",
+                h1: "Заголовок 1",
+                h2: "Заголовок 2",
+                h3: "Заголовок 3",
+                h4: "Заголовок 4",
+                h5: "Заголовок 5",
+                h6: "Заголовок 6"
+
+            },
+            emphasis: {
+                bold: "Полужирный",
+                italic: "Курсив",
+                underline: "Подчёркнутый"
+            },
+            lists: {
+                unordered: "Маркированный список",
+                ordered: "Нумерованный список",
+                outdent: "Уменьшить отступ",
+                indent: "Увеличить отступ"
+            }
+        };
+    }(jQuery);
+
+    $('textarea[name=comment]').wysihtml5({
+        useLineBreaks: false,
+        locale: 'ru-RU',
+        toolbar: {
+            "font-styles": true,
+            "emphasis": true,
+            "lists": true,
+            "html": false,
+            "link": false,
+            "image": false,
+            "color": false,
+            "blockquote": false,
+            "fa": true,
+            "size": 'none'
+        }
+    })
+
+    !function (a) {
+        a.fn.datepicker.dates.ru = {
+            days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+            daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
+            daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+            today: "Сегодня",
+            clear: "Очистить",
+            format: "dd.mm.yyyy",
+            weekStart: 1,
+            monthsTitle: "Месяцы"
+        }
+    }(jQuery);
+
+
+    $('#id_date').datepicker({
+        format: 'dd.mm.yyyy',
+        startDate: '-100y',
+        language: 'ru',
+
+    });
+
+    $('#id_time').timepicker({
+        showInputs: false,
+        showMeridian: false,
+
+    });
+
+
+</script>
+{% endblock %}
+

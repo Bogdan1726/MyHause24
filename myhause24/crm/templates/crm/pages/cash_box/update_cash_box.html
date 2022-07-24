@@ -1,0 +1,302 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+
+{% if object.type %}
+Приходная ведомость
+{% else %}
+Расходная ведомость
+{% endif %}
+
+{% endblock %}
+
+{% block style %}
+
+{% endblock %}
+
+
+{% block content-header %}
+{% if object.type %}
+<h1>Приходная ведомость</h1>
+{% else %}
+<h1>Расходная ведомость</h1>
+{% endif %}
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'cash_box' %}">Платежи</a></li>
+    <li>
+        <a href="{% url 'detail_cash_box' object.id %}">
+            {% if object.type %}Приходная ведомость{% else %}Расходная ведомость{% endif %} №{{ object.number}}
+        </a>
+    </li>
+    <li class="active">Редактирование</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<form id="cash_box_form" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-xs-12 col-md-7 col-lg-6">
+            <div class="page-header-spec">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">
+                            №
+                        </div>
+                        {{ form.number }}
+                    </div>
+                </div>
+                <span class="label-mid">от</span>
+                <div class="form-group">
+                    <div class="input-group date">
+                        <div class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        {{ form.date }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="box">
+        <div class="box-body">
+            <div class="row">
+                <div class="col-xs-12 col-sm-6 col-sm-offset-6">
+                    {{ form.status }}
+                    <label>Проведен</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    {% if object.type %}
+                    <div class="form-group">
+                        <label class="control-label">Владелец квартиры</label>
+                        {{ form.owner }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Лицевой счет</label>
+                        {{ form.personal_account }}
+                    </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <label class="control-label">Статья</label>
+                        {{ form.payment_items }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Сумма</label>
+                        {{ form.sum }}
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label">Менеджер</label>
+                        {{ form.manager }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <div class="form-group">
+                        <a href="{% url 'cash_box' %}"
+                           class="btn btn-default margin-bottom-15">
+                            Отменить
+                        </a>
+                        <input type="submit"
+                               class="btn btn-success margin-bottom-15"
+                               name="action_save"
+                               value="Сохранить">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label">Комментарий</label>
+                        {{ form.comment }}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+<script>
+    $(document).ready(function () {
+        //
+        var owner_select = $('select[name=owner]')
+        var personal_account_select = $('select[name=personal_account]')
+        var initial_options = []
+        var options = []
+
+        $('select[name=personal_account] option').each(function () {
+            initial_options.push({
+                id: $(this).val(),
+                text: $(this).text()
+            })
+        })
+
+
+        owner_select.select2({
+            allowClear: true,
+            placeholder: "Выберите...",
+            language: {
+                noResults: function () {
+                    return "Совпавдений не найдено";
+                }
+            }
+        })
+
+        personal_account_select.select2({
+            allowClear: true,
+            placeholder: "Выберите...",
+            language: {
+                noResults: function () {
+                    return "Совпавдений не найдено";
+                }
+            }
+        })
+
+
+        if (owner_select.val()) {
+            personal_account_ajax(owner_select.val(), true);
+        }
+
+
+        owner_select.on('change', function () {
+            if (this.value) {
+                personal_account_ajax(this.value, false);
+            } else {
+                personal_account_select.empty().select2({
+                    data: initial_options,
+                    placeholder: "Выберите...",
+                    language: {
+                        noResults: function () {
+                            return "Совпавдений не найдено";
+                        }
+                    }
+                });
+            }
+        })
+
+        function personal_account_ajax(data, flag) {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "loading_personal_account_of_owner" %}',
+                dataType: 'json',
+                data: {
+                    'owner_id': data
+                },
+                success: function (response) {
+                    load_personal_account(response.personal_account, flag)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        }
+
+        function load_personal_account(data, flag) {
+            if (flag) {
+                personal_account_select.find('option:not([selected])').slice(1).remove();
+            } else {
+                personal_account_select.find('option').slice(1).remove();
+            }
+            for (account in data) {
+                options.push({
+                    text: data[account].number,
+                    id: data[account].id
+                })
+            }
+            personal_account_select.select2({
+                data: options,
+                placeholder: "Выберите...",
+                language: {
+                    noResults: function () {
+                        return "Совпавдений не найдено";
+                    }
+                }
+            });
+            options = []
+        }
+
+        //
+
+        // datepicker
+        !function (a) {
+            a.fn.datepicker.dates.ru = {
+                days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+                daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
+                daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+                months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+                monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+                today: "Сегодня",
+                clear: "Очистить",
+                format: "dd.mm.yyyy",
+                weekStart: 1,
+                monthsTitle: "Месяцы"
+            }
+        }(jQuery);
+
+
+        $('#id_date').datepicker({
+            format: 'dd.mm.yyyy',
+            startDate: '-100y',
+            default: 'date',
+            language: 'ru'
+        });
+        //
+
+        //  jQuery Validations Form
+
+        $('#cash_box_form').validate({
+            rules: {
+                date: {
+                    required: true,
+                },
+                number: {
+                    required: true,
+                    minlength: 10
+                },
+                sum: {
+                    required: true,
+                },
+
+            },
+            messages: {
+                date: {
+                    required: "Обязательное поле",
+                },
+                number: {
+                    required: "Обязательное поле",
+                    minlength: "Пожалуйста, введите не менее 10 символов"
+                },
+                sum: {
+                    required: "Обязательное поле",
+                }
+            },
+
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element) {
+                $(element).closest('.form-group').addClass('has-error');
+            },
+            unhighlight: function (element) {
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+        });
+    })
+
+</script>
+
+
+{% endblock %}

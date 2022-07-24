@@ -1,1 +1,255 @@
 {% extends 'crm/elements/layout.html'%}
+
+{% load static %}
+{% load floattags %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12 col-sm-6">
+        <h2 class="page-header">В вашем обслуживании</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-4 col-sm-6 col-xs-12">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{{ houses|length }}</h3>
+                <p>Домов</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-building"></i>
+            </div>
+            <a href="{% url 'houses' %}" class="small-box-footer">
+                Перейти в дома <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12">
+        <div class="small-box bg-green">
+            <div class="inner">
+                <h3>{{ owner|length }}</h3>
+                <p>Активных владельцев</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-users"></i>
+            </div>
+            <a href="{% url 'owners' %}" class="small-box-footer">
+                Перейти к владельцам <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12">
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>{{ master_call_in_work|length }}</h3>
+                <p>Заявок мастера в работе</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-wrench"></i>
+            </div>
+            <a href="{% url 'master_calls' %}" class="small-box-footer">
+                Перейти в заявки <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{{ apartment|length }}</h3>
+                <p>Квартир</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-key"></i>
+            </div>
+            <a href="{% url 'apartments' %}" class="small-box-footer">
+                Перейти в квартиры <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12">
+        <div class="small-box bg-green">
+            <div class="inner">
+                <h3>{{ personal_account|length }}</h3>
+                <p>Лицевых счетов</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-child"></i>
+            </div>
+            <a href="{% url 'accounts' %}" class="small-box-footer">
+                Перейти к счетам <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12">
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>{{ master_call|length }}</h3>
+                <p>Новых заявок мастера</p>
+            </div>
+            <div class="icon">
+                <i class="fa fa-user-plus"></i>
+            </div>
+            <a href="{% url 'master_calls' %}" class="small-box-footer">
+                Перейти в заявки <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-8 col-md-7 col-xs-12">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h3 class="box-title">График погашения квитанций, грн</h3>
+            </div>
+            <div class="box-body">
+                <div class="chart">
+                    <canvas id="barChart" style="height: 149px; width: 764px;" width="764" height="149"></canvas>
+                    <div id="barChart-legend" class="text-center">
+                        <ul class="bar-legend">
+                            <li><span style="background-color:rgba(221, 75, 57, 1)"></span>Задолженность</li>
+                            <li><span style="background-color:rgba(0, 166, 90, 1)"></span>Погашение задолженности</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-5 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-red"><i class="fa fa-money"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Задолженность по счетам, грн</span>
+                <span class="info-box-number">{{ account_debit|floatformat:"2g"|formatted_float }}</span>
+            </div>
+        </div>
+        <div class="info-box">
+            <span class="info-box-icon bg-blue"><i class="fa fa-money"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Баланс по счетам, грн</span>
+                <span class="info-box-number">{{ account_balance|floatformat:"2g"|formatted_float }}</span>
+            </div>
+        </div>
+        <div class="info-box">
+            <span class="info-box-icon bg-green"><i class="fa fa-money"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Состояние кассы, грн</span>
+                <span class="info-box-number">{{ cash_balance|floatformat:"2g"|formatted_float }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h3 class="box-title">График приходов и расходов по кассе, грн</h3>
+            </div>
+            <div class="box-body">
+                <div class="chart">
+                    <canvas id="barChart2" style="height: 95px; width: 643px;" width="643" height="95"></canvas>
+                    <div id="barChart2-legend" class="text-center">
+                        <ul class="bar-legend">
+                            <li><span style="background-color:rgba(0, 166, 90, 1)"></span>Приход</li>
+                            <li><span style="background-color:rgba(221, 75, 57, 1)"></span>Расход</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+        integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+
+<script>
+
+    jQuery(function ($) {
+        $(function () {
+            var date = new Date();
+            let labels = ['янв.' + date.getFullYear() + '', 'февр.' + date.getFullYear() + '', 'март' + date.getFullYear() + '', 'апр.' + date.getFullYear() + '', 'май.' + date.getFullYear() + '', 'июнь' + date.getFullYear() + '', 'июль' + date.getFullYear() + '', 'авг.' + date.getFullYear() + '', 'сент.' + date.getFullYear() + '', 'окт.' + date.getFullYear() + '', 'нояб.' + date.getFullYear() + '', 'дек.' + date.getFullYear() + '']
+            var receipt_paid = []
+            var receipt_not_paid = []
+            var receipt = JSON.parse('{{ receipt|safe }}')
+
+            for (let i = 0; i < receipt.length; i++) {
+                receipt_not_paid.push(receipt[i].not_paid_sum)
+                receipt_paid.push(receipt[i].paid_sum)
+            }
+
+            var ctx = document.getElementById("barChart").getContext("2d");
+
+            var data = {
+                labels: labels,
+                datasets: [{
+                    label: "Задолженность, грн",
+                    backgroundColor: "red",
+                    data: receipt_not_paid
+                },
+                    {
+                        label: "Погашение, грн",
+                        backgroundColor: "green",
+                        data: receipt_paid
+                    }
+                ]
+            };
+
+            var myBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    barValueSpacing: 20,
+                }
+            });
+        })
+    })
+
+
+    jQuery(function ($) {
+        $(function () {
+            var date = new Date();
+            let labels = ['янв.' + date.getFullYear() + '', 'февр.' + date.getFullYear() + '', 'март' + date.getFullYear() + '', 'апр.' + date.getFullYear() + '', 'май.' + date.getFullYear() + '', 'июнь' + date.getFullYear() + '', 'июль' + date.getFullYear() + '', 'авг.' + date.getFullYear() + '', 'сент.' + date.getFullYear() + '', 'окт.' + date.getFullYear() + '', 'нояб.' + date.getFullYear() + '', 'дек.' + date.getFullYear() + '']
+            var expense = []
+            var income = []
+            var cash = JSON.parse('{{ cash|safe }}')
+
+            for (let i = 0; i < cash.length; i++) {
+                expense.push(cash[i].expense)
+                income.push(cash[i].income)
+            }
+
+            var ctx = document.getElementById("barChart2").getContext("2d");
+
+            var data = {
+                labels: labels,
+                datasets: [{
+                    label: "Расход, грн",
+                    backgroundColor: "red",
+                    data: expense
+                },
+                    {
+                        label: "Приход, грн",
+                        backgroundColor: "green",
+                        data: income
+                    }
+                ]
+            };
+
+            var myBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    barValueSpacing: 20,
+                }
+            });
+        })
+    })
+</script>
+
+{% endblock %}

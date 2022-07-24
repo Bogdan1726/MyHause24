@@ -1,0 +1,220 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+
+{% block title %}
+Сообщения
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+<link href="{% static 'crm/plugins/iCheck/flat/blue.css' %}" rel="stylesheet">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Сообщения</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Сообщения</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="pull-right margin-bottom">
+            <a class="btn btn-success" href="{% url 'send_message' %}">Отправить сообщение</a>
+        </div>
+    </div>
+</div>
+<div class="box">
+    <div class="box-header with-border">
+        <h3 class="box-title"></h3>
+        <div class="box-tools pull-right">
+            <div class="has-feedback">
+                <form action="" method="get">
+                    <input type="text" id="custom_search" name="search" value="" class="form-control input-sm"
+                           placeholder="Поиск">
+                    <span class="glyphicon glyphicon-search form-control-feedback"></span>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="box-body no-padding">
+
+        <div class="grid-view">
+            <div class="mailbox-controls">
+                <button type="button" class="btn btn-default btn-sm checkbox-toggle"><i class="fa fa-square-o"></i>
+                </button>
+                <button type="button" class="btn btn-default btn-sm delete-many"><i class="fa fa-trash-o"></i></button>
+                <div class="pull-right"></div>
+            </div>
+
+            <div class="table-responsive mailbox-messages">
+                <table id="list_messages" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th style="min-width: 200px">Получатели</th>
+                        <th>Текст</th>
+                        <th style="width: 135px; min-width: 135px">Дата</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for message in message %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="selection[]" value="{{ message.id }}"
+                                   style="position: absolute; opacity: 0;">
+                        </td>
+                        <td>
+                            {% if message.owner %}
+                            <a href="{% url 'detail_message' message.id %}">
+                                {{ message.owner }}
+                            </a>
+                            {% else %}
+                            <a href="{% url 'detail_message' message.id %}">
+                                {% if message.house %}
+                                {{ message.house.title }}
+                                {% else %}
+                                Всем
+                                {% endif %}
+                                {% if message.section %}
+                                , {{ message.section.title }}
+                                {% endif %}
+                                {% if message.floor %}
+                                , {{ message.floor.title }}
+                                {% endif %}
+                                {% if message.apartment %}
+                                , кв.{{ message.apartment.number }}
+                                {% endif %}
+                                {% if message.apartment.owner %}
+                                , {{ message.apartment.owner }}
+                                {% endif %}
+                            </a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <b>{{ message.topics }}</b>
+                            {% if message.text %}
+                            - {{ message.text|striptags|truncatechars:20 }}
+                            {% endif %}
+                        </td>
+                        <td>{{ message.datetime|date:"d.m.Y - H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mailbox-controls">
+                <button type="button" class="btn btn-default btn-sm checkbox-toggle"><i class="fa fa-square-o"></i>
+                </button>
+                <button type="button" class="btn btn-default btn-sm delete-many"><i class="fa fa-trash-o"></i></button>
+                <div class="pull-right"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'crm/plugins/iCheck/icheck.min.js' %}"></script>
+
+<script>
+
+    $(document).ready(function () {
+
+
+        // DataTable
+        var table = $('#list_messages').DataTable({
+            "responsive": false,
+            'paging': false,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': false,
+            'info': false,
+            'autoWidth': true,
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "infoEmpty": "Нет записей.",
+            },
+        });
+        $("#list_messages_filter").css('display', 'none')
+        //
+
+        // Custom search
+        $("#custom_search").on('keyup', function () {
+            table.search(this.value).draw();
+        })
+        //
+    });
+
+
+    jQuery(function ($) {
+        //Enable iCheck plugin for checkboxes
+        //iCheck for checkbox and radio inputs
+        $('.mailbox-messages input[type="checkbox"]').iCheck({
+            checkboxClass: 'icheckbox_flat-blue',
+            radioClass: 'iradio_flat-blue'
+        });
+
+        //Enable check and uncheck all functionality
+        $(".checkbox-toggle").click(function () {
+            var clicks = $(this).data('clicks');
+            if (clicks) {
+                //Uncheck all checkboxes
+                $(".mailbox-messages input[type='checkbox']").iCheck("uncheck");
+                $(".checkbox-toggle > .fa").removeClass("fa-check-square-o").addClass('fa-square-o');
+            } else {
+                //Check all checkboxes
+                $(".mailbox-messages input[type='checkbox']").iCheck("check");
+                $(".checkbox-toggle > .fa").removeClass("fa-square-o").addClass('fa-check-square-o');
+            }
+            $(this).data("clicks", !clicks);
+        });
+
+        // Delete button trigger
+        $('body').on('click', '.delete-many', function () {
+            var ids = [];
+            $('input[name="selection[]"]:checked').each(function () {
+                ids.push($(this).val());
+            });
+
+            if (ids.length) {
+                if (confirm('Данные будут удалены. Продолжить?')) {
+                    let format_data = new FormData()
+                    format_data.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+                    format_data.append('list_messages_id', ids)
+                    $.ajax({
+                        type: 'post',
+                        url: '{% url "delete_is_checked_messages" %}',
+                        data: format_data,
+                        success: function (response) {
+                            if (response) {
+                                location.reload();
+                            }
+
+                        },
+                        error: function (response) {
+                            console.log(response.error);
+                        },
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                    });
+                }
+            }
+        });
+
+    });
+
+
+</script>
+
+{% endblock %}

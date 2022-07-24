@@ -1,0 +1,290 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Редактирование страницы
+{% endblock %}
+
+{% block style %}
+<style>
+    a:hover {
+        cursor: pointer;
+    }
+</style>
+<link rel="stylesheet" href="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Редактирование страницы</h1>
+
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Редактирование страницы</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Редактирование страницы "О нас"</h3>
+            </div>
+            <div class="box-body">
+                <form id="about_page" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <h3 class="page-header">Информация</h3>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="control-label">Заголовок</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Краткий текст</label>
+                                {{ form.description }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h4>Фото директора</h4>
+                            {% if object.image %}
+                            <img src="{{ object.image.url }}" alt="director">
+                            {% endif %}
+                            <div class="form-group">
+                                <label class="control-label">Рекомендуемый размер: (250x310)</label>
+                                {{ form.image }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row site-about-gallery">
+                        <div class="col-xs-12">
+                            <h3 class="page-header">Фотогалерея</h3>
+                        </div>
+                        {% for gallery in object.gallery.all %}
+                        {% if gallery.image %}
+                        <div class="col-xs-4 col-sm-2 text-center">
+                            <img src="{{ gallery.image.url }}"
+                                 alt="" class="margin-bottom-15 img-thumbnail">
+                            <div class="form-group margin-bottom-15">
+                                <a href="{% url 'delete_gallery_image' gallery.id %}"
+                                   data-confirm="Удалить?"
+                                   title="Удалить">
+                                    <i class="fa fa-trash text-red" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label class="control-label">Рекомендуемый размер: (1200x1200)</label>
+                                {{ gallery.image }}
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="page-header">Дополнительная информация</h3>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label class="control-label">Заголовок</label>
+                                {{ form.title2 }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Краткий текст</label>
+                                {{ form.description2 }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row site-about-gallery">
+                        <div class="col-xs-12">
+                            <h3 class="page-header">Дополнительная фотогалерея</h3>
+                        </div>
+                        {% for gallery in object.gallery2.all %}
+                        {% if gallery.image %}
+                        <div class="col-xs-6 col-sm-4 col-md-2 text-center">
+                            <img src="{{ gallery.image.url }}"
+                                 alt="" class="margin-bottom-15 img-thumbnail">
+                            <div class="form-group margin-bottom-15">
+                                <a href="{% url 'delete_gallery_image' gallery.id %}"
+                                   data-confirm="Удалить?"
+                                   title="Удалить">
+                                    <i class="fa fa-trash text-red" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label class="control-label">Рекомендуемый размер: (1200x1200)</label>
+                                {{gallery2.image }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row site-about-documents">
+                        {{ document_form.management_form }}
+                        <div class="col-xs-12">
+                            <h3 class="page-header">Документы</h3>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            {% with document_form as forms %}
+                            <div id="form-document_form-rows">
+                                {% for form in forms %}
+                                <div id="{{ form.prefix }}" class="form-document">
+                                    {{ form.id }}
+                                    <div class="form-group">
+                                        <a href="{% url 'delete_document' form.instance.id %}"
+                                           class="pull-right text-red"
+                                           data-confirm="Удалить?"><i class="fa fa-trash"></i></a>
+                                        <i class="fa fa-file-o fa-3x pull-left" style="width: 32px;"
+                                           aria-hidden="true"></i>
+                                        <label>PDF, JPG (макс. размер 20 Mb)</label>
+                                        {{ form.file }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Название документа</label>
+                                        {{ form.name }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endwith %}
+                            {% with document_form.empty_form as form %}
+                            <div id="empty_form-document_form" style="display: none;">
+                                <div id="{{ form.prefix }}" class="form-document">
+                                    <div class="form-group">
+                                        <a onclick="delForm('{{ form.prefix }}')"
+                                           class="pull-right text-red">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+                                        <label>PDF, JPG (макс. размер 20 Mb)</label>
+                                        {{ form.file }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Название документа</label>
+                                        {{ form.name }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                            <div class="btn-group">
+                                <button type="button"
+                                        onclick="addEmptyForm('{{ document_form.prefix }}')"
+                                        class="btn btn-success margin-bottom-15">
+                                    Добавить документ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3 class="page-header">Настройки SEO</h3>
+                            {% with seo_block_form as form %}
+                            <div class="form-group ">
+                                <label class="control-label">Title</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Description</label>
+                                {{ form.description }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Keywords</label>
+                                {{ form.keywords }}
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 text-center">
+                            <div class="form-group">
+                                <a href="/admin/website/about" class="btn btn-default">Отменить</a>
+                                <button type="submit" class="btn btn-success">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js' %}"></script>
+<script>
+
+    // document formset
+    function addEmptyForm(prefix) {
+        const totalForms = $('#id_' + prefix + '-TOTAL_FORMS')
+        const form_idx = totalForms.val();
+        $("#form-" + prefix + "-rows").append($('#empty_form-' + prefix + '').html().replace(/__prefix__/g, form_idx))
+        totalForms.val(parseInt(form_idx) + 1);
+    }
+
+    function delForm(prefix) {
+        var form = $("div[id='" + prefix + "']")
+        const totalForms = $('#id_' + prefix.split('-')[0] + '-TOTAL_FORMS')
+        const form_idx = totalForms.val();
+        const result = confirm('Удалить?');
+        if (result) {
+            form.empty();
+            totalForms.val(parseInt(form_idx) - 1);
+        }
+    }
+
+    //
+
+
+    // WYSIHTML5
+
+    !function ($) {
+        $.fn.wysihtml5.locale["ru-RU"] = {
+            font_styles: {
+                normal: "Обычный текст",
+                h1: "Заголовок 1",
+                h2: "Заголовок 2",
+                h3: "Заголовок 3",
+                h4: "Заголовок 4",
+                h5: "Заголовок 5",
+                h6: "Заголовок 6"
+
+            },
+            emphasis: {
+                bold: "Полужирный",
+                italic: "Курсив",
+                underline: "Подчёркнутый"
+            },
+            lists: {
+                unordered: "Маркированный список",
+                ordered: "Нумерованный список",
+                outdent: "Уменьшить отступ",
+                indent: "Увеличить отступ"
+            }
+        };
+    }(jQuery);
+
+
+    $('.description').wysihtml5({
+        useLineBreaks: false,
+        locale: 'ru-RU',
+        toolbar: {
+            "font-styles": true,
+            "emphasis": true,
+            "lists": true,
+            "html": false,
+            "link": false,
+            "image": false,
+            "color": false,
+            "blockquote": false,
+            "fa": true,
+            "size": 'none'
+        }
+    })
+    //
+
+
+</script>
+{% endblock %}

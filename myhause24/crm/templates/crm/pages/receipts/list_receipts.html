@@ -1,0 +1,544 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% load floattags %}
+
+{% block title %}
+Квитанции на оплату
+
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/css/style_dataTable_filter.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.css' %}">
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Квитанции на оплату</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Квитанции на оплату</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12 col-lg-9">
+        <div class="row">
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-green overflow-hidden">
+                    <div class="inner">
+                        <h3>{{ cash_balance|floatformat:"2g"|formatted_float }} грн</h3>
+                        <p>Состояние кассы</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-blue overflow-hidden">
+                    <div class="inner">
+                        <h3>{{ account_balance|floatformat:"2g"|formatted_float }} грн</h3>
+                        <p>Баланс по счетам</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-4">
+                <div class="small-box bg-red overflow-hidden">
+                    <div class="inner">
+                        <h3>{{ account_debit|floatformat:"2g"|formatted_float }} грн</h3>
+                        <p>Задолженность по счетам</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-lg-3">
+        <div class="btn-group pull-right margin-bottom">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+                Выберите действие <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'create_receipt' %}">Создать общую квитанцию</a></li>
+                <li><a class="delete-many">Удалить</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <a id="clean" class="btn btn-default btn-sm">
+                        <span class="hidden-xs">Очистить</span>
+                        <i class="fa fa-eraser visible-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="list_receipts" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="table_receipts" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th style="width: 10px; min-width: 10px;">
+                                <input type="checkbox" id="check-all" name="selection_all" value="1">
+                            </th>
+                            <th style="width: 90px; min-width: 90px;">№ квитанции</th>
+                            <th style="width: 120px; min-width: 120px;">Статус</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">Дата</th>
+                            <th style="width: 100px; min-width: 100px; color: #3c8dbc">Месяц</th>
+                            <th style="min-width: 200px">Квартира</th>
+                            <th style="min-width: 100px">Владелец</th>
+                            <th style="width: 120px; min-width: 120px">Проведена</th>
+                            <th style="width: 120px; min-width: 120px">Сумма (грн)</th>
+                            <th style="width: 100px; min-width: 100px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tfoot style="display: table-header-group">
+                        <tr>
+                            <td></td>
+                            <th></th>
+                            <th></th>
+                            <td style="z-index: 9999">
+                                <input type="text" name="custom_search" id="id_date">
+                            </td>
+                            <td style="z-index: 9999">
+                                <input type="text" name="custom_search" id="id_month">
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for receipt in receipts %}
+                        <tr data-href="{% url 'detail_receipt' receipt.id %}">
+                            <td style="z-index: 9999">
+                                <input type="checkbox"
+                                       class="select-on-check-all"
+                                       name="receipt_checkbox"
+                                       id="{{ receipt.id }}">
+                            </td>
+                            <td>{{ receipt.number }}</td>
+                            {% if receipt.status_pay == 'paid' %}
+                            <td><small class="label label-success">Оплачена</small></td>
+                            {% elif receipt.status_pay == 'partially_paid' %}
+                            <td><small class="label label-warning">Частично</small></td>
+                            {% elif receipt.status_pay == 'not_paid' %}
+                            <td><small class="label label-danger">Неоплачен</small></td>
+                            {% endif %}
+                            <td>{{ receipt.date|date:"d.m.Y" }}</td>
+                            <td>{{ receipt.date|date:"F Y" }}</td>
+                            <td>{{ receipt.apartment.number }}, {{ receipt.apartment.house.title }}</td>
+                            <td>{{ receipt.apartment.owner }}</td>
+                            {% if receipt.status %}
+                            <td>Проведена</td>
+                            {% else %}
+                            <td>Не проведена</td>
+                            {% endif %}
+                            {% if receipt.sum %}
+                            <td>{{ receipt.sum|floatformat:"2g"|formatted_float }}</td>
+                            {% else %}
+                            <td>0.00</td>
+                            {% endif %}
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'create_receipt' %}?receipt_id={{ receipt.id }}"
+                                       title="Копировать"
+                                       data-toggle="tooltip">
+                                        <i class="fa fa-clone"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_receipt' receipt.id %}"
+                                       title="Редактировать" data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление квитанции</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_receipt' receipt.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>
+                                                Вы уверены, что хотите удалить квитанцию №{{ receipt.number }}?
+                                            </p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/moment/min/moment.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+<script>
+
+
+    var minDate, maxDate
+
+    $.fn.dataTable.ext.search.push(function (settings, data) {
+        var min = new Date(minDate).getTime();
+        var max = new Date(maxDate).getTime();
+        var table_date = data[3].split(".")[2] + '-' + data[3].split(".")[1] + '-' + data[3].split(".")[0]
+        var date = new Date(table_date).getTime();
+        if (
+            (isNaN(min) && isNaN(max)) ||
+            (isNaN(min) && date <= max) ||
+            (min <= date && isNaN(max)) ||
+            (min <= date && date <= max)
+        ) {
+            return true;
+        }
+        return false;
+    });
+    //
+
+
+    $(document).ready(function () {
+        var date_input = $('#id_date')
+        var month_input = $('#id_month')
+
+        // Date range picker
+        date_input.daterangepicker({
+            timePicker: false,
+            timePickerIncrement: 30,
+            autoUpdateInput: false,
+
+            locale: {
+                format: 'DD.MM.YYYY',
+                "applyLabel": "Ок",
+                "cancelLabel": "Отмена",
+                "fromLabel": "От",
+                "toLabel": "До",
+                "customRangeLabel": "Произвольный",
+                "daysOfWeek": [
+                    "Вс",
+                    "Пн",
+                    "Вт",
+                    "Ср",
+                    "Чт",
+                    "Пт",
+                    "Сб"
+                ],
+                "monthNames": [
+                    "Январь",
+                    "Февраль",
+                    "Март",
+                    "Апрель",
+                    "Май",
+                    "Июнь",
+                    "Июль",
+                    "Август",
+                    "Сентябрь",
+                    "Октябрь",
+                    "Ноябрь",
+                    "Декабрь"
+                ],
+                firstDay: 1
+            }
+        });
+        //
+
+        // Month picker
+        !function (a) {
+            a.fn.datepicker.dates.ru = {
+                days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+                daysShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Суб"],
+                daysMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+                months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+                monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+                today: "Сегодня",
+                clear: "Очистить",
+                format: "dd.mm.yyyy",
+                weekStart: 1,
+                monthsTitle: "Месяцы"
+            }
+        }(jQuery);
+
+        month_input.datepicker({
+            format: " MM yyyy",
+            viewMode: "months",
+            minViewMode: "months",
+            language: 'ru'
+        })
+        //
+
+
+        // Setup - add a text input to each footer cell
+        $('#table_receipts tfoot th').each(function () {
+            $(this).html('<input type="text" name="custom_search"/>');
+        });
+
+
+        // DataTable
+        var table = $('#table_receipts').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                'excel'
+            ],
+            "responsive": false,
+            'pageLength': 10,
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': true,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [0, 1, 2, 5, 6, 7, 8, 9]
+                }
+            ],
+            order: [],
+            "language": {
+                "infoFiltered": "(Отфильтровано _MAX_ записей)",
+                "zeroRecords": "Записей не найдено",
+                "info": "",
+                "infoEmpty": "Нет записей.",
+                "paginate": {
+                    "previous": '<i class="fa fa-angle-left" style="color: #337AB7"></i>',
+                    "last": "Последняя",
+                    "next": '<i class="fa fa-angle-right" style="color: #337AB7"></i>',
+                }
+            },
+
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns([1, 4, 5])
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+                this.api()
+                    .columns([2, 6, 7])
+
+                    .every(function () {
+                        var column = this;
+                        var select = $('<select name="custom_select"><option value="">Выберите</option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+
+                        column
+                            .data()
+                            .unique()
+                            .sort()
+                            .each(function (d, j) {
+                                var val = $('<div/>').html(d).text();
+                                select.append('<option value="' + val + '">' + val + '</option>');
+                            });
+                    });
+            },
+        });
+
+        //Checkbox all
+        $("#check-all").on("click", function (e) {
+            if ($(this).is(":checked")) {
+                table.column(0).nodes().to$().each(function (d, j) {
+                    $(j).find('input').prop('checked', 'checked')
+                })
+            } else {
+                table.column(0).nodes().to$().each(function (d, j) {
+                    $(j).find('input').prop('checked', '')
+                })
+            }
+        });
+        //
+
+        // Delete all
+        $(".delete-many").on("click", function () {
+            var receipts = table.rows(function (idx, data, node) {
+                return $(node).find('input[type="checkbox"]').prop('checked');
+            })
+                .data().pluck(1).toArray();
+
+
+            if (receipts.length > 0) {
+                const result = confirm('Данные будут удалены. Продолжить?');
+                if (result) {
+                    let format_data = new FormData()
+                    format_data.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+                    format_data.append('receipts', receipts)
+                    console.log(format_data.get('receipts'))
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url "delete_is_checked_receipts" %}',
+                        data: format_data,
+                        success: function (response) {
+                            if (response) {
+                                location.reload();
+                            }
+                        },
+                        error: function (response) {
+                            console.log(response.error)
+                        },
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                    })
+                }
+            }
+        })
+        //
+
+
+        // export to excel
+        $('.buttons-excel').css('display', 'none')
+        $('#export').on("click", function () {
+            table.buttons('.buttons-excel').trigger('click');
+        })
+        //
+
+        // clean button
+        $("#table_receipts_filter").css('display', 'none')
+        $("#clean").on("click", function () {
+            $('input').val('');
+            $('select').val('');
+            minDate = ''
+            maxDate = ''
+            table.columns().search("").draw();
+            $("#check-all").prop('checked', '');
+            table.column(0).nodes().to$().each(function (d, j) {
+                $(j).find('input').prop('checked', '')
+            })
+        })
+        //
+
+
+        // daterange
+        date_input.on('apply.daterangepicker', function (ev, picker) {
+            minDate = new Date(picker.startDate).getTime();
+            maxDate = new Date(picker.endDate).getTime();
+            $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY'));
+            table.draw();
+        });
+
+        date_input.on('cancel.daterangepicker', function () {
+            $(this).val('');
+            minDate = ''
+            maxDate = ''
+            table.draw();
+        });
+        //
+
+
+        // total
+        table.on('draw', function () {
+            var income = []
+            var expense = []
+
+            table.column(7, {search: 'applied'}).nodes().to$().each(function (d, j) {
+                if ($(j).attr('data-filter') === 'income') {
+                    income.push($(j).attr('value'))
+                }
+            })
+
+            table.column(7, {search: 'applied'}).nodes().to$().each(function (d, j) {
+                if ($(j).attr('data-filter') === 'expense') {
+                    expense.push($(j).attr('value'))
+                }
+            })
+
+
+            $("#pri").html(parseFloat(income.reduce(totals, 0)).toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, " ") + ' грн')
+            $("#ras").html(parseFloat(expense.reduce(totals, 0)).toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, " ") + ' грн')
+
+            function totals(b, a) {
+                return parseFloat(b) + parseFloat(a)
+            }
+
+        })
+
+        var income = []
+        var expense = []
+
+        table.column(7).nodes().to$().each(function (d, j) {
+            if ($(j).attr('data-filter') === 'income') {
+                income.push($(j).attr('value'))
+            }
+        })
+
+        table.column(7).nodes().to$().each(function (d, j) {
+            if ($(j).attr('data-filter') === 'expense') {
+                expense.push($(j).attr('value'))
+            }
+        })
+
+        $("#pri").html(parseFloat(income.reduce(totals, 0)).toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, " ") + ' грн')
+        $("#ras").html(parseFloat(expense.reduce(totals, 0)).toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, " ") + ' грн')
+
+        function totals(b, a) {
+            return parseFloat(b) + parseFloat(a)
+        }
+
+        //
+
+    });
+
+</script>
+
+{% endblock %}

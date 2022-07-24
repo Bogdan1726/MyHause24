@@ -1,0 +1,171 @@
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == 'error' %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: '{{ message.tags }}',
+            title: '<h5>{{ message }}</h5>'
+        })
+    });
+</script>
+{% endif %}
+{% if message.tags == 'success' %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: '{{ message.tags }}',
+            title: '<h5>{{ message }}</h5>'
+        })
+    });
+</script>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% for error in form.non_field_errors %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>{{ error }}</h5>'
+        })
+    });
+</script>
+{% endfor %}
+
+
+{% for field in form %}
+{% if field.errors %}
+{% for error in field.errors %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>{{ error }}</h5>'
+        })
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+{% for forms in form %}
+{% for field in forms %}
+{% if field.errors %}
+{% for error in field.errors %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>{{ error }}</h5>'
+        })
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+
+{% for forms in form_unit %}
+{% for field in forms %}
+{% if field.errors %}
+{% for error in field.errors %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>{{ error }}</h5>'
+        })
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+
+{% for forms in formset %}
+{% for field in forms %}
+{% if field.errors %}
+{% for error in field.errors %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>{{ error }}</h5>'
+        })
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+
+{% for forms in formset_for_services %}
+{% for field in forms %}
+{% if field.errors %}
+{% for error in field.errors %}
+<script>
+    $(function () {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+        });
+        Toast.fire({
+            icon: 'error',
+            title: '<h5>{{ error }}</h5>'
+        })
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+

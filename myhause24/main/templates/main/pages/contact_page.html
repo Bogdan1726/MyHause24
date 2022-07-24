@@ -1,0 +1,74 @@
+{% extends 'main/elements/layout.html'%}
+{% load static %}
+
+{% block seo %}
+<meta name="description" content="{{ contact.seo_block.description }}">
+<meta name="keywords" content="{{ contact.seo_block.keywords }}">
+{% endblock %}
+
+{% block title %}
+{{ contact.seo_block.title }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content %}
+<div class="breadcrumbs">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'main' %}">Главная</a></li>
+                    <li class="active">Контакты</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+<!--map -->
+{{ contact.maps|safe }}
+<!--map end -->
+<div class="contacts">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-sm-7 col-md-8">
+                <div class="page-header">
+                    <h1>{{ contact.title }}</h1>
+                </div>
+                <div class="box">
+                    {{ contact.description|safe }}
+                    <p>
+                        <b><i></i><i>Официальный сайт компании -&nbsp;</i></b>
+                        <a target="_blank" rel="nofollow" href="{{ contact.link }}">
+                            <b><i>{{ contact.link }}</i></b>
+                        </a>
+                        <b></b>
+                    </p>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-5 col-md-4">
+                <div class="page-header">
+                    <h3>Контакты</h3>
+                </div>
+                <div class="box">
+                    <p><i class="fas fa-user-circle"></i> {{ contact.initials }}</p>
+                    <p><i class="fas fa-compass"></i> {{ contact.location }}</p>
+                    <p><i class="fas fa-map-marker"></i> {{ contact.address }}</p>
+                    <p><i class="fas fa-phone"></i> <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+                    <p><i class="fas fa-envelope"></i>
+                        <a href="mailto:{{ contact.email }}">
+                            {{ contact.email }}
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+{% endblock %}

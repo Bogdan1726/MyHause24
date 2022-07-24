@@ -1,0 +1,219 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Тариф: {{ object.title }}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Тариф: {{ object.title }}</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'tariffs' %}">Тарифы</a></li>
+    <li><a href="{% url 'detail_tariff' object.id %}">Тариф: {{ object.title }}</a></li>
+    <li class="active">Редактирование</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-body">
+        <form id="create_tariff" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-lg-7">
+                    <div class="form-group">
+                        <label class="control-label">Название тарифа</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Описание тарифа</label>
+                        {{ form.description }}
+                    </div>
+                </div>
+                <div class="col-xs-12 col-lg-7">
+                    <div class="can-delete-list"></div>
+                    {{ formset.management_form }}
+                    <div id="form-services_price-rows">
+                        {% with formset as form %}
+                        {% for form in form %}
+                        <div id="{{ form.prefix }}" class="row form-services_price">
+                            {{ form.id }}
+                            <div class="col-xs-6 col-md-4">
+                                <div class="form-group">
+                                    <label>Услуга</label>
+                                    {{ form.services }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-3">
+                                <div class="form-group">
+                                    <label>Цена</label>
+                                    {{ form.price }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-2">
+                                <div class="form-group">
+                                    <label>Валюта</label>
+                                    {{ form.currency }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-3">
+                                <div class="form-group">
+                                    <label>Ед. изм.</label>
+                                    <div class="input-group">
+                                        {{ form.unit }}
+                                        <span class="input-group-btn">
+                                        <button type="button"
+                                                onclick="delForm('{{ form.prefix }}')"
+                                                class="btn btn-default form-row-remove-btn">
+                                        <i class="fa fa-trash"></i>
+                                        </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endwith %}
+                    </div>
+                    {% with formset.empty_form as form %}
+                    <div id="empty_form-services_price" style="display: none;">
+                        <div id="{{ form.prefix }}" class="row form-services_price">
+                            <div class="col-xs-6 col-md-4">
+                                <div class="form-group">
+                                    <label>Услуга</label>
+                                    {{ form.services }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-3">
+                                <div class="form-group">
+                                    <label>Цена</label>
+                                    {{ form.price }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-2">
+                                <div class="form-group">
+                                    <label>Валюта</label>
+                                    {{ form.currency }}
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-md-3">
+                                <div class="form-group">
+                                    <label>Ед. изм.</label>
+                                    <div class="input-group">
+                                        {{ form.unit }}
+                                        <span class="input-group-btn">
+                                        <button type="button"
+                                                onclick="delForm('{{ form.prefix }}')"
+                                                class="btn btn-default form-row-remove-btn">
+                                        <i class="fa fa-trash"></i>
+                                        </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endwith %}
+                    <button type="button"
+                            onclick="addEmptyForm('{{ formset.prefix }}')"
+                            class="btn btn-default btn-hover-change pull-left margin-bottom-15 form-row-add-tariffservice-btn">
+                        Добавить услугу
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-lg-7 text-right">
+                    <div class="form-group">
+                        <a href="{% url 'tariffs'%}" class="btn btn-default">Отменить</a>
+                        <button type="submit" class="btn btn-success">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    function selectServices(element) {
+        var element_id = element.id.split("-").slice(0, 2).join("-") + "-unit"
+        if (element.value) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'loading_unit_for_services' %}",
+                data: {
+                    'service_id': element.value,
+                },
+                success: function (response) {
+                    $("input[id=" + element_id + "]").attr('value', response.unit[0].u_measurement__title)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        } else {
+            $("input[id=" + element_id + "]").attr('value', 'Выберите...')
+        }
+    }
+
+
+    function addEmptyForm(prefix) {
+        const totalForms = $('#id_' + prefix + '-TOTAL_FORMS')
+        const form_idx = totalForms.val();
+        $("#form-" + prefix + "-rows").append($('#empty_form-' + prefix + '').html().replace(/__prefix__/g, form_idx))
+        totalForms.val(parseInt(form_idx) + 1);
+    }
+
+    function delForm(prefix) {
+        var form = $("div[id='" + prefix + "']")
+        console.log(prefix)
+        const result = confirm('Удалить?');
+        if (result) {
+            $('.can-delete-list').append(
+                '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
+            );
+            form.css('display', 'none');
+        } else {
+        }
+    }
+
+    //  jQuery Validations Form
+
+    $('#create_tariff').validate({
+        rules: {
+            title: {
+                required: true,
+            },
+            description: {
+                required: true,
+            },
+        },
+        messages: {
+            title: {
+                required: "Обязательное поле",
+            },
+            description: {
+                required: "Обязательное поле",
+            }
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Новый пользователь
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Новый пользователь</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'users' %}">Пользователи</a></li>
+    <li class="active">Новый пользователь</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="box">
+    <div class="box-body">
+
+        <form id="create_user" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">Имя</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Фамилия</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Телефон</label>
+                        {{ form.phone }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Роль</label>
+                        {{ form.role }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Статус</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">Email (логин)</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Пароль</label>
+                        <div class="input-group">
+                            {{ form.password1 }}
+                            <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" onclick="generatePassword()">
+                                Сгенерировать
+                            </button>
+                            <button type="button" class="btn btn-primary" id="showPass">
+                                <i class="fa fa-eye" aria-hidden="true"></i>
+                            </button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Повторить пароль</label>
+                        {{ form.password2 }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <a href="{% url 'users' %}" class="btn btn-default">Отменить</a>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+
+<script>
+
+    // jQuery validations
+
+    $('#create_user').validate({
+        rules: {
+            role: {
+                required: true,
+            },
+            username: {
+                required: true,
+                email: true
+            },
+            password1: {
+                required: true,
+                minlength: 8
+
+            },
+            password2: {
+                required: true,
+                minlength: 8
+            },
+            phone: {
+                required: false,
+                minlength: 18
+            },
+
+        },
+        messages: {
+            role: {
+                required: "Обязательное поле",
+            },
+            username: {
+                required: "Обязательное поле",
+                email: "Введите корректный email адрес"
+            },
+            password1: {
+                required: "Обязательное поле",
+                minlength: "Пожалуйста, введите не менее 8 символов."
+            },
+            password2: {
+                required: "Обязательное поле",
+                minlength: "Пожалуйста, введите не менее 8 символов."
+            },
+            phone: {
+                required: "",
+                minlength: "Пожалуйста, введите корректный 11-ти значный номер."
+            },
+
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+
+        },
+    });
+
+    function generatePassword() {
+        const password = Math.random().toString(36).slice(-8);
+        $('input[name="password1"]').val(password);
+        $('input[name="password2"]').val(password);
+    }
+</script>
+{% endblock %}

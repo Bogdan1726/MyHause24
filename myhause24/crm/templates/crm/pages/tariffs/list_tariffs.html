@@ -1,0 +1,137 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Тарифы
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Тарифы</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Тарифы</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="pull-right margin-bottom">
+            <a class="btn btn-success" href="{% url 'create_tariff' %}">Добавить тариф</a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div id="tariffs" class="grid-view">
+                <div class="box-body table-responsive no-padding">
+                    <table id="list_tariffs" class="table table-bordered table-hover table-striped linkedRow">
+                        <thead>
+                        <tr>
+                            <th style="min-width: 200px; color: #3c8dbc">Название тарифа</th>
+                            <th style="min-width: 350px;">Описание тарифа</th>
+                            <th style="min-width: 150px;">Дата редактирования</th>
+                            <th style="width: 114px; min-width: 114px">&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for tariff in tariffs %}
+                        <tr data-href="{% url 'detail_tariff' tariff.id %}">
+                            <td>{{ tariff.title }}</td>
+                            <td>{{ tariff.description }}</td>
+                            <td>{{ tariff.date_edit|date:"d.m.Y - H:m" }}</td>
+                            <td>
+                                <div class="btn-group pull-right">
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'create_copy_tariff' tariff.id %}"
+                                       title="Копировать" data-toggle="tooltip">
+                                        <i class="fa fa-clone"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       href="{% url 'update_tariff' tariff.id %}"
+                                       title="Редактировать" data-toggle="tooltip">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-default btn-sm"
+                                       title="Удалить"
+                                       data-toggle="modal"
+                                       data-target="#modal-default-{{ forloop.counter }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <div class="modal fade"
+                             id="modal-default-{{ forloop.counter }}" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                        <h4 class="modal-title">Удаление Тарифа</h4>
+                                    </div>
+                                    <form method="post" action="{% url 'delete_tariff' tariff.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Вы уверены, что хотите удалить {{ tariff.title }} ?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left"
+                                                    data-dismiss="modal">Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-success">Подтвердить</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align:center;">Нет даных</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'crm/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+<script>
+
+        // DataTable
+        $('#list_tariffs').DataTable({
+            "responsive": false,
+            'paging': false,
+            'lengthChange': false,
+            'searching': false,
+            'ordering': true,
+            'info': false,
+            'autoWidth': true,
+            'columnDefs': [
+                {
+                    'orderable': false,
+                    'targets': [1, 2, 3]
+                }
+            ],
+            order: [],
+            "language": {
+                "zeroRecords": "Записей не найдено",
+                "infoEmpty": "Нет записей.",
+            },
+        });
+</script>
+{% endblock %}

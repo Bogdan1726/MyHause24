@@ -1,0 +1,186 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+
+{% block title %}
+Редактирование страницы
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Редактирование страницы</h1>
+
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Редактирование страницы</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Редактирование страницы "Контакты"</h3>
+            </div>
+            <div class="box-body">
+                <form id="contact_page" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-xs-12 col-md-8">
+                            <h3 class="page-header">Контактная информация</h3>
+                            <div class="form-group">
+                                <label class="control-label">Заголовок</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="form-group ">
+                                <label class="control-label">Краткий текст</label>
+                                {{ form.description }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Ссылка на коммерческий сайт</label>
+                                {{ form.link }}
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-md-4">
+                            <h3 class="page-header">Контакты</h3>
+                            <div class="form-group">
+                                <label class="control-label">ФИО</label>
+                                {{ form.initials }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Локация</label>
+                                {{ form.location }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Адрес</label>
+                                {{ form.address }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Телефон</label>
+                                {{ form.phone }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">E-mail</label>
+                                {{ form.email }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <h3 class="page-header">Карта</h3>
+                            <div class="form-group">
+                                <label class="control-label">Код карты</label>
+                                {{ form.maps }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3 class="page-header">Настройки SEO</h3>
+                            {% with seo_block_form as form %}
+                            <div class="form-group ">
+                                <label class="control-label">Title</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Description</label>
+                                {{ form.description }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Keywords</label>
+                                {{ form.keywords }}
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 text-center">
+                            <div class="form-group">
+                                <a href="/admin/website/contact" class="btn btn-default">Отменить</a>
+                                <button type="submit" class="btn btn-success">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+<script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js' %}"></script>
+<script>
+    // WYSIHTML5
+
+    !function ($) {
+        $.fn.wysihtml5.locale["ru-RU"] = {
+            font_styles: {
+                normal: "Обычный текст",
+                h1: "Заголовок 1",
+                h2: "Заголовок 2",
+                h3: "Заголовок 3",
+                h4: "Заголовок 4",
+                h5: "Заголовок 5",
+                h6: "Заголовок 6"
+
+            },
+            emphasis: {
+                bold: "Полужирный",
+                italic: "Курсив",
+                underline: "Подчёркнутый"
+            },
+            lists: {
+                unordered: "Маркированный список",
+                ordered: "Нумерованный список",
+                outdent: "Уменьшить отступ",
+                indent: "Увеличить отступ"
+            }
+        };
+    }(jQuery);
+
+    $('textarea[name=description]').wysihtml5({
+        useLineBreaks: false,
+        locale: 'ru-RU',
+        toolbar: {
+            "font-styles": true,
+            "emphasis": true,
+            "lists": true,
+            "html": false,
+            "link": false,
+            "image": false,
+            "color": false,
+            "blockquote": false,
+            "fa": true,
+            "size": 'none'
+        }
+    })
+
+    $('.content_des').wysihtml5({
+        useLineBreaks: false,
+        locale: 'ru-RU',
+        toolbar: {
+            "font-styles": true,
+            "emphasis": true,
+            "lists": true,
+            "html": false,
+            "link": false,
+            "image": false,
+            "color": false,
+            "blockquote": false,
+            "fa": true,
+            "size": 'none'
+        }
+    })
+    //
+
+
+</script>
+{% endblock %}

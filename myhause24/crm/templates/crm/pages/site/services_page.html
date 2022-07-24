@@ -1,0 +1,235 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+
+{% block title %}
+Редактирование страницы
+{% endblock %}
+
+{% block style %}
+<style>
+    a:hover {
+        cursor: pointer;
+    }
+</style>
+<link rel="stylesheet" href="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css' %}">
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Редактирование страницы</h1>
+
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin' %}"><i class="fa fa-home"></i> Главная</a></li>
+    <li class="active">Редактирование страницы</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Редактирование страницы "Услуги"</h3>
+            </div>
+            <div class="box-body">
+                <form id="services_page" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row near-img">
+                        <div class="col-xs-12">
+                            <h3 class="page-header">Услуги</h3>
+                        </div>
+                        <div id="form-services-rows">
+                            {{ form.management_form }}
+                            {% for form in form %}
+                            <div id="{{ form.prefix }}" class="col-md-4 form-service">
+                                {{ form.id }}
+                                <h4>
+                                    Услуга {{ forloop.counter }}
+                                    {% if form.instance.id %}
+                                    <a href="{% url 'delete_site_services' form.instance.id %}"
+                                       class="pull-right text-red"
+                                       data-confirm="Удалить?">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                    {% else %}
+                                    <a onclick="delForm('{{ form.prefix }}')"
+                                       class="pull-right text-red">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </h4>
+                                <img src="{% if form.instance.image %}{{ form.instance.image.url }}{% else %}{% static 'crm/media/def_image.jpeg' %}{% endif %}"
+                                     alt="" class="img-responsive margin-bottom-15">
+                                <div class="form-group">
+                                    <label>Рекомендуемый размер: (650x300)</label>
+                                    {{ form.image }}
+                                </div>
+                                <div class="form-group">
+                                    <label>Название услуги</label>
+                                    {{ form.title }}
+                                </div>
+                                <div class="form-group margin-bottom-30">
+                                    <label for="id_{{ form.prefix}}-description">Описание услуги</label>
+                                    {{ form.description }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% with form.empty_form as form %}
+                        <div id="empty_form-services" style="display: none;">
+                            <div id="{{ form.prefix }}" class="col-md-4 form-service">
+                                <h4>
+                                    Услуга
+                                    <text id="{{ form.prefix }}-name"></text>
+                                    <a onclick="delForm('{{ form.prefix }}')"
+                                       class="pull-right text-red">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </h4>
+                                <img src="{% static 'crm/media/def_image.jpeg' %}"
+                                     alt="" class="img-responsive margin-bottom-15">
+                                <div class="form-group">
+                                    <label>Рекомендуемый размер: (650x300)</label>
+                                    {{ form.image }}
+                                </div>
+                                <div class="form-group">
+                                    <label>Название услуги</label>
+                                    {{ form.title }}
+                                </div>
+                                <div class="form-group margin-bottom-30">
+                                    <label for="id_{{ form.prefix}}-description">Описание услуги</label>
+                                    {{ form.description }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3 class="page-header">Настройки SEO</h3>
+                            {% with seo_block_form as form %}
+                            <div class="form-group ">
+                                <label class="control-label">Title</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Description</label>
+                                {{ form.description }}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Keywords</label>
+                                {{ form.keywords }}
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 text-center">
+                            <div class="form-group">
+                                <a href="/admin/website/services" class="btn btn-default">Отменить</a>
+                                <button type="button"
+                                        onclick="addEmptyForm('{{ form.prefix }}')"
+                                        role="button"
+                                        class="btn btn-success bg-green-active">Добавить услугу
+                                </button>
+                                <button type="submit" class="btn btn-success">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js' %}"></script>
+<script>
+    // formset
+
+    const form_count = $('#id_services-TOTAL_FORMS').val()
+
+    function addEmptyForm(prefix) {
+        const totalForms = $('#id_' + prefix + '-TOTAL_FORMS')
+        const form_idx = totalForms.val();
+        $("#form-" + prefix + "-rows").append($('#empty_form-' + prefix + '').html().replace(/__prefix__/g, form_idx))
+        totalForms.val(parseInt(form_idx) + 1);
+        $("#services-" + form_idx + "-name").html(parseInt(form_idx) + 1)
+        editor(form_idx)
+    }
+
+    function delForm(prefix) {
+        var form = $("div[id='" + prefix + "']")
+        const totalForms = $('#id_' + prefix.split('-')[0] + '-TOTAL_FORMS')
+        const form_idx = totalForms.val();
+        const result = confirm('Удалить?');
+        if (result) {
+            form.empty();
+            totalForms.val(parseInt(form_idx) - 1);
+        }
+    }
+
+    //
+
+    // Initial WYSIHTML5
+    $(document).ready(function () {
+        for (let i = 0; i < form_count; i++) {
+            editor(i)
+        }
+    });
+    //
+
+    // WYSIHTML5
+    !function ($) {
+        $.fn.wysihtml5.locale["ru-RU"] = {
+            font_styles: {
+                normal: "Обычный текст",
+                h1: "Заголовок 1",
+                h2: "Заголовок 2",
+                h3: "Заголовок 3",
+                h4: "Заголовок 4",
+                h5: "Заголовок 5",
+                h6: "Заголовок 6"
+
+            },
+            emphasis: {
+                bold: "Полужирный",
+                italic: "Курсив",
+                underline: "Подчёркнутый"
+            },
+            lists: {
+                unordered: "Маркированный список",
+                ordered: "Нумерованный список",
+                outdent: "Уменьшить отступ",
+                indent: "Увеличить отступ"
+            }
+        };
+    }(jQuery);
+
+    function editor(index) {
+        $('#id_services-' + index + '-description').wysihtml5({
+            useLineBreaks: true,
+            locale: 'ru-RU',
+            toolbar: {
+                "font-styles": true,
+                "emphasis": true,
+                "lists": true,
+                "html": false,
+                "link": false,
+                "image": false,
+                "color": false,
+                "blockquote": false,
+                "fa": true,
+                "size": 'none'
+            }
+        })
+    }
+
+    //
+
+
+</script>
+{% endblock %}

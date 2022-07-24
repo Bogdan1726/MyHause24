@@ -1,0 +1,410 @@
+{% extends 'crm/elements/layout.html'%}
+{% load static %}
+{% block title %}
+Дома
+{% endblock %}
+
+{% block style %}
+<style>
+    .error {
+        color: red;
+    }
+</style>
+{% endblock %}
+
+
+{% block content-header %}
+<h1>Новый дом</h1>
+<ul class="breadcrumb">
+    <li><a href="{% url 'admin'%}"><i class="fa fa-home"></i> Главная</a></li>
+    <li><a href="{% url 'houses'%}">Дома</a></li>
+    <li class="active">Новый дом</li>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+{% include 'crm/inc/_messages.html' %}
+
+<div class="box">
+    <div class="box-body">
+        <form id="create_house" action="{% url 'create_house' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-12 col-lg-4">
+                    <div class="form-group field-houseform-name">
+                        <label class="control-label">Название</label>
+                        {{ form.title }}
+                        <div class="help-block"></div>
+                    </div>
+                    <div class="form-group field-houseform-address">
+                        <label class="control-label">Адрес</label>
+                        {{ form.address }}
+                        <div class="help-block"></div>
+                    </div>
+                    <div class="form-group field-houseform-image1">
+                        <label class="control-label">Изображение #1. Размер: (522x350)</label>
+                        {{ form.image1 }}
+                        <div class="help-block"></div>
+                    </div>
+                    <div class="form-group field-houseform-image2">
+                        <label class="control-label">Изображение #2. Размер: (248x160)</label>
+                        {{ form.image2 }}
+                        <div class="help-block"></div>
+                    </div>
+                    <div class="form-group field-houseform-image3">
+                        <label class="control-label">Изображение #3. Размер: (248x160)</label>
+                        {{ form.image3 }}
+                        <div class="help-block"></div>
+                    </div>
+                    <div class="form-group field-houseform-image4">
+                        <label class="control-label">Изображение #4. Размер: (248x160)</label>
+                        {{ form.image4 }}
+                        <div class="help-block"></div>
+                    </div>
+                    <div class="form-group field-houseform-image5">
+                        <label class="control-label">Изображение #5. Размер: (248x160)</label>
+                        {{ form.image5 }}
+                        <div class="help-block"></div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-lg-8">
+                    <div class="row" id="image-block">
+                        <div class="col-xs-12 col-md-6">
+                            <img src="{% static 'crm/media/def_house.jpeg' %}"
+                                 class="img-responsive largeImg margin-bottom-30"
+                                 id="id_image1"
+                                 alt="Изображение #1. Размер: (522x350)">
+                        </div>
+                        <div class="col-xs-6 col-md-3">
+                            <img src="{% static 'crm/media/def_house.jpeg' %}"
+                                 class="img-responsive smallImg margin-bottom-30"
+                                 id="id_image2"
+                                 alt="Изображение #2. Размер: (248x160)">
+                        </div>
+                        <div class="col-xs-6 col-md-3">
+                            <img src="{% static 'crm/media/def_house.jpeg' %}"
+                                 class="img-responsive smallImg margin-bottom-30"
+                                 id="id_image3"
+                                 alt="Изображение #3. Размер: (248x160)">
+                        </div>
+                        <div class="col-xs-6 col-md-3">
+                            <img src="{% static 'crm/media/def_house.jpeg' %}"
+                                 class="img-responsive smallImg margin-bottom-30"
+                                 id="id_image4"
+                                 alt="Изображение #4. Размер: (248x160)">
+                        </div>
+                        <div class="col-xs-6 col-md-3">
+                            <img src="{% static 'crm/media/def_house.jpeg' %}"
+                                 class="img-responsive smallImg margin-bottom-30"
+                                 id="id_image5"
+                                 alt="Изображение #5. Размер: (248x160)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-lg-8">
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a href="#tab-sections" data-toggle="tab" aria-expanded="true">Секции</a>
+                            </li>
+                            <li><a href="#tab-floors" data-toggle="tab" aria-expanded="false">Этажи</a></li>
+                            <li><a href="#tab-houseuseradmins" data-toggle="tab" aria-expanded="false">Пользователи</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="can-delete-list"></div>
+                            <div class="tab-pane active clearfix" id="tab-sections">
+                                {% with formset_for_section as form %}
+                                {{ form.management_form }}
+                                <div id="form-section-rows">
+                                    <div class="empty_form-{{ form.prefix }}" style="display: none;">
+                                        <div id="form-{{ form.empty_form.prefix }}" class="row form-section">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
+                                                    <label>Название</label>
+                                                    <div class="input-group">
+                                                        {{ form.empty_form.title }}
+                                                        <span class="input-group-btn">
+                                                        <button type="button"
+                                                                onclick="delForm('{{ form.empty_form.prefix }}')"
+                                                                class="btn btn-danger form-row-remove-btn">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-success pull-right form-row-add-section-btn"
+                                        onclick="addEmptyForm('{{ form.prefix }}')"
+                                        type="button">
+                                    Добавить
+                                </button>
+                                {% endwith %}
+                            </div>
+                            <div class="tab-pane clearfix" id="tab-floors">
+                                {% with formset_for_floor as form %}
+                                <div id="form-floor-rows">
+                                    {{ form.management_form }}
+                                    <div class="empty_form-{{ form.prefix }}" style="display: none;">
+                                        <div id="form-{{ form.empty_form.prefix }}" class="row form-floor">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
+                                                    <label>Название</label>
+                                                    <div class="input-group">
+                                                        {{ form.empty_form.title }}
+                                                        <span class="input-group-btn">
+                                                        <button type="button"
+                                                                onclick="delForm('{{ form.empty_form.prefix }}')"
+                                                                class="btn btn-danger form-row-remove-btn">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-success pull-right form-row-add-floor-btn"
+                                        onclick="addEmptyForm('{{ form.prefix }}')"
+                                        type="button">
+                                    Добавить
+                                </button>
+                                {% endwith %}
+                            </div>
+                            <div class="tab-pane clearfix" id="tab-houseuseradmins">
+                                {% with formset_for_user as form %}
+                                <div id="form-user-rows">
+                                    {{ form.management_form }}
+                                    <div class="empty_form-{{ form.prefix }}" style="display: none;">
+                                        <div id="form-{{ form.empty_form.prefix }}" class="row form-user">
+                                            <div class="col-xs-12 col-sm-7">
+                                                <div class="form-group">
+                                                    <label>ФИО</label>
+                                                    {{ form.empty_form.user }}
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-12 col-sm-5">
+                                                <div class="form-group">
+                                                    <label>Роль</label>
+                                                    <div class="input-group">
+                                                        {{ form.empty_form.role }}
+                                                        <span class="input-group-btn">
+                                                            <button type="button"
+                                                                    onclick="delForm('{{ form.empty_form.prefix }}')"
+                                                                    class="btn btn-danger form-row-remove-btn">
+                                                                <i class="fa fa-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-success pull-right form-row-add-houseuseradmin-btn"
+                                        onclick="addEmptyForm('{{ form.prefix }}')"
+                                        type="button">Добавить
+                                </button>
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 text-right">
+                        <div class="form-group">
+                            <a href="{% url 'houses' %}" class="btn btn-default">Отменить</a>
+                            <button type="submit" class="btn btn-success">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+
+    // get role on user select
+    function selectUser(index) {
+        const id = index.id.split("-").slice(0, 2).join("-") + "-role"
+        if (index.value) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'load_role' %}",
+                data: {
+                    'user': index.value,
+                },
+                success: function (response) {
+                    $("input[id=" + id + "]").attr('value', response.role[0].role__name)
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            })
+        } else {
+            $("input[id=" + id + "]").attr('value', '')
+        }
+    }
+
+    // get role on user select end
+
+
+    // dynamic formset for (section, floor and user)
+    function addEmptyForm(prefix) {
+        const totalForms = $('#id_' + prefix + '-TOTAL_FORMS')
+        const form_idx = totalForms.val();
+        $("#form-" + prefix + "-rows").append($('.empty_form-' + prefix + '').html().replace(/__prefix__/g, form_idx))
+
+        const input = $("input[name='" + prefix + '-' + form_idx + "-title']")
+        if (prefix === 'section') {
+            input.attr('value', 'Секция ' + (parseInt(form_idx) + 1))
+        }
+        if (prefix === 'floor') {
+            input.attr('value', 'Этаж ' + (parseInt(form_idx) + 1))
+        }
+        totalForms.val(parseInt(form_idx) + 1);
+    }
+
+
+    function delForm(prefix) {
+        const result = confirm('Удалить?');
+        if (result) {
+            $('.can-delete-list').append(
+                '<input type="hidden" value="on" name="' + prefix + '-DELETE" id="id_' + prefix + '-DELETE">'
+            );
+            $("input[name='" + prefix + "-title']").val('');
+            $("div[id='form-" + prefix + "']").css('display', 'none');
+        } else {
+
+        }
+    }
+
+</script>
+<script>
+    //  jQuery Validations Form
+    $.validator.addMethod("height", function (value, element, param) {
+        if ($(element).data('height')) {
+            if ($(element).data('height') !== param) {
+                return false
+            }
+        }
+        return true;
+    });
+
+    $.validator.addMethod("width", function (value, element, param) {
+        if ($(element).data('width')) {
+            if ($(element).data('width') !== param) {
+                return false
+            }
+        }
+        return true;
+    });
+
+    var validator = $('#create_house').validate({
+        rules: {
+            title: {
+                required: true,
+            },
+            address: {
+                required: true,
+            },
+            image1: {
+                extension: "jpg|jpeg|png|",
+                height: 350,
+                width: 522
+            },
+            image2: {
+                extension: "jpg|jpeg|png|",
+                height: 160,
+                width: 248
+            },
+            image3: {
+                extension: "jpg|jpeg|png|",
+                height: 160,
+                width: 248
+            },
+            image4: {
+                extension: "jpg|jpeg|png|",
+                height: 160,
+                width: 248
+            },
+            image5: {
+                extension: "jpg|jpeg|png|",
+                height: 160,
+                width: 248
+            }
+        },
+        messages: {
+            title: {
+                required: "Обязательное поле",
+            },
+            address: {
+                required: "Обязательное поле",
+            },
+            image1: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (522х250)',
+                with: 'Разрешена загрузка изображения размер которого (522х250)'
+            },
+            image2: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (248x160)',
+                with: 'Разрешена загрузка изображения размер которого (248x160)'
+            },
+            image3: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (248x160)',
+                with: 'Разрешена загрузка изображения размер которого (248x160)'
+            },
+            image4: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (248x160)',
+                with: 'Разрешена загрузка изображения размер которого (248x160)'
+            },
+            image5: {
+                extension: 'Разрешена загрузка файлов только со следующими расширениями: png, jpg, jpeg.',
+                height: 'Разрешена загрузка изображения размер которого (248x160)',
+                with: 'Разрешена загрузка изображения размер которого (248x160)'
+            },
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+    });
+
+    // loads preview images
+    $('input[type=file]').on('change', function (element) {
+        const img = $("img[id='" + this.id + "']")
+        var image = new Image();
+        image.src = URL.createObjectURL(element.target.files[0])
+        if (element.target.files[0]) {
+            img.attr("src", URL.createObjectURL(element.target.files[0]))
+            image.onload = function () {
+                $(element.currentTarget).data('height', this.height)
+                $(element.currentTarget).data('width', this.width)
+                validator.element($(element.currentTarget));
+            }
+        } else {
+            img.attr("src", "{% static 'crm/media/def_house.jpeg' %}")
+        }
+    })
+
+    // loads preview images end
+</script>
+
+{% include 'crm/inc/_messages.html' %}
+{% endblock %}

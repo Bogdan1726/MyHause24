@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="{% static 'crm/bower_components/font-awesome/css/font-awesome.min.css' %}">
     <link rel="stylesheet" href="{% static 'crm/bower_components/Ionicons/css/ionicons.min.css' %}">
     <link rel="stylesheet" href="{% static 'crm/bower_components/jvectormap/jquery-jvectormap.css' %}">
+    <link rel="stylesheet"
+          href="{% static 'crm/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
+    <link rel="stylesheet" href="{% static 'crm/bower_components/select2/dist/css/select2.min.css' %}">
     <link rel="stylesheet" href="{% static 'crm/dist/css/AdminLTE.min.css' %}">
     <link rel="stylesheet" href="{% static 'crm/dist/css/skins/_all-skins.min.css' %}">
     <link href="{% static 'crm/css/style.css' %}" rel="stylesheet">
@@ -24,13 +27,32 @@
     <title>
         {% block title %} Панель Администратора {% endblock %}
     </title>
+    <style>
+        .box {
+            position: relative;
+            border-radius: 3px;
+            background: #ffffff;
+            border: 1px solid #d2d6de;
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 100%;
+            box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.1)
+        }
+
+        .error {
+            color: red;
+        }
+
+    </style>
+
 </head>
 
 <body class="skin-black-light sidebar-mini fixed sidebar-mini-expand-feature" style="height: auto; min-height: 100%;">
 <div class="wrapper" style="height: auto; min-height: 100%;">
     <header class="main-header">
         <!-- Logo -->
-        <a href="{% url 'admin' %}" class="logo">
+
+        <a href="{% if request.user.role.statistics %}{% url 'admin' %}{% endif %}" class="logo">
         <span class="logo-mini">
             <img src="{% static 'crm/media/logo-mini.svg' %}" class="img-responsive" alt="">
         </span>
@@ -53,16 +75,18 @@
                     <li class="dropdown notifications-menu">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <i class="fa fa-child fa-lg"></i>
-                            <span class="label label-warning">0</span>
+                            <span class="label label-warning">
+                                <span class="users_counter">0</span>
+                            </span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li class="header">Новых пользователей: 0</li>
+                            <li class="header">Новых пользователей: <span class="users_counter">0</span></li>
                             <li>
                                 <!-- inner menu: contains the actual data -->
                                 <ul class="menu">
                                 </ul>
                             </li>
-                            <li class="footer"><a href="#">Перейти в раздел пользователей</a></li>
+                            <li class="footer"><a href="{% url 'owners' %}">Перейти в раздел пользователей</a></li>
                         </ul>
                     </li>
                     <!-- User Account -->
@@ -73,25 +97,26 @@
                             {% else %}
                             <i class="fa fa-user-circle text-purple"></i>
                             {% endif %}
-                            <span class="hidden-xs">{{ request.user.get_full_name }}</span>
+                            <span class="hidden-xs">{{ request.user }}</span>
                         </a>
                         <ul class="dropdown-menu">
                             <!-- User image -->
                             <li class="user-header">
                                 {% if request.user.profile_picture %}
-                                <img src="{{ request.user.profile_picture.url }}" class="img-circle" alt="profile_picture">
+                                <img src="{{ request.user.profile_picture.url }}" class="img-circle"
+                                     alt="profile_picture">
                                 {% else %}
                                 <span><i class="fa fa-user-circle text-purple bg-gray-light img-circle"></i></span>
                                 {% endif %}
-                                <p>{{ request.user.get_full_name }}</p>
+                                <p>{{ request.user }}</p>
                             </li>
                             <!-- Menu Footer-->
                             <li class="user-footer">
                                 <div class="pull-left">
-                                    <a class="btn btn-default btn-flat" href="#">Профиль</a>
+                                    <a class="btn btn-default btn-flat" href="{% url 'user_profile' request.user.id %}">Профиль</a>
                                 </div>
                                 <div class="pull-right">
-                                    <a class="btn btn-default btn-flat" href="{% url 'logout' %}">Выход</a>
+                                    <a class="btn btn-default btn-flat" href="{% url 'admin_logout' %}">Выход</a>
                                 </div>
                             </li>
                         </ul>
@@ -111,7 +136,9 @@
 
     <div class="content-wrapper" style="min-height: 897px;">
         <section class="content-header">
+            {% block content-header %}
             <h1>Статистика</h1>
+            {% endblock %}
         </section>
 
         <section class="content">
@@ -125,15 +152,16 @@
     </footer>
 
 </div>
-
-
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{% static 'crm/js/jquery.js' %}"></script>
 <script src="{% static 'crm/js/yii.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.js"></script>
 <script src="{% static 'crm/js/adminlte.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'crm/bower_components/select2/dist/js/select2.full.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/fastclick/lib/fastclick.js' %}"></script>
-<script src="{% static 'crm/plugins/iCheck/icheck.min.js' %}"></script>
 <script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.js' %}"></script>
 <script src="{% static 'crm/plugins/bootstrap-wysihtml5/bootstrap-wysihtml5.ru-RU.js' %}"></script>
 <script src="{% static 'crm/bower_components/jquery-sparkline/dist/jquery.sparkline.min.js' %}"></script>
@@ -142,6 +170,33 @@
 <script src="{% static 'crm/bower_components/jquery-slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'crm/bower_components/chart.js/Chart.js' %}"></script>
 <script src="{% static 'crm/dist/js/main.js' %}"></script>
+<script>
+    if (localStorage.getItem('users_count')) {
+        $(".users_counter").html(localStorage.getItem('users_count'))
+    }
+    $.ajax({
+        type: 'GET',
+        url: '{% url "new_users" %}',
+        date: {},
+        success: function (response) {
+            $(".users_counter").html(response.users.length)
+            localStorage.setItem('users_count', response.users.length)
+            for (user in response.users) {
+                $('ul .menu').append(
+                    '<li>' +
+                    '<a href="/admin/owner/' + response.users[user].id + '">' +
+                    '' + response.users[user].email + '' +
+                    '</a>' +
+                    '</li>'
+                )
+            }
+        },
+        error: function (response) {
+            console.log(response.error)
+        },
+    })
+</script>
+{% include 'crm/inc/_messages.html' %}
 {% block scripts %}
 {% endblock %}
 </body>

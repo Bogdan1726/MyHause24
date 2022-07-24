@@ -1,4 +1,4 @@
-MANAGE = python myhause24/manage.py
+MANAGE = python manage.py
 SOURCE = myhause24
 
 run:
@@ -14,14 +14,15 @@ superuser:
 	$(MANAGE) createsuperuser
 
 # Docker
+
 start_worker:
-	cd $(SOURCE) && celery -A myhause24 worker -l info
+	celery -A myhause24 worker -l info
 
 start_app:
 	$(MANAGE) migrate --no-input
 	$(MANAGE) loaddata dump.json
-#	$(MANAGE) collectstatic --no-input
-	cd $(SOURCE) && gunicorn myhause24.wsgi:application -b 0.0.0.0:8000
+	$(MANAGE) collectstatic --no-input
+	gunicorn myhause24.wsgi:application --bind 0.0.0.0:8000
 
 
 

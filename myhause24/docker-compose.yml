@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
 
@@ -15,30 +15,26 @@ services:
 
 
   web:
-    build:
-      context: ./
-      dockerfile: Dockerfile
+    build: .
     command: make start_app
     volumes:
-      - ./:/usr/src/app
-      - static_volume:/usr/src/app/myhause24/static
-      - media_volume:/usr/src/app/myhause24/media
+      - .:/app:rw
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
     depends_on:
       - db
     ports:
       - "8000:8000"
 
   nginx:
-    build:
-      context: ./docker/nginx
-      dockerfile: Dockerfile
-    depends_on:
-      - web
+    build: ./docker/nginx
     ports:
       - "80:80"
     volumes:
-      - static_volume:/usr/src/app/myhause24/static
-      - media_volume:/usr/src/app/myhause24/media
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
+    depends_on:
+      - web
 
   redis:
     image: 'redis:alpine'

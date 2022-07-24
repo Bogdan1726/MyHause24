@@ -1,7 +1,5 @@
 MANAGE = python myhause24/manage.py
 SOURCE = myhause24
-include .env
-
 
 run:
 	$(MANAGE) runserver
@@ -22,8 +20,8 @@ start_worker:
 start_app:
 	$(MANAGE) migrate --no-input
 	$(MANAGE) loaddata dump.json
-	$(MANAGE) collectstatic --no-input
-	cd $(SOURCE) && gunicorn myhause24.wsgi:application -b 0.0.0.0:8000 --reload
+#	$(MANAGE) collectstatic --no-input
+	cd $(SOURCE) && gunicorn myhause24.wsgi:application -b 0.0.0.0:8000
 
 
 

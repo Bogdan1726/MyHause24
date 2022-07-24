@@ -1,0 +1,61 @@
+version: '3.7'
+
+services:
+
+  db:
+    build:
+      context: ./docker/postgresql
+      dockerfile: Dockerfile
+    volumes:
+      - ./docker/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_PASSWORD=Zaqwerty123#
+    env_file:
+      - .env
+
+
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: make start_app
+    volumes:
+      - ./:/usr/src/app
+      - static_volume:/usr/src/app/myhause24/static/
+      - media_volume:/usr/src/app/myhause24/media/
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/usr/src/app/myhause24/static/
+      - media_volume:/usr/src/app/myhause24/media/
+
+  redis:
+    image: 'redis:alpine'
+
+  celery:
+    restart: always
+    build:
+      context: .
+    command: make start_worker
+    ports:
+      - "587:587"
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+
+volumes:
+  static_volume:
+  media_volume:
